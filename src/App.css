@@ -1,38 +1,263 @@
-.App {
-  text-align: center;
+/** @format */
+
+@import url("https://fonts.googleapis.com/css?family=Montserrat:400,700|Open+Sans&display=swap");
+@import url("//fonts.googleapis.com/earlyaccess/droidarabickufi.css");
+
+/* @import "~react-image-gallery/styles/css/image-gallery.css"; */
+
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+	/* font-family: "Helvetica", sans-serif; */
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+body {
+	background-color: white;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+:root {
+	--primaryColor: #5fb7ea;
+	--primaryRGBA: rgba(0, 0, 0, 0.3);
+	--mainGrey: #fafafa;
+	--darkGrey: #5f5e5e;
+	--mainWhite: #fff;
+	--mainBlack: #222;
+	--mainTransition: all 0.3s ease-in-out;
+	--mainSpacing: 0.3rem;
+	--mainRed: #c40000;
+	--clr-primary-1: hsl(22, 28%, 21%);
+	--clr-primary-2: hsl(22, 28%, 29%);
+	--clr-primary-3: hsl(22, 28%, 37%);
+	--clr-primary-4: hsl(22, 28%, 45%);
+	/* primary/main color */
+	--clr-primary-5: hsl(22, 31%, 52%);
+	/* lighter shades of primary color */
+	--clr-primary-6: hsl(22, 31%, 60%);
+	--clr-primary-7: hsl(22, 31%, 67%);
+	--clr-primary-8: hsl(20, 31%, 74%);
+	--clr-primary-9: hsl(22, 31%, 81%);
+	--clr-primary-10: hsl(22, 31%, 88%);
+	/* darkest grey - used for headings */
+	--clr-grey-1: hsl(209, 61%, 16%);
+	--clr-grey-2: hsl(211, 39%, 23%);
+	--clr-grey-3: hsl(209, 34%, 30%);
+	--clr-grey-4: hsl(209, 28%, 39%);
+	/* grey used for paragraphs */
+	--clr-grey-5: hsl(210, 22%, 49%);
+	--clr-grey-6: hsl(209, 23%, 60%);
+	--clr-grey-7: hsl(211, 27%, 70%);
+	--clr-grey-8: hsl(210, 31%, 80%);
+	--clr-grey-9: hsl(212, 33%, 89%);
+	--clr-grey-10: hsl(210, 36%, 96%);
+	--clr-white: #fff;
+	--clr-red-dark: hsl(360, 67%, 44%);
+	--clr-red-light: hsl(360, 71%, 66%);
+	--clr-green-dark: hsl(125, 67%, 44%);
+	--clr-green-light: hsl(125, 71%, 66%);
+	--clr-black: #222;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.submitForm:hover {
+	background-color: #78ffff !important;
+	color: black !important;
+	transition: 0.5s;
 }
 
-.App-link {
-  color: #61dafb;
+.sidePhoto:hover {
+	transition: 0.5s;
+	box-shadow:
+		5px 5px 8px blue,
+		10px 10px 8px #2a0000,
+		15px 15px 8px white;
+	min-height: 50vh;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.sidePhoto2:hover {
+	transition: 0.5s;
+	box-shadow:
+		5px 5px 8px blue,
+		10px 10px 8px #2a0000,
+		15px 15px 8px white;
+	min-height: 58vh;
+}
+
+.paragraph1:hover {
+	background-color: black !important;
+	transition: 0.4s;
+	padding: 5px;
+}
+
+.max-height p {
+	font-weight: bold;
+	color: black;
+	text-align: center;
+}
+
+:root {
+	--primaryColor: #5fb7ea;
+	--primaryRGBA: rgba(0, 0, 0, 0.3);
+	--mainGrey: #fafafa;
+	--darkGrey: #5f5e5e;
+	--mainWhite: #fff;
+	--mainBlack: #222;
+	--mainTransition: all 0.3s ease-in-out;
+	--mainSpacing: 0.3rem;
+}
+
+.text-title {
+	/* font-family: "Montserrat", sans-serif; */
+	font-family: "Helvetica";
+
+	font-weight: bold;
+	/* letter-spacing: var(--mainSpacing); */
+	/* letter-spacing: 0.1rem; */
+	text-transform: capitalize;
+}
+
+.text-main {
+	color: var(--primaryColor);
+}
+
+.main-link {
+	padding: 0.5rem 1rem;
+	background: var(--primaryColor);
+	color: var(--mainWhite);
+	display: inline-block;
+	text-transform: uppercase;
+	letter-spacing: var(--mainSpacing);
+	outline: 2px solid var(--primaryColor);
+	outline-offset: 4px; /* you can change the value into negative but you will need to change the outline color to e.g. white*/
+	transition: var(--mainTransition);
+}
+
+.main-link:hover {
+	background: var(--darkGrey);
+	text-decoration: none;
+	color: var(--primaryColor);
+	outline-color: var(--darkGrey);
+}
+
+.cart-icon {
+	cursor: pointer;
+}
+
+.single-Product-Description-Style {
+	font-size: 0.85rem;
+	margin: none;
+}
+
+.single-Product-Description-List {
+	font-size: 0.85rem;
+}
+
+::placeholder {
+	font-style: italic;
+	font-size: 0.75rem;
+	font-weight: bold;
+	color: #d3d3d3 !important;
+}
+
+.continueShoppingEmpty {
+	font-weight: bold;
+	font-size: 1rem;
+	border: 1px solid white;
+	color: white;
+	/* box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.3); */
+	background-color: #350000;
+	border-radius: 20px;
+	padding: 5px;
+	transition: var(--mainTransition);
+	text-decoration: none;
+	width: 30%;
+	text-align: center;
+}
+
+.continueShoppingEmpty:hover {
+	padding: 12px;
+	transition: var(--mainTransition);
+	background-color: #ffcdcd;
+	color: black;
+	text-decoration: none;
+	text-align: center;
+}
+
+@media (max-width: 800px) {
+	.continueShoppingEmpty {
+		font-weight: bold;
+		font-size: 0.9rem;
+		border: 1px solid white;
+		color: white;
+		/* box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.3); */
+		background-color: #350000;
+		border-radius: 20px;
+		padding: 5px;
+		transition: var(--mainTransition);
+		text-decoration: none;
+		width: 50%;
+		text-align: center;
+	}
+
+	.continueShoppingEmpty:hover {
+		padding: 8px;
+		transition: var(--mainTransition);
+		background-color: #ffcdcd;
+		color: black;
+		text-decoration: none;
+	}
+}
+
+.detailsAboutAppointment {
+	font-weight: bold;
+	font-size: 0.95rem;
+	/* text-shadow: 1px 1px 4px; */
+	color: #7a0909;
+}
+
+.backToAdminDashboard {
+	font-weight: bold;
+	font-size: 0.9rem;
+	border: 1px solid white;
+	color: white;
+	/* box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.3); */
+	background-color: #030561;
+	border-radius: 20px;
+	padding: 5px;
+	transition: var(--mainTransition);
+	text-decoration: none;
+	width: 30%;
+	text-align: center;
+}
+
+.backToAdminDashboard:hover {
+	padding: 8px;
+	transition: var(--mainTransition);
+	background-color: #ffcdcd;
+	color: black;
+	text-decoration: none;
+	text-align: center;
+}
+
+.DarkbackgroundForSidebar {
+	background-color: rgba(0, 0, 0, 0.3);
+	height: 100%;
+	top: 0px;
+	left: 0;
+	position: fixed;
+	z-index: 100;
+	padding: 1200px;
+}
+
+.DarkbackgroundForSidebar2 {
+	background-color: rgba(0, 0, 0, 0.3);
+	height: 100%;
+	top: 0px;
+	left: 0;
+	position: fixed;
+	z-index: 100;
+	padding: 1200px;
+}
+
+.arabicFonts {
+	font-family: "Droid Arabic Kufi";
 }

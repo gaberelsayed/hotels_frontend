@@ -1,25 +1,82 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect } from "react";
+import "./App.css";
+import { Route, Switch, BrowserRouter } from "react-router-dom";
+
+import { useCartContext } from "./cart_context";
+import Footer from "./Footer";
+import Signup from "./pages/Signup";
+import Signin from "./pages/Signin";
+
+//Management Routes
+import AdminRoute from "./auth/AdminRoute";
+import AdminDashboard from "./AdminModule/AdminDashboard";
+import AddNewHotel from "./AdminModule/NewHotels/AddNewHotel";
+import AddedHotelsMain from "./AdminModule/AddedHotels/AddedHotelsMain";
+
+//Hotel Routes
+import HotelRoute from "./auth/HotelRoute";
+import HotelManagerDashboard from "./HotelModule/HotelManagement/HotelManagerDashboard";
+import ReservationsMain from "./HotelModule/ReservationsFolder/ReservationsMain";
+import NewReservationMain from "./HotelModule/NewReservation/NewReservationMain";
+import HotelSettingsMain from "./HotelModule/HotelSettings/HotelSettingsMain";
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+	const { languageToggle, chosenLanguage } = useCartContext();
+
+	const languageToggle2 = () => {
+		localStorage.setItem("lang", JSON.stringify(chosenLanguage));
+		// window.location.reload(false);
+	};
+
+	useEffect(() => {
+		languageToggle2();
+		languageToggle(chosenLanguage);
+		// eslint-disable-next-line
+	}, [chosenLanguage]);
+
+	return (
+		<BrowserRouter>
+			<>
+				<Switch>
+					<Route path='/signup' exact component={Signup} />
+					<Route path='/' exact component={Signin} />
+					<AdminRoute
+						path='/admin/dashboard'
+						exact
+						component={AdminDashboard}
+					/>
+					<AdminRoute path='/admin/new-hotel' exact component={AddNewHotel} />
+					<AdminRoute
+						path='/admin/added-hotels'
+						exact
+						component={AddedHotelsMain}
+					/>
+
+					<HotelRoute
+						path='/hotel-management/dashboard'
+						exact
+						component={HotelManagerDashboard}
+					/>
+					<HotelRoute
+						path='/hotel-management/reservation-history'
+						exact
+						component={ReservationsMain}
+					/>
+					<HotelRoute
+						path='/hotel-management/new-reservation'
+						exact
+						component={NewReservationMain}
+					/>
+					<HotelRoute
+						path='/hotel-management/settings'
+						exact
+						component={HotelSettingsMain}
+					/>
+				</Switch>
+			</>
+			<Footer />
+		</BrowserRouter>
+	);
 }
 
 export default App;
