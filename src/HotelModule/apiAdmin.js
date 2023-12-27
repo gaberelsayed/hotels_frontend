@@ -106,3 +106,23 @@ export const gettingHotelDetailsForAdmin = (userId, token) => {
 		})
 		.catch((err) => console.log(err));
 };
+
+export const getHotelReservations = (userId) => {
+	return fetch(`${process.env.REACT_APP_API_URL}/new-reservation/${userId}`, {
+		method: "GET",
+	})
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
+export const getHotelReservations2 = (userId) => {
+	return fetch(`${process.env.REACT_APP_API_URL}/new-reservation2/${userId}`, {
+		method: "GET",
+	})
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};

@@ -1,28 +1,16 @@
 import React, { useState } from "react";
 import styled, { keyframes } from "styled-components";
 import { roomTypeColors } from "../../AdminModule/NewHotels/Assets";
-import { InputNumber, Modal, Select } from "antd";
 import moment from "moment";
-const { Option } = Select;
 
-const HotelOverviewReservation = ({
+const HotelHeatMap = ({
 	hotelRooms,
 	hotelDetails,
-	pickedHotelRooms,
-	setPickedHotelRooms,
-	total_amount,
-	setTotal_Amount,
-	setPickedRoomPricing,
-	pickedRoomPricing,
 	start_date,
 	end_date,
 	allReservations,
 }) => {
 	const [selectedRoomType, setSelectedRoomType] = useState(null);
-	const [isModalVisible, setIsModalVisible] = useState(false);
-	const [currentRoom, setCurrentRoom] = useState(null);
-	const [customPrice, setCustomPrice] = useState(null);
-	const [selectedPrice, setSelectedPrice] = useState("");
 
 	const { hotelFloors, parkingLot } = hotelDetails;
 	const floors = Array.from(
@@ -30,23 +18,9 @@ const HotelOverviewReservation = ({
 		(_, index) => hotelFloors - index
 	);
 
-	const handleRoomClick = (roomId, show, room) => {
-		let priceToAdd;
-
-		if (pickedHotelRooms.includes(roomId)) {
-			setPickedHotelRooms(pickedHotelRooms.filter((id) => id !== roomId));
-			priceToAdd = currentRoom?.room_pricing[selectedPrice];
-			setTotal_Amount((prevTotal) => prevTotal - Number(priceToAdd));
-
-			setPickedRoomPricing(
-				pickedRoomPricing.filter((room) => room.roomId !== roomId)
-			);
-		} else {
-			setPickedHotelRooms([...pickedHotelRooms, roomId]);
-			setCurrentRoom(room);
-			showModal(room); // Open the modal for room pricing
-		}
-	};
+	const filteredRooms = selectedRoomType
+		? hotelRooms.filter((room) => room.room_type === selectedRoomType)
+		: hotelRooms;
 
 	const handleRoomTypeClick = (roomType) => {
 		setSelectedRoomType(roomType);
@@ -54,54 +28,6 @@ const HotelOverviewReservation = ({
 
 	const handleSelectAllClick = () => {
 		setSelectedRoomType(null); // Reset room type filter
-	};
-
-	console.log(pickedRoomPricing, "pickedRoomPricing");
-
-	const filteredRooms = selectedRoomType
-		? hotelRooms.filter((room) => room.room_type === selectedRoomType)
-		: hotelRooms;
-
-	const showModal = (room) => {
-		setCurrentRoom(room);
-		setIsModalVisible(true);
-	};
-
-	const handleOk = () => {
-		let priceToAdd;
-		if (selectedPrice === "custom") {
-			priceToAdd = customPrice;
-			setPickedRoomPricing([
-				...pickedRoomPricing,
-				{
-					roomId: currentRoom._id,
-					chosenPrice: customPrice,
-				},
-			]);
-		} else {
-			priceToAdd = currentRoom?.room_pricing[selectedPrice];
-			setPickedRoomPricing([
-				...pickedRoomPricing,
-				{
-					roomId: currentRoom._id,
-					chosenPrice: priceToAdd,
-				},
-			]);
-		}
-		setTotal_Amount((prevTotal) => prevTotal + Number(priceToAdd));
-		setIsModalVisible(false);
-	};
-
-	const handlePriceChange = (value) => {
-		setSelectedPrice(value);
-		if (value !== "custom") {
-			setCustomPrice(null); // Reset custom price if a preset price is selected
-		}
-	};
-
-	const handleCancel = () => {
-		setIsModalVisible(false);
-		setCustomPrice(null); // Reset custom price
 	};
 
 	const isRoomBooked = (roomId) => {
@@ -176,25 +102,19 @@ const HotelOverviewReservation = ({
 										return (
 											<RoomSquare
 												key={idx}
-												color={
-													roomIsBooked
-														? "#e7e7e7"
-														: pickedHotelRooms.includes(room._id)
-														  ? "darkgreen"
-														  : room.roomColorCode
-												}
-												onClick={() => {
-													if (!roomIsBooked) {
-														handleRoomClick(room._id, true, room);
-													}
-												}}
-												picked={pickedHotelRooms.includes(room._id)}
+												color={roomIsBooked ? "#e7e7e7" : room.roomColorCode}
+												picked={false}
 												reserved={roomIsBooked}
 												style={{
 													pointerEvents: roomIsBooked ? "none" : "auto",
 												}}
 											>
-												{room.room_number}
+												<div className='room-info'>
+													{roomIsBooked && (
+														<div className='reservation-indicator'>Res.</div>
+													)}
+													<div className='room-number'>{room.room_number}</div>
+												</div>
 											</RoomSquare>
 										);
 									})}
@@ -203,48 +123,11 @@ const HotelOverviewReservation = ({
 				))}
 				{parkingLot && <ParkingLot>Parking Lot</ParkingLot>}
 			</FloorsContainer>
-
-			<Modal
-				title='Select Room Pricing'
-				open={isModalVisible}
-				onOk={handleOk}
-				onCancel={handleCancel}
-			>
-				<Select
-					defaultValue=''
-					style={{ width: "100%" }}
-					onChange={handlePriceChange}
-				>
-					<Option value=''>Please Select</Option>
-					<Option value='basePrice'>
-						Base Price: {currentRoom?.room_pricing.basePrice}
-					</Option>
-					<Option value='seasonPrice'>
-						Season Price: {currentRoom?.room_pricing.seasonPrice}
-					</Option>
-					<Option value='weekendPrice'>
-						Weekend Price: {currentRoom?.room_pricing.weekendPrice}
-					</Option>
-					<Option value='lastMinuteDealPrice'>
-						Last Minute Deal Price:{" "}
-						{currentRoom?.room_pricing.lastMinuteDealPrice}
-					</Option>
-					<Option value='custom'>Custom Price</Option>
-				</Select>
-				{selectedPrice === "custom" && (
-					<InputNumber
-						value={customPrice}
-						onChange={setCustomPrice}
-						style={{ width: "100%", marginTop: "10px" }}
-						min={0} // Set minimum value if needed
-					/>
-				)}
-			</Modal>
 		</HotelOverviewWrapper>
 	);
 };
 
-export default HotelOverviewReservation;
+export default HotelHeatMap;
 
 // Styled components
 const fadeIn = keyframes`
@@ -343,4 +226,25 @@ const RoomSquare = styled.div`
       pointer-events: none; // Disable interactions
     }
   `}
+
+	.room-info {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.reservation-indicator {
+		font-size: 0.7rem;
+		color: red;
+		position: absolute;
+		top: -3px; // Adjust as needed
+		left: 50%;
+		transform: translateX(-50%);
+		z-index: 1; // Ensure it's above the room number
+	}
+
+	.room-number {
+		z-index: 0;
+	}
 `;

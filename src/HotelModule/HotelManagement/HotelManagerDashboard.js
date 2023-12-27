@@ -7,6 +7,7 @@ import { useCartContext } from "../../cart_context";
 import {
 	createRooms,
 	getHotelDetails,
+	getHotelReservations,
 	getHotelRooms,
 	hotelAccount,
 } from "../apiAdmin";
@@ -14,6 +15,8 @@ import { isAuthenticated } from "../../auth";
 import HotelOverview from "./HotelOverview";
 import { toast } from "react-toastify";
 import { defaultHotelDetails } from "../../AdminModule/NewHotels/Assets";
+import HotelHeatMap from "./HotelHeatMap";
+import moment from "moment";
 
 const isActive = (history, path) => {
 	if (history === path) {
@@ -54,6 +57,7 @@ const HotelManagerDashboard = () => {
 	const [modalVisible2, setModalVisible2] = useState(false);
 	const [clickedFloor, setClickedFloor] = useState("");
 	const [clickedRoom, setClickedRoom] = useState("");
+	const [allReservations, setAllReservations] = useState([]);
 	const { languageToggle, chosenLanguage } = useCartContext();
 	const { user, token } = isAuthenticated();
 
@@ -93,6 +97,21 @@ const HotelManagerDashboard = () => {
 
 		return roomCountDetails;
 	};
+
+	const getAllReservations = () => {
+		getHotelReservations(user._id).then((data3) => {
+			if (data3 && data3.error) {
+				console.log(data3.error);
+			} else {
+				setAllReservations(data3 && data3.length > 0 ? data3 : []);
+			}
+		});
+	};
+
+	useEffect(() => {
+		getAllReservations();
+		// eslint-disable-next-line
+	}, []);
 
 	const gettingHotelData = () => {
 		hotelAccount(user._id, token, user._id).then((data) => {
@@ -253,7 +272,7 @@ const HotelManagerDashboard = () => {
 								to='#'
 							>
 								<i className='fa fa-plus mx-1'></i>
-								{chosenLanguage === "Arabic" ? "ملخص" : "Hotel Overview"}
+								{chosenLanguage === "Arabic" ? "ملخص" : "HOTEL OVERVIEW"}
 							</Link>
 						</div>
 
@@ -271,32 +290,42 @@ const HotelManagerDashboard = () => {
 							>
 								<i className='fa fa-edit mx-1'></i>
 								{chosenLanguage === "Arabic"
-									? "الزوار لتسجيل الوصول"
-									: "Visitors To Check In"}
+									? "HOTEL HEAT MAP"
+									: "HOTEL HEAT MAP"}
 							</Link>
 						</div>
 					</div>
 
 					<div className='container-wrapper'>
-						<HotelOverview
-							hotelRooms={hotelRooms}
-							setHotelRooms={setHotelRooms}
-							hotelDetails={hotelDetails}
-							values={values}
-							addRooms={addRooms}
-							currentAddingRoom={currentAddingRoom}
-							alreadyAddedRooms={alreadyAddedRooms}
-							floorDetails={floorDetails}
-							setFloorDetails={setFloorDetails}
-							modalVisible={modalVisible}
-							setModalVisible={setModalVisible}
-							modalVisible2={modalVisible2}
-							setModalVisible2={setModalVisible2}
-							clickedFloor={clickedFloor}
-							setClickedFloor={setClickedFloor}
-							clickedRoom={clickedRoom}
-							setClickedRoom={setClickedRoom}
-						/>
+						{websiteMenu === "Overview" ? (
+							<HotelOverview
+								hotelRooms={hotelRooms}
+								setHotelRooms={setHotelRooms}
+								hotelDetails={hotelDetails}
+								values={values}
+								addRooms={addRooms}
+								currentAddingRoom={currentAddingRoom}
+								alreadyAddedRooms={alreadyAddedRooms}
+								floorDetails={floorDetails}
+								setFloorDetails={setFloorDetails}
+								modalVisible={modalVisible}
+								setModalVisible={setModalVisible}
+								modalVisible2={modalVisible2}
+								setModalVisible2={setModalVisible2}
+								clickedFloor={clickedFloor}
+								setClickedFloor={setClickedFloor}
+								clickedRoom={clickedRoom}
+								setClickedRoom={setClickedRoom}
+							/>
+						) : websiteMenu === "Operations" && hotelRooms.length > 0 ? (
+							<HotelHeatMap
+								hotelRooms={hotelRooms}
+								hotelDetails={hotelDetails}
+								start_date={moment().subtract(30, "days").format("YYYY-MM-DD")}
+								end_date={moment().add(30, "days").format("YYYY-MM-DD")}
+								allReservations={allReservations}
+							/>
+						) : null}
 					</div>
 				</div>
 			</div>

@@ -82,8 +82,28 @@ const Signin = ({ history }) => {
 			}
 		}
 
-		if (isAuthenticated()) {
-			return (window.location.href = "/");
+		if (
+			isAuthenticated() &&
+			isAuthenticated().user &&
+			isAuthenticated().user.role === 2000
+		) {
+			return (window.location.href = "/hotel-management/new-reservation");
+		}
+
+		if (
+			isAuthenticated() &&
+			isAuthenticated().user &&
+			isAuthenticated().user.role === 1000
+		) {
+			return (window.location.href = "/admin/dashboard");
+		}
+
+		if (
+			isAuthenticated() &&
+			isAuthenticated().user &&
+			isAuthenticated().user.role === 3000
+		) {
+			return (window.location.href = "/staff/dashboard");
 		}
 	};
 
@@ -179,131 +199,6 @@ const Signin = ({ history }) => {
 						</Fragment>
 					</div>
 				</div>
-				<Fragment>
-					<div className='col-md-5  SigninPic' style={{ borderRadius: "20px" }}>
-						<Fragment duration={1500}>
-							<h5 className='mt-3'>
-								<Link to='/'>
-									<h4
-										className=''
-										style={{
-											fontWeight: "bold",
-											fontFamily: "Brush Script MT, Brush Script Std, cursive",
-											textDecoration: "underline",
-											textAlign: "center",
-											color: "black",
-										}}
-									>
-										Online Store Name
-									</h4>
-								</Link>
-							</h5>
-							<div
-								className='col-md-12'
-								style={{ textAlign: "center", marginTop: "0%" }}
-							>
-								<h3>
-									Login with{" "}
-									<span
-										style={{
-											fontWeight: "bold",
-											fontFamily: "Brush Script MT, Brush Script Std, cursive",
-											textDecoration: "underline",
-											textAlign: "center",
-											color: "black",
-										}}
-									>
-										Online Store Name
-									</span>
-								</h3>
-								<p className='container'>
-									When you Login with{" "}
-									<span
-										style={{
-											fontWeight: "bold",
-											fontFamily: "Brush Script MT, Brush Script Std, cursive",
-											textDecoration: "underline",
-											textAlign: "center",
-											color: "black",
-											fontSize: "1.3rem",
-										}}
-									>
-										Online Store Name
-									</span>
-									, you will have the privilege of obtaining free shipping,
-									discounts and free products!
-									<br />
-									Your sensitive data is safe with highly secured complicated
-									tokens and servers, furthermore, your personal information{" "}
-									<span
-										style={{ fontWeight: "bold", textDecoration: "underline" }}
-									>
-										WILL NEVER
-									</span>{" "}
-									be shared.
-								</p>
-
-								<p className='container mt-3'>
-									<span
-										style={{
-											fontWeight: "bold",
-											fontFamily: "Brush Script MT, Brush Script Std, cursive",
-											textDecoration: "underline",
-											textAlign: "center",
-											color: "black",
-											fontSize: "1.3rem",
-										}}
-									>
-										Online Store Name
-									</span>{" "}
-									is the way to uniqueness and modern fashion.
-									<br /> Once you Login, you will be able to use our special
-									program "Design It" which will allow you to add your preferred
-									text to your loved ones or even photos from your design!{" "}
-									<div className='mt-3'>
-										Our{" "}
-										<span
-											style={{
-												fontWeight: "bold",
-												fontFamily:
-													"Brush Script MT, Brush Script Std, cursive",
-												textDecoration: "underline",
-												textAlign: "center",
-												color: "black",
-												fontSize: "1.3rem",
-											}}
-										>
-											Online Store Name
-										</span>{" "}
-										team will be always there for your comfort in case you need
-										any advise whether at choosing items or even at designing
-										your own unique items!
-									</div>
-									<div className='mt-2'>
-										If you decided to design with us, Please be noted that
-										<span
-											style={{
-												fontWeight: "bold",
-												fontFamily:
-													"Brush Script MT, Brush Script Std, cursive",
-												textDecoration: "underline",
-												textAlign: "center",
-												color: "black",
-												fontSize: "1.3rem",
-											}}
-										>
-											Online Store Name
-										</span>{" "}
-										will always check the Copy Rights of any photo or even
-										quote, if your design is Copy Righted, We will address this
-										to you and give you advises.
-									</div>
-									<br />
-								</p>
-							</div>
-						</Fragment>
-					</div>
-				</Fragment>
 			</div>
 		</FormSignin>
 	);

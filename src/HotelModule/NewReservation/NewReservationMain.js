@@ -6,15 +6,27 @@ import styled from "styled-components";
 import { useCartContext } from "../../cart_context";
 import moment from "moment";
 import ZReservationForm from "./ZReservationForm";
-import { getHotelDetails, getHotelRooms, hotelAccount } from "../apiAdmin";
+import {
+	createNewReservation,
+	getHotelDetails,
+	getHotelRooms,
+	hotelAccount,
+	getHotelReservations,
+} from "../apiAdmin";
 import { isAuthenticated } from "../../auth";
+import { toast } from "react-toastify";
 
 const NewReservationMain = () => {
 	const [AdminMenuStatus, setAdminMenuStatus] = useState(false);
 	const [collapsed, setCollapsed] = useState(false);
 	const [hotelRooms, setHotelRooms] = useState("");
 	const [hotelDetails, setHotelDetails] = useState("");
+	const [payment_status, setPaymentStatus] = useState("Not Paid");
+	const [pickedHotelRooms, setPickedHotelRooms] = useState([]);
+	const [pickedRoomPricing, setPickedRoomPricing] = useState([]);
+	const [allReservations, setAllReservations] = useState([]);
 	const [values, setValues] = useState("");
+	const [total_amount, setTotal_Amount] = useState(0);
 
 	const [customer_details, setCustomer_details] = useState({
 		name: "",
@@ -22,7 +34,7 @@ const NewReservationMain = () => {
 		email: "",
 	});
 
-	const [start_date, setStart_date] = useState(new Date());
+	const [start_date, setStart_date] = useState("");
 	const [end_date, setEnd_date] = useState("");
 	const [days_of_residence, setDays_of_residence] = useState(0);
 
@@ -54,6 +66,14 @@ const NewReservationMain = () => {
 						console.log(data2.error, "Error rendering");
 					} else {
 						if (data && data.name && data._id && data2 && data2.length > 0) {
+							getHotelReservations(user._id).then((data3) => {
+								if (data3 && data3.error) {
+									console.log(data3.error);
+								} else {
+									setAllReservations(data3 && data3.length > 0 ? data3 : []);
+								}
+							});
+
 							setHotelDetails(data2[0]);
 
 							getHotelRooms(user._id).then((data3) => {
@@ -66,6 +86,50 @@ const NewReservationMain = () => {
 						}
 					}
 				});
+			}
+		});
+	};
+
+	const clickSubmit = () => {
+		if (!customer_details.name) {
+			return toast.error("Name is required");
+		}
+		if (!customer_details.phone) {
+			return toast.error("Phone is required");
+		}
+		if (!start_date) {
+			return toast.error("Check in Date is required");
+		}
+
+		if (!end_date) {
+			return toast.error("Check out Date is required");
+		}
+		if (pickedHotelRooms && pickedHotelRooms.length <= 0) {
+			return toast.error("Please Pick Up Rooms To Reserve");
+		}
+
+		const new_reservation = {
+			customer_details: customer_details,
+			start_date: start_date,
+			end_date: end_date,
+			days_of_residence: days_of_residence,
+			payment_status: payment_status,
+			total_amount: total_amount * days_of_residence,
+			booking_source: "From Hotel",
+			belongsTo: hotelDetails.belongsTo._id,
+			hotelId: hotelDetails._id,
+			roomId: pickedHotelRooms,
+			pickedRoomsPricing: pickedRoomPricing,
+		};
+		createNewReservation(user._id, token, new_reservation).then((data) => {
+			if (data && data.error) {
+				console.log(data.error, "error create new reservation");
+			} else {
+				console.log("successful reservation");
+				toast.success("Reservation Was Successfully Booked!");
+				setTimeout(() => {
+					window.location.reload(false);
+				}, 2000);
 			}
 		});
 	};
@@ -143,6 +207,16 @@ const NewReservationMain = () => {
 							hotelDetails={hotelDetails}
 							hotelRooms={hotelRooms}
 							values={values}
+							clickSubmit={clickSubmit}
+							pickedHotelRooms={pickedHotelRooms}
+							setPickedHotelRooms={setPickedHotelRooms}
+							payment_status={payment_status}
+							setPaymentStatus={setPaymentStatus}
+							total_amount={total_amount}
+							setTotal_Amount={setTotal_Amount}
+							setPickedRoomPricing={setPickedRoomPricing}
+							pickedRoomPricing={pickedRoomPricing}
+							allReservations={allReservations}
 						/>
 					</div>
 				</div>

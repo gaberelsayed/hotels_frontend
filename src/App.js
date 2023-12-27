@@ -1,7 +1,8 @@
 import React, { useEffect } from "react";
 import "./App.css";
 import { Route, Switch, BrowserRouter } from "react-router-dom";
-
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { useCartContext } from "./cart_context";
 import Footer from "./Footer";
 import Signup from "./pages/Signup";
@@ -37,6 +38,8 @@ function App() {
 	return (
 		<BrowserRouter>
 			<>
+				<ToastContainer />
+
 				<Switch>
 					<Route path='/signup' exact component={Signup} />
 					<Route path='/' exact component={Signin} />
