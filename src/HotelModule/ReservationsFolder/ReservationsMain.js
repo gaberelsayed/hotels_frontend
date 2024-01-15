@@ -2,17 +2,50 @@ import React, { useEffect, useState } from "react";
 import AdminNavbar from "../AdminNavbar/AdminNavbar";
 import AdminNavbarArabic from "../AdminNavbar/AdminNavbarArabic";
 import styled from "styled-components";
-// import { Link } from "react-router-dom";
 import { useCartContext } from "../../cart_context";
-import { getHotelReservations2 } from "../apiAdmin";
+import { getHotelReservations2, prereservationList } from "../apiAdmin";
 import { isAuthenticated } from "../../auth";
 import moment from "moment";
+import PreReservationTable from "./PreReservationTable";
+import { Link } from "react-router-dom";
+
+const isActive = (history, path) => {
+	if (history === path) {
+		return {
+			background: "#0f377e",
+			fontWeight: "bold",
+			borderRadius: "5px",
+			fontSize: "1.1rem",
+			textAlign: "center",
+			padding: "10px",
+			color: "white",
+			transition: "var(--mainTransition)",
+
+			// textDecoration: "underline",
+		};
+	} else {
+		return {
+			backgroundColor: "grey",
+			padding: "10px",
+			borderRadius: "5px",
+			fontSize: "1rem",
+			fontWeight: "bold",
+			textAlign: "center",
+			cursor: "pointer",
+			transition: "var(--mainTransition)",
+			color: "white",
+		};
+	}
+};
 
 const ReservationsMain = () => {
+	const [websiteMenu, setWebsiteMenu] = useState("Occupied Reservation");
 	const [AdminMenuStatus, setAdminMenuStatus] = useState(false);
 	const [collapsed, setCollapsed] = useState(false);
 	const [allReservations, setAllReservations] = useState([]);
+	const [allPreReservations, setAllPreReservations] = useState([]);
 	const [q, setQ] = useState("");
+	const [q2, setQ2] = useState("");
 	const { languageToggle, chosenLanguage } = useCartContext();
 
 	// eslint-disable-next-line
@@ -35,8 +68,19 @@ const ReservationsMain = () => {
 		});
 	};
 
+	const getAllPreReservation = () => {
+		prereservationList(user._id).then((data3) => {
+			if (data3 && data3.error) {
+				console.log(data3.error);
+			} else {
+				setAllPreReservations(data3 && data3.length > 0 ? data3 : []);
+			}
+		});
+	};
+
 	useEffect(() => {
 		getAllReservations();
+		getAllPreReservation();
 		// eslint-disable-next-line
 	}, []);
 
@@ -66,6 +110,8 @@ const ReservationsMain = () => {
 		);
 		return dailyTotal * reservation.days_of_residence;
 	}
+
+	console.log(allPreReservations, "allPre");
 
 	return (
 		<ReservationsMainWrapper
@@ -115,88 +161,150 @@ const ReservationsMain = () => {
 					</div>
 
 					<div className='container-wrapper'>
-						<div className='form-group mx-3 text-center'>
-							<label
-								className='mt-2 mx-3'
-								style={{
-									fontWeight: "bold",
-									fontSize: "1.05rem",
-									color: "black",
-									borderRadius: "20px",
-								}}
-							>
-								Search
-							</label>
-							<input
-								className='p-2 my-2 '
-								type='text'
-								value={q}
-								onChange={(e) => setQ(e.target.value.toLowerCase())}
-								placeholder='Search By Client Phone, Client Name, Email, Date, Payment Status'
-								style={{ borderRadius: "20px", width: "50%" }}
-							/>
-						</div>
-						<table
-							className='table table-bordered table-md-responsive table-hover table-striped'
-							style={{ fontSize: "0.75rem" }}
+						<div
+							className='row text-center'
+							style={{
+								justifyContent: "center",
+							}}
 						>
-							<thead style={{ background: "#191919", color: "white" }}>
-								<tr>
-									<th scope='col'>#</th>
-									<th scope='col'>Client Name</th>
-									<th scope='col'>Client Phone</th>
-									<th scope='col'>Client Email</th>
-									<th scope='col'>Check In</th>
-									<th scope='col'>Check Out</th>
-									<th scope='col'>Payment Status</th>
-									<th scope='col'>Booked Rooms</th>
-									<th scope='col'>Total Amount</th>
-									<th scope='col'>UPDATE...</th>
-								</tr>
-							</thead>
-							<tbody>
-								{allReservations &&
-									allReservations &&
-									search(allReservations).map((reservation, index) => (
-										<tr key={index}>
-											<td>{index + 1}</td>
-											<td>{reservation.customer_details.name}</td>
-											<td>{reservation.customer_details.phone}</td>
-											<td>{reservation.customer_details.email}</td>
-											<td>
-												{moment(reservation.start_date).format("YYYY-MM-DD")}
-											</td>
-											<td>
-												{moment(reservation.end_date).format("YYYY-MM-DD")}
-											</td>
-											<td>{reservation.payment_status}</td>
-											<td>
-												{reservation.roomId.map((room) => (
-													<div
-														key={room._id}
-														style={{ textTransform: "capitalize" }}
-													>
-														{`${room.room_type}: ${room.room_pricing.basePrice} SAR`}
-														<br />
-													</div>
-												))}
-											</td>
-											<td>{getTotalAmount(reservation)} SAR</td>
-											<td
-												style={{
-													fontWeight: "bolder",
-													color: "darkgreen",
-													textDecoration: "underline",
-													fontSize: "15px",
-													cursor: "pointer",
-												}}
-											>
-												UPDATE
-											</td>
+							<div
+								style={isActive(websiteMenu, "OccupiedReservation")}
+								className='menuItems col-md-4 col-5 my-3'
+								onClick={() => setWebsiteMenu("OccupiedReservation")}
+							>
+								<Link
+									onClick={() => setWebsiteMenu("OccupiedReservation")}
+									style={{
+										color:
+											websiteMenu === "OccupiedReservation" ? "white" : "white",
+									}}
+									to='#'
+								>
+									<i className='fa fa-plus mx-1'></i>
+									{chosenLanguage === "Arabic"
+										? "OCCUPIED RESERVATION"
+										: "OCCUPIED RESERVATION"}
+								</Link>
+							</div>
+
+							<div
+								style={isActive(websiteMenu, "Pre-Reservation")}
+								className='menuItems col-md-4 col-5 my-3'
+								onClick={() => setWebsiteMenu("Pre-Reservation")}
+							>
+								<Link
+									style={{
+										color:
+											websiteMenu === "Pre-Reservation" ? "white" : "white",
+									}}
+									onClick={() => setWebsiteMenu("Pre-Reservation")}
+									to='#'
+								>
+									<i className='fa fa-edit mx-1'></i>
+									{chosenLanguage === "Arabic"
+										? "Pre-Reservation"
+										: "Pre-Reservation"}
+								</Link>
+							</div>
+						</div>
+
+						{websiteMenu === "OccupiedReservation" ? (
+							<>
+								<div className='form-group mx-3 text-center'>
+									<label
+										className='mt-2 mx-3'
+										style={{
+											fontWeight: "bold",
+											fontSize: "1.05rem",
+											color: "black",
+											borderRadius: "20px",
+										}}
+									>
+										Search
+									</label>
+									<input
+										className='p-2 my-2 '
+										type='text'
+										value={q}
+										onChange={(e) => setQ(e.target.value.toLowerCase())}
+										placeholder='Search By Client Phone, Client Name, Email, Date, Payment Status'
+										style={{ borderRadius: "20px", width: "50%" }}
+									/>
+								</div>
+
+								<table
+									className='table table-bordered table-md-responsive table-hover table-striped'
+									style={{ fontSize: "0.75rem" }}
+								>
+									<thead style={{ background: "#191919", color: "white" }}>
+										<tr>
+											<th scope='col'>#</th>
+											<th scope='col'>Client Name</th>
+											<th scope='col'>Client Phone</th>
+											<th scope='col'>Client Email</th>
+											<th scope='col'>Check In</th>
+											<th scope='col'>Check Out</th>
+											<th scope='col'>Payment Status</th>
+											<th scope='col'>Booked Rooms</th>
+											<th scope='col'>Total Amount</th>
+											<th scope='col'>UPDATE...</th>
 										</tr>
-									))}
-							</tbody>
-						</table>
+									</thead>
+									<tbody>
+										{allReservations &&
+											allReservations &&
+											search(allReservations).map((reservation, index) => (
+												<tr key={index}>
+													<td>{index + 1}</td>
+													<td>{reservation.customer_details.name}</td>
+													<td>{reservation.customer_details.phone}</td>
+													<td>{reservation.customer_details.email}</td>
+													<td>
+														{moment(reservation.start_date).format(
+															"YYYY-MM-DD"
+														)}
+													</td>
+													<td>
+														{moment(reservation.end_date).format("YYYY-MM-DD")}
+													</td>
+													<td>{reservation.payment_status}</td>
+													<td>
+														{reservation.roomId.map((room) => (
+															<div
+																key={room._id}
+																style={{ textTransform: "capitalize" }}
+															>
+																{`${room.room_type}: ${room.room_pricing.basePrice} SAR`}
+																<br />
+															</div>
+														))}
+													</td>
+													<td>{getTotalAmount(reservation)} SAR</td>
+													<td
+														style={{
+															fontWeight: "bolder",
+															color: "darkgreen",
+															textDecoration: "underline",
+															fontSize: "15px",
+															cursor: "pointer",
+														}}
+													>
+														UPDATE
+													</td>
+												</tr>
+											))}
+									</tbody>
+								</table>
+							</>
+						) : (
+							<div>
+								<PreReservationTable
+									allPreReservations={allPreReservations}
+									setQ={setQ2}
+									q={q2}
+								/>
+							</div>
+						)}
 					</div>
 				</div>
 			</div>

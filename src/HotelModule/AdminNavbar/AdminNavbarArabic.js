@@ -77,7 +77,7 @@ const items = [
 	getItem(<Link to='#'>فروع الفندق</Link>, "sub7", <BankTwoTone />),
 
 	getItem(
-		<Link to='#'>طاقم الفندق</Link>,
+		<Link to='/hotel-management/staff'>طاقم الفندق</Link>,
 		"sub8",
 		<>
 			<TeamOutlined />
@@ -182,7 +182,7 @@ const AdminNavbarArabic = ({
 						          ? "sub6"
 						          : fromPage === "AddOccasions"
 						            ? "sub7"
-						            : fromPage === "AddProducts"
+						            : fromPage === "HotelStaff"
 						              ? "sub8"
 						              : fromPage === "WebsiteManagement"
 						                ? "sub10"

@@ -20,6 +20,7 @@ import HotelManagerDashboard from "./HotelModule/HotelManagement/HotelManagerDas
 import ReservationsMain from "./HotelModule/ReservationsFolder/ReservationsMain";
 import NewReservationMain from "./HotelModule/NewReservation/NewReservationMain";
 import HotelSettingsMain from "./HotelModule/HotelSettings/HotelSettingsMain";
+import SignupNew from "./HotelModule/HotelStaff/SignupNew";
 
 function App() {
 	const { languageToggle, chosenLanguage } = useCartContext();
@@ -74,6 +75,12 @@ function App() {
 						path='/hotel-management/settings'
 						exact
 						component={HotelSettingsMain}
+					/>
+
+					<HotelRoute
+						path='/hotel-management/staff'
+						exact
+						component={SignupNew}
 					/>
 				</Switch>
 			</>

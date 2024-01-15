@@ -77,7 +77,7 @@ const items = [
 	getItem(<Link to='#'>Hotel Branches</Link>, "sub7", <BankTwoTone />),
 
 	getItem(
-		<Link to='#'>Hotel Staff</Link>,
+		<Link to='/hotel-management/staff'>Hotel Staff</Link>,
 		"sub8",
 		<>
 			<TeamOutlined />
@@ -189,7 +189,7 @@ const AdminNavbar = ({
 						          ? "sub6"
 						          : fromPage === "AddOccasions"
 						            ? "sub7"
-						            : fromPage === "AddProducts"
+						            : fromPage === "HotelStaff"
 						              ? "sub8"
 						              : fromPage === "WebsiteManagement"
 						                ? "sub10"

@@ -126,3 +126,74 @@ export const getHotelReservations2 = (userId) => {
 		})
 		.catch((err) => console.log(err));
 };
+
+export const getListOfRoomSummary = (checkinDate, checkoutDate) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/room/${checkinDate}/${checkoutDate}`,
+		{
+			method: "GET",
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
+export const createNewReservation2 = (userId, token, new_reservation) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/pre-reservation/create/${userId}`,
+		{
+			method: "POST",
+			headers: {
+				Accept: "application/json",
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${token}`,
+			},
+			body: JSON.stringify(new_reservation),
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => {
+			console.log(err);
+		});
+};
+
+export const getReservationSearch = (searchQuery) => {
+	return fetch(`${process.env.REACT_APP_API_URL}/search/${searchQuery}`, {
+		method: "GET",
+	})
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
+export const updatingPreReservation = (token, Id) => {
+	return fetch(`${process.env.REACT_APP_API_URL}/update/${Id}`, {
+		method: "PUT",
+		headers: {
+			// content type?
+			"Content-Type": "application/json",
+			Accept: "application/json",
+			Authorization: `Bearer ${token}`,
+		},
+		// body: JSON.stringify(room),
+	})
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
+export const prereservationList = () => {
+	return fetch(`${process.env.REACT_APP_API_URL}/list-prereservation`, {
+		method: "GET",
+	})
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};

@@ -17,6 +17,7 @@ import { toast } from "react-toastify";
 import { defaultHotelDetails } from "../../AdminModule/NewHotels/Assets";
 import HotelHeatMap from "./HotelHeatMap";
 import moment from "moment";
+import GeneralOverview from "./GeneralOverview";
 
 const isActive = (history, path) => {
 	if (history === path) {
@@ -46,7 +47,7 @@ const isActive = (history, path) => {
 const HotelManagerDashboard = () => {
 	const [AdminMenuStatus, setAdminMenuStatus] = useState(false);
 	const [collapsed, setCollapsed] = useState(false);
-	const [websiteMenu, setWebsiteMenu] = useState("Overview");
+	const [websiteMenu, setWebsiteMenu] = useState("Operations");
 	const [hotelRooms, setHotelRooms] = useState("");
 	const [alreadyAddedRooms, setAlreadyAddedRooms] = useState("");
 	const [hotelDetails, setHotelDetails] = useState("");
@@ -294,6 +295,25 @@ const HotelManagerDashboard = () => {
 									: "HOTEL HEAT MAP"}
 							</Link>
 						</div>
+
+						<div
+							style={isActive(websiteMenu, "general")}
+							className='menuItems col-md-4 col-5 my-3'
+							onClick={() => setWebsiteMenu("general")}
+						>
+							<Link
+								style={{
+									color: websiteMenu === "general" ? "white" : "",
+								}}
+								onClick={() => setWebsiteMenu("general")}
+								to='#'
+							>
+								<i className='fa-solid fa-house-medical mx-1'></i>
+								{chosenLanguage === "Arabic"
+									? "GENERAL OVERVIEW"
+									: "GENERAL OVERVIEW"}
+							</Link>
+						</div>
 					</div>
 
 					<div className='container-wrapper'>
@@ -325,6 +345,8 @@ const HotelManagerDashboard = () => {
 								end_date={moment().add(30, "days").format("YYYY-MM-DD")}
 								allReservations={allReservations}
 							/>
+						) : websiteMenu === "general" ? (
+							<GeneralOverview />
 						) : null}
 					</div>
 				</div>
