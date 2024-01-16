@@ -177,13 +177,12 @@ const NewReservationMain = () => {
 		}
 	};
 
-	console.log(roomsSummary, "roomsSummary");
-
 	const gettingSearchQuery = () => {
 		if (searchQuery && searchClicked) {
 			getReservationSearch(searchQuery).then((data) => {
 				if (data && data.error) {
 					console.log(data.error, "Error rendering");
+					toast.error("No available value, please try again...");
 				} else {
 					setCustomer_details(data.customer_details);
 					setStart_date(data.start_date);

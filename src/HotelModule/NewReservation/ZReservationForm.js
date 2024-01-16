@@ -236,7 +236,9 @@ const ZReservationForm = ({
 								borderRadius: "10px",
 							}}
 						>
-							<option value=''>Please Select</option>
+							<option value=''>
+								{booking_source ? booking_source : "Please Select"}
+							</option>
 							<option value='manual'>Manual Reservation</option>
 							<option value='booking.com'>Booking.com</option>
 							<option value='trivago'>Trivago</option>
@@ -285,7 +287,11 @@ const ZReservationForm = ({
 								borderRadius: "10px",
 							}}
 						>
-							<option value=''>Please Select</option>
+							<option value=''>
+								{searchedReservation && searchedReservation.payment
+									? searchedReservation.payment
+									: "Please Select"}
+							</option>
 							<option value='not paid'>Not Paid</option>
 							<option value='credit/ debit'>Credit/ Debit</option>
 							<option value='cash'>Cash</option>
