@@ -31,12 +31,26 @@ const HotelOverviewReservation = ({
 	);
 
 	const handleRoomClick = (roomId, show, room) => {
+		// eslint-disable-next-line
 		let priceToAdd;
 
 		if (pickedHotelRooms.includes(roomId)) {
 			setPickedHotelRooms(pickedHotelRooms.filter((id) => id !== roomId));
+			// eslint-disable-next-line
 			priceToAdd = currentRoom?.room_pricing[selectedPrice];
-			setTotal_Amount((prevTotal) => prevTotal - Number(priceToAdd));
+
+			var newAmount =
+				pickedRoomPricing.filter((room) => room.roomId !== roomId) &&
+				pickedRoomPricing
+					.filter((room) => room.roomId !== roomId)
+					.map((ii) => ii.chosenPrice);
+
+			setTotal_Amount(
+				newAmount.reduce(
+					(accumulator, currentValue) => accumulator + Number(currentValue),
+					0
+				)
+			);
 
 			setPickedRoomPricing(
 				pickedRoomPricing.filter((room) => room.roomId !== roomId)
@@ -68,27 +82,31 @@ const HotelOverviewReservation = ({
 	};
 
 	const handleOk = () => {
-		let priceToAdd;
-		if (selectedPrice === "custom") {
+		let priceToAdd = null;
+		if (selectedPrice === "custom" && customPrice) {
 			priceToAdd = customPrice;
+			// Add room pricing information
 			setPickedRoomPricing([
 				...pickedRoomPricing,
-				{
-					roomId: currentRoom._id,
-					chosenPrice: customPrice,
-				},
+				{ roomId: currentRoom._id, chosenPrice: customPrice },
+			]);
+		} else if (selectedPrice) {
+			priceToAdd = currentRoom?.room_pricing[selectedPrice];
+			// Add room pricing information
+			setPickedRoomPricing([
+				...pickedRoomPricing,
+				{ roomId: currentRoom._id, chosenPrice: priceToAdd },
 			]);
 		} else {
-			priceToAdd = currentRoom?.room_pricing[selectedPrice];
-			setPickedRoomPricing([
-				...pickedRoomPricing,
-				{
-					roomId: currentRoom._id,
-					chosenPrice: priceToAdd,
-				},
-			]);
+			// Deselect the room if no price is selected
+			handleRoomDeselection();
 		}
-		setTotal_Amount((prevTotal) => prevTotal + Number(priceToAdd));
+
+		// Update total amount if a valid price is added
+		if (priceToAdd !== null) {
+			setTotal_Amount((prevTotal) => prevTotal + Number(priceToAdd));
+		}
+
 		setIsModalVisible(false);
 	};
 
@@ -100,8 +118,33 @@ const HotelOverviewReservation = ({
 	};
 
 	const handleCancel = () => {
+		handleRoomDeselection();
 		setIsModalVisible(false);
 		setCustomPrice(null); // Reset custom price
+	};
+
+	const handleRoomDeselection = () => {
+		if (currentRoom) {
+			// Deselect the room by removing it from pickedHotelRooms
+			setPickedHotelRooms(
+				pickedHotelRooms.filter((id) => id !== currentRoom._id)
+			);
+
+			// Update total amount by subtracting the price of the deselected room
+			const priceToRemove = pickedRoomPricing.find(
+				(pricing) => pricing.roomId === currentRoom._id
+			)?.chosenPrice;
+			if (priceToRemove) {
+				setTotal_Amount((prevTotal) => prevTotal - Number(priceToRemove));
+			}
+
+			// Remove the room's pricing information from pickedRoomPricing
+			setPickedRoomPricing(
+				pickedRoomPricing.filter(
+					(pricing) => pricing.roomId !== currentRoom._id
+				)
+			);
+		}
 	};
 
 	const isRoomBooked = (roomId) => {

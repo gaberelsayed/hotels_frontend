@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import { DatePicker } from "antd";
+import { DatePicker, Spin } from "antd";
 import moment from "moment";
 import { Modal, InputNumber } from "antd";
+import { prerservationAuto } from "../apiAdmin";
 
 const ZReservationForm2 = ({
 	customer_details,
@@ -12,6 +13,7 @@ const ZReservationForm2 = ({
 	end_date,
 	setEnd_date,
 	disabledDate,
+	hotelDetails,
 	chosenLanguage,
 	hotelRooms,
 	pickedHotelRooms,
@@ -36,6 +38,7 @@ const ZReservationForm2 = ({
 	const [selectedCount, setSelectedCount] = useState("");
 
 	const [isModalVisible, setIsModalVisible] = useState(false);
+	const [loading, setLoading] = useState(false);
 	const [selectedRoomIndex, setSelectedRoomIndex] = useState(null);
 	const [updatedRoomCount, setUpdatedRoomCount] = useState(0);
 	const [updatedRoomPrice, setUpdatedRoomPrice] = useState(0);
@@ -164,465 +167,513 @@ const ZReservationForm2 = ({
 		setIsModalVisible(false);
 	};
 
+	const addPreReservations = () => {
+		const isConfirmed = window.confirm(
+			"This may take a few minutes, Do you want to proceed?"
+		);
+		if (!isConfirmed) return;
+
+		setLoading(true);
+		prerservationAuto(hotelDetails._id, hotelDetails.belongsTo._id).then(
+			(data) => {
+				if (data) {
+					console.log(data, "data from prereservation");
+				}
+				setLoading(false);
+			}
+		);
+	};
+
 	return (
-		<ZReservationFormWrapper>
-			<Modal
-				title='Update Picked Room'
-				open={isModalVisible}
-				onOk={handleOk}
-				onCancel={handleCancel}
-			>
-				<p>Update the count for the room:</p>
-				<InputNumber
-					min={1}
-					value={updatedRoomCount}
-					onChange={setUpdatedRoomCount}
-				/>
-
-				<p className='mt-4'>Update the price for the room:</p>
-				<InputNumber
-					min={0}
-					value={updatedRoomPrice}
-					onChange={setUpdatedRoomPrice}
-				/>
-				<div className='my-3'>
-					<button
-						onClick={() => removeRoom(selectedRoomIndex)}
-						className='btn btn-danger'
-					>
-						Remove Room
-					</button>
+		<>
+			{loading ? (
+				<div className='text-center my-5'>
+					<Spin size='large' />
+					<p>Loading Reservations...</p>
 				</div>
-			</Modal>
-
-			<h6
-				style={{
-					textTransform: "uppercase",
-					color: "darkcyan",
-					fontWeight: "bold",
-				}}
-			>
-				WARNING... THIS IS A preliminary RESERVATION
-			</h6>
-			<h4>Customer Details:</h4>
-
-			<div className='row'>
-				<div className='col-md-4'>
-					<div
-						className='form-group'
-						style={{ marginTop: "10px", marginBottom: "10px" }}
+			) : (
+				<ZReservationFormWrapper>
+					<Modal
+						title='Update Picked Room'
+						open={isModalVisible}
+						onOk={handleOk}
+						onCancel={handleCancel}
 					>
-						<label style={{ fontWeight: "bold" }}> Visitor Name</label>
-						<input
-							background='red'
-							type='text'
-							value={customer_details.name}
-							onChange={(e) =>
-								setCustomer_details({
-									...customer_details,
-									name: e.target.value,
-								})
-							}
+						<p>Update the count for the room:</p>
+						<InputNumber
+							min={1}
+							value={updatedRoomCount}
+							onChange={setUpdatedRoomCount}
 						/>
-					</div>
-				</div>
-				<div className='col-md-4'>
-					<div
-						className='form-group'
-						style={{ marginTop: "10px", marginBottom: "10px" }}
-					>
-						<label style={{ fontWeight: "bold" }}> Visitor Phone</label>
-						<input
-							background='red'
-							type='text'
-							value={customer_details.phone}
-							onChange={(e) =>
-								setCustomer_details({
-									...customer_details,
-									phone: e.target.value,
-								})
-							}
-						/>
-					</div>
-				</div>
-				<div className='col-md-4'>
-					<div
-						className='form-group'
-						style={{ marginTop: "10px", marginBottom: "10px" }}
-					>
-						<label style={{ fontWeight: "bold" }}> Visitor Email</label>
-						<input
-							background='red'
-							type='text'
-							value={customer_details.email}
-							onChange={(e) =>
-								setCustomer_details({
-									...customer_details,
-									email: e.target.value,
-								})
-							}
-						/>
-					</div>
-				</div>
 
-				<div className='col-md-4'>
-					<div
-						className='form-group'
-						style={{ marginTop: "10px", marginBottom: "10px" }}
-					>
-						<label style={{ fontWeight: "bold" }}> Visitor Passport #</label>
-						<input
-							background='red'
-							type='text'
-							value={customer_details.passport}
-							onChange={(e) =>
-								setCustomer_details({
-									...customer_details,
-									passport: e.target.value,
-								})
-							}
+						<p className='mt-4'>Update the price for the room:</p>
+						<InputNumber
+							min={0}
+							value={updatedRoomPrice}
+							onChange={setUpdatedRoomPrice}
 						/>
-					</div>
-				</div>
-
-				<div className='col-md-4'>
-					<div
-						className='form-group'
-						style={{ marginTop: "10px", marginBottom: "10px" }}
-					>
-						<label style={{ fontWeight: "bold" }}>Passport Expiry Date</label>
-						<input
-							background='red'
-							type='text'
-							value={customer_details.passportExpiry}
-							onChange={(e) =>
-								setCustomer_details({
-									...customer_details,
-									passportExpiry: e.target.value,
-								})
-							}
-						/>
-					</div>
-				</div>
-
-				<div className='col-md-4'>
-					<div
-						className='form-group'
-						style={{ marginTop: "10px", marginBottom: "10px" }}
-					>
-						<label style={{ fontWeight: "bold" }}>Nationality</label>
-						<input
-							background='red'
-							type='text'
-							value={customer_details.nationality}
-							onChange={(e) =>
-								setCustomer_details({
-									...customer_details,
-									nationality: e.target.value,
-								})
-							}
-						/>
-					</div>
-				</div>
-
-				<div
-					className={
-						booking_source !== "manual" && booking_source
-							? "col-md-3 mx-auto"
-							: "col-md-4 mx-auto"
-					}
-				>
-					<div
-						className='form-group'
-						style={{ marginTop: "10px", marginBottom: "10px" }}
-					>
-						<label style={{ fontWeight: "bold" }}>Booking Source</label>
-						<select
-							onChange={(e) => setBookingSource(e.target.value)}
-							style={{
-								height: "auto",
-								width: "100%",
-								padding: "10px",
-								boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
-								borderRadius: "10px",
-							}}
-						>
-							<option value=''>Please Select</option>
-							<option value='manual'>Manual Reservation</option>
-							<option value='booking.com'>Booking.com</option>
-							<option value='trivago'>Trivago</option>
-							<option value='expedia'>Expedia</option>
-							<option value='hotel.com'>Hotel.com</option>
-						</select>
-					</div>
-				</div>
-
-				{booking_source !== "manual" && booking_source && (
-					<div className='col-md-3'>
-						<div
-							className='form-group'
-							style={{ marginTop: "10px", marginBottom: "10px" }}
-						>
-							<label style={{ fontWeight: "bold" }}>Confirmation #</label>
-							<input
-								background='red'
-								type='text'
-								value={confirmation_number}
-								onChange={(e) => setConfirmationNumber(e.target.value)}
-							/>
+						<div className='my-3'>
+							<button
+								onClick={() => removeRoom(selectedRoomIndex)}
+								className='btn btn-danger'
+							>
+								Remove Room
+							</button>
 						</div>
-					</div>
-				)}
+					</Modal>
 
-				<div
-					className={
-						booking_source !== "manual" && booking_source
-							? "col-md-3 mx-auto"
-							: "col-md-4 mx-auto"
-					}
-				>
 					<div
-						className='form-group'
-						style={{ marginTop: "10px", marginBottom: "10px" }}
-					>
-						<label style={{ fontWeight: "bold" }}>Payment</label>
-						<select
-							onChange={(e) => setPaymentStatus(e.target.value)}
-							style={{
-								height: "auto",
-								width: "100%",
-								padding: "10px",
-								boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
-								borderRadius: "10px",
-							}}
-						>
-							<option value=''>Please Select</option>
-							<option value='not paid'>Not Paid</option>
-							<option value='credit/ debit'>Credit/ Debit</option>
-							<option value='cash'>Cash</option>
-						</select>
-					</div>
-				</div>
-
-				<div
-					className={
-						booking_source !== "manual" && booking_source
-							? "col-md-3 mx-auto"
-							: "col-md-4 mx-auto"
-					}
-				>
-					<div
-						className='form-group'
-						style={{ marginTop: "10px", marginBottom: "10px" }}
-					>
-						<label style={{ fontWeight: "bold" }}>Comment</label>
-						<textarea
-							background='red'
-							cols={4}
-							type='text'
-							value={booking_comment}
-							onChange={(e) => setBookingComment(e.target.value)}
-						/>
-					</div>
-				</div>
-
-				<div className='col-md-6'>
-					<label
-						className='dataPointsReview mt-3'
-						style={{
-							fontWeight: "bold",
-							fontSize: "1.05rem",
-							color: "#32322b",
+						className='mx-auto mb-5 text-center'
+						onClick={() => {
+							addPreReservations();
 						}}
 					>
-						Checkin Date
-					</label>
-					<br />
-					<DatePicker
-						className='inputFields'
-						disabledDate={disabledDate}
-						inputReadOnly
-						size='small'
-						showToday={true}
-						placeholder='Please pick the desired schedule checkin date'
-						style={{
-							height: "auto",
-							width: "100%",
-							padding: "10px",
-							boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
-							borderRadius: "10px",
-						}}
-						onChange={onStartDateChange}
-					/>
-				</div>
-
-				<div className='col-md-6'>
-					<label
-						className='dataPointsReview mt-3'
-						style={{
-							fontWeight: "bold",
-							fontSize: "1.05rem",
-							color: "#32322b",
-						}}
-					>
-						Checkout Date
-					</label>
-					<br />
-					<DatePicker
-						className='inputFields'
-						disabledDate={disabledEndDate}
-						inputReadOnly
-						size='small'
-						showToday={true}
-						placeholder='Please pick the desired schedule checkout date'
-						style={{
-							height: "auto",
-							width: "100%",
-							padding: "10px",
-							boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
-							borderRadius: "10px",
-						}}
-						onChange={onEndDateChange}
-					/>
-				</div>
-			</div>
-
-			<div className='row'>
-				{roomsSummary && roomsSummary.length > 0 && (
-					<div
-						className='col-md-4'
-						style={{ marginTop: "20px", marginBottom: "20px" }}
-					>
-						<label style={{ fontWeight: "bold" }}>Room Type</label>
-						<select
-							onChange={handleRoomTypeChange}
-							value={selectedRoomType}
-							style={{
-								height: "auto",
-								width: "100%",
-								padding: "10px",
-								boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
-								borderRadius: "10px",
-								textTransform: "capitalize",
-							}}
-						>
-							<option value=''>Select Room Type</option>
-							{roomsSummary.map((room) => (
-								<option key={room.room_type} value={room.room_type}>
-									{room.room_type} | Available: {room.available} Rooms
-								</option>
-							))}
-						</select>
-					</div>
-				)}
-
-				{selectedRoomType && (
-					<div
-						className='col-md-4'
-						style={{ marginTop: "20px", marginBottom: "20px" }}
-					>
-						<label style={{ fontWeight: "bold" }}>Room Price</label>
-						<select
-							onChange={handlePriceOptionChange}
-							value={selectedPriceOption}
-							style={{
-								height: "auto",
-								width: "100%",
-								padding: "10px",
-								boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
-								borderRadius: "10px",
-							}}
-						>
-							<option value=''>Select Price Option</option>
-							{roomsSummary
-								.filter((room) => room.room_type === selectedRoomType)
-								.map((room) => {
-									const { room_price } = room;
-									return Object.entries(room_price).map(([key, value]) => (
-										<option key={key} value={value}>
-											{`${key}: ${value} SAR`}
-										</option>
-									));
-								})}
-						</select>
-					</div>
-				)}
-
-				{selectedRoomType && selectedPriceOption && (
-					<div className='col-md-4'>
-						<div
-							className='form-group'
-							style={{ marginTop: "20px", marginBottom: "20px" }}
-						>
-							<label style={{ fontWeight: "bold" }}>How Many Rooms?</label>
-							<input
-								background='red'
-								type='number'
-								value={selectedCount}
-								onChange={handleRoomCountChange}
-							/>
-						</div>
-					</div>
-				)}
-
-				{selectedRoomType && selectedPriceOption && selectedCount && (
-					<div className='col-md-4'>
-						<button onClick={addRoomToReservation} className='btn btn-primary'>
-							Add Room
+						<button className='btn btn-success' style={{ fontWeight: "bold" }}>
+							Get All Reservations from Booking.com, Expedia & Trivago?
 						</button>
 					</div>
-				)}
-			</div>
 
-			{customer_details.name &&
-			start_date &&
-			end_date &&
-			pickedRoomsType.length > 0 ? (
-				<>
-					<div className='total-amount my-3'>
-						<h5 style={{ fontWeight: "bold" }}>
-							Days Of Residence: {days_of_residence} Days /{" "}
-							{days_of_residence <= 1 ? 1 : days_of_residence - 1} Nights
-						</h5>
+					<h6
+						style={{
+							textTransform: "uppercase",
+							color: "darkcyan",
+							fontWeight: "bold",
+						}}
+					>
+						WARNING... THIS IS A preliminary RESERVATION
+					</h6>
+					<h4>Customer Details:</h4>
 
-						<h4>
-							Total Amount Per Day: {calculateTotalAmountPerDay()} SAR/ Day
-						</h4>
-						<div className='room-list my-3'>
-							{pickedRoomsType.map((room, index) => (
-								<div
-									key={index}
-									className='room-item my-2'
-									style={{ fontWeight: "bold", textTransform: "capitalize" }}
-									onClick={() => openModal(room, index)}
+					<div className='row'>
+						<div className='col-md-4'>
+							<div
+								className='form-group'
+								style={{ marginTop: "10px", marginBottom: "10px" }}
+							>
+								<label style={{ fontWeight: "bold" }}> Visitor Name</label>
+								<input
+									background='red'
+									type='text'
+									value={customer_details.name}
+									onChange={(e) =>
+										setCustomer_details({
+											...customer_details,
+											name: e.target.value,
+										})
+									}
+								/>
+							</div>
+						</div>
+						<div className='col-md-4'>
+							<div
+								className='form-group'
+								style={{ marginTop: "10px", marginBottom: "10px" }}
+							>
+								<label style={{ fontWeight: "bold" }}> Visitor Phone</label>
+								<input
+									background='red'
+									type='text'
+									value={customer_details.phone}
+									onChange={(e) =>
+										setCustomer_details({
+											...customer_details,
+											phone: e.target.value,
+										})
+									}
+								/>
+							</div>
+						</div>
+						<div className='col-md-4'>
+							<div
+								className='form-group'
+								style={{ marginTop: "10px", marginBottom: "10px" }}
+							>
+								<label style={{ fontWeight: "bold" }}> Visitor Email</label>
+								<input
+									background='red'
+									type='text'
+									value={customer_details.email}
+									onChange={(e) =>
+										setCustomer_details({
+											...customer_details,
+											email: e.target.value,
+										})
+									}
+								/>
+							</div>
+						</div>
+
+						<div className='col-md-4'>
+							<div
+								className='form-group'
+								style={{ marginTop: "10px", marginBottom: "10px" }}
+							>
+								<label style={{ fontWeight: "bold" }}>
+									{" "}
+									Visitor Passport #
+								</label>
+								<input
+									background='red'
+									type='text'
+									value={customer_details.passport}
+									onChange={(e) =>
+										setCustomer_details({
+											...customer_details,
+											passport: e.target.value,
+										})
+									}
+								/>
+							</div>
+						</div>
+
+						<div className='col-md-4'>
+							<div
+								className='form-group'
+								style={{ marginTop: "10px", marginBottom: "10px" }}
+							>
+								<label style={{ fontWeight: "bold" }}>
+									Passport Expiry Date
+								</label>
+								<input
+									background='red'
+									type='text'
+									value={customer_details.passportExpiry}
+									onChange={(e) =>
+										setCustomer_details({
+											...customer_details,
+											passportExpiry: e.target.value,
+										})
+									}
+								/>
+							</div>
+						</div>
+
+						<div className='col-md-4'>
+							<div
+								className='form-group'
+								style={{ marginTop: "10px", marginBottom: "10px" }}
+							>
+								<label style={{ fontWeight: "bold" }}>Nationality</label>
+								<input
+									background='red'
+									type='text'
+									value={customer_details.nationality}
+									onChange={(e) =>
+										setCustomer_details({
+											...customer_details,
+											nationality: e.target.value,
+										})
+									}
+								/>
+							</div>
+						</div>
+
+						<div
+							className={
+								booking_source !== "manual" && booking_source
+									? "col-md-3 mx-auto"
+									: "col-md-4 mx-auto"
+							}
+						>
+							<div
+								className='form-group'
+								style={{ marginTop: "10px", marginBottom: "10px" }}
+							>
+								<label style={{ fontWeight: "bold" }}>Booking Source</label>
+								<select
+									onChange={(e) => setBookingSource(e.target.value)}
+									style={{
+										height: "auto",
+										width: "100%",
+										padding: "10px",
+										boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
+										borderRadius: "10px",
+									}}
 								>
-									{`Room Type: ${room.room_type}, Price: ${room.chosenPrice} SAR, Count: ${room.count} Rooms (Click To Update)`}
-								</div>
-							))}
+									<option value=''>Please Select</option>
+									<option value='manual'>Manual Reservation</option>
+									<option value='booking.com'>Booking.com</option>
+									<option value='trivago'>Trivago</option>
+									<option value='expedia'>Expedia</option>
+									<option value='hotel.com'>Hotel.com</option>
+								</select>
+							</div>
 						</div>
 
-						<h3>
-							Total Amount:{" "}
-							{(
-								calculateTotalAmountPerDay() * Number(days_of_residence)
-							).toLocaleString()}{" "}
-							SAR
-						</h3>
-					</div>
-					<div className='mt-5 mx-auto text-center col-md-6'>
-						<button
-							className='btn btn-success w-50'
-							onClick={() => {
-								clickSubmit2();
-							}}
-							style={{ fontWeight: "bold", fontSize: "1.2rem" }}
+						{booking_source !== "manual" && booking_source && (
+							<div className='col-md-3'>
+								<div
+									className='form-group'
+									style={{ marginTop: "10px", marginBottom: "10px" }}
+								>
+									<label style={{ fontWeight: "bold" }}>Confirmation #</label>
+									<input
+										background='red'
+										type='text'
+										value={confirmation_number}
+										onChange={(e) => setConfirmationNumber(e.target.value)}
+									/>
+								</div>
+							</div>
+						)}
+
+						<div
+							className={
+								booking_source !== "manual" && booking_source
+									? "col-md-3 mx-auto"
+									: "col-md-4 mx-auto"
+							}
 						>
-							Make A Reservation...
-						</button>
+							<div
+								className='form-group'
+								style={{ marginTop: "10px", marginBottom: "10px" }}
+							>
+								<label style={{ fontWeight: "bold" }}>Payment</label>
+								<select
+									onChange={(e) => setPaymentStatus(e.target.value)}
+									style={{
+										height: "auto",
+										width: "100%",
+										padding: "10px",
+										boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
+										borderRadius: "10px",
+									}}
+								>
+									<option value=''>Please Select</option>
+									<option value='not paid'>Not Paid</option>
+									<option value='credit/ debit'>Credit/ Debit</option>
+									<option value='cash'>Cash</option>
+								</select>
+							</div>
+						</div>
+
+						<div
+							className={
+								booking_source !== "manual" && booking_source
+									? "col-md-3 mx-auto"
+									: "col-md-4 mx-auto"
+							}
+						>
+							<div
+								className='form-group'
+								style={{ marginTop: "10px", marginBottom: "10px" }}
+							>
+								<label style={{ fontWeight: "bold" }}>Comment</label>
+								<textarea
+									background='red'
+									cols={4}
+									type='text'
+									value={booking_comment}
+									onChange={(e) => setBookingComment(e.target.value)}
+								/>
+							</div>
+						</div>
+
+						<div className='col-md-6'>
+							<label
+								className='dataPointsReview mt-3'
+								style={{
+									fontWeight: "bold",
+									fontSize: "1.05rem",
+									color: "#32322b",
+								}}
+							>
+								Checkin Date
+							</label>
+							<br />
+							<DatePicker
+								className='inputFields'
+								disabledDate={disabledDate}
+								inputReadOnly
+								size='small'
+								showToday={true}
+								placeholder='Please pick the desired schedule checkin date'
+								style={{
+									height: "auto",
+									width: "100%",
+									padding: "10px",
+									boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
+									borderRadius: "10px",
+								}}
+								onChange={onStartDateChange}
+							/>
+						</div>
+
+						<div className='col-md-6'>
+							<label
+								className='dataPointsReview mt-3'
+								style={{
+									fontWeight: "bold",
+									fontSize: "1.05rem",
+									color: "#32322b",
+								}}
+							>
+								Checkout Date
+							</label>
+							<br />
+							<DatePicker
+								className='inputFields'
+								disabledDate={disabledEndDate}
+								inputReadOnly
+								size='small'
+								showToday={true}
+								placeholder='Please pick the desired schedule checkout date'
+								style={{
+									height: "auto",
+									width: "100%",
+									padding: "10px",
+									boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
+									borderRadius: "10px",
+								}}
+								onChange={onEndDateChange}
+							/>
+						</div>
 					</div>
-				</>
-			) : null}
-		</ZReservationFormWrapper>
+
+					<div className='row'>
+						{roomsSummary && roomsSummary.length > 0 && (
+							<div
+								className='col-md-4'
+								style={{ marginTop: "20px", marginBottom: "20px" }}
+							>
+								<label style={{ fontWeight: "bold" }}>Room Type</label>
+								<select
+									onChange={handleRoomTypeChange}
+									value={selectedRoomType}
+									style={{
+										height: "auto",
+										width: "100%",
+										padding: "10px",
+										boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
+										borderRadius: "10px",
+										textTransform: "capitalize",
+									}}
+								>
+									<option value=''>Select Room Type</option>
+									{roomsSummary.map((room) => (
+										<option key={room.room_type} value={room.room_type}>
+											{room.room_type} | Available: {room.available} Rooms
+										</option>
+									))}
+								</select>
+							</div>
+						)}
+
+						{selectedRoomType && (
+							<div
+								className='col-md-4'
+								style={{ marginTop: "20px", marginBottom: "20px" }}
+							>
+								<label style={{ fontWeight: "bold" }}>Room Price</label>
+								<select
+									onChange={handlePriceOptionChange}
+									value={selectedPriceOption}
+									style={{
+										height: "auto",
+										width: "100%",
+										padding: "10px",
+										boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
+										borderRadius: "10px",
+									}}
+								>
+									<option value=''>Select Price Option</option>
+									{roomsSummary
+										.filter((room) => room.room_type === selectedRoomType)
+										.map((room) => {
+											const { room_price } = room;
+											return Object.entries(room_price).map(([key, value]) => (
+												<option key={key} value={value}>
+													{`${key}: ${value} SAR`}
+												</option>
+											));
+										})}
+								</select>
+							</div>
+						)}
+
+						{selectedRoomType && selectedPriceOption && (
+							<div className='col-md-4'>
+								<div
+									className='form-group'
+									style={{ marginTop: "20px", marginBottom: "20px" }}
+								>
+									<label style={{ fontWeight: "bold" }}>How Many Rooms?</label>
+									<input
+										background='red'
+										type='number'
+										value={selectedCount}
+										onChange={handleRoomCountChange}
+									/>
+								</div>
+							</div>
+						)}
+
+						{selectedRoomType && selectedPriceOption && selectedCount && (
+							<div className='col-md-4'>
+								<button
+									onClick={addRoomToReservation}
+									className='btn btn-primary'
+								>
+									Add Room
+								</button>
+							</div>
+						)}
+					</div>
+
+					{customer_details.name &&
+					start_date &&
+					end_date &&
+					pickedRoomsType.length > 0 ? (
+						<>
+							<div className='total-amount my-3'>
+								<h5 style={{ fontWeight: "bold" }}>
+									Days Of Residence: {days_of_residence} Days /{" "}
+									{days_of_residence <= 1 ? 1 : days_of_residence - 1} Nights
+								</h5>
+
+								<h4>
+									Total Amount Per Day: {calculateTotalAmountPerDay()} SAR/ Day
+								</h4>
+								<div className='room-list my-3'>
+									{pickedRoomsType.map((room, index) => (
+										<div
+											key={index}
+											className='room-item my-2'
+											style={{
+												fontWeight: "bold",
+												textTransform: "capitalize",
+											}}
+											onClick={() => openModal(room, index)}
+										>
+											{`Room Type: ${room.room_type}, Price: ${room.chosenPrice} SAR, Count: ${room.count} Rooms (Click To Update)`}
+										</div>
+									))}
+								</div>
+
+								<h3>
+									Total Amount:{" "}
+									{(
+										calculateTotalAmountPerDay() * Number(days_of_residence)
+									).toLocaleString()}{" "}
+									SAR
+								</h3>
+							</div>
+							<div className='mt-5 mx-auto text-center col-md-6'>
+								<button
+									className='btn btn-success w-50'
+									onClick={() => {
+										clickSubmit2();
+									}}
+									style={{ fontWeight: "bold", fontSize: "1.2rem" }}
+								>
+									Make A Reservation...
+								</button>
+							</div>
+						</>
+					) : null}
+				</ZReservationFormWrapper>
+			)}
+		</>
 	);
 };
 

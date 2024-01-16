@@ -177,6 +177,8 @@ const NewReservationMain = () => {
 		}
 	};
 
+	console.log(roomsSummary, "roomsSummary");
+
 	const gettingSearchQuery = () => {
 		if (searchQuery && searchClicked) {
 			getReservationSearch(searchQuery).then((data) => {
@@ -542,6 +544,7 @@ const NewReservationMain = () => {
 									roomsSummary={roomsSummary}
 									pickedRoomsType={pickedRoomsType}
 									setPickedRoomsType={setPickedRoomsType}
+									hotelDetails={hotelDetails}
 								/>
 							</>
 						)}

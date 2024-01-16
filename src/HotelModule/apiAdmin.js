@@ -197,3 +197,16 @@ export const prereservationList = () => {
 		})
 		.catch((err) => console.log(err));
 };
+
+export const prerservationAuto = (hotelId, belongsTo) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/reservations-from-platforms/${hotelId}/${belongsTo}`,
+		{
+			method: "GET",
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
