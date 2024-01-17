@@ -16,10 +16,12 @@ import {
 	createNewReservation2,
 	getReservationSearch,
 	updatingPreReservation,
+	singlePreReservation,
 } from "../apiAdmin";
 import { isAuthenticated } from "../../auth";
 import { toast } from "react-toastify";
 import ZReservationForm2 from "./ZReservationForm2";
+import { Spin } from "antd";
 
 const isActive = (history, path) => {
 	if (history === path) {
@@ -53,6 +55,7 @@ const isActive = (history, path) => {
 const NewReservationMain = () => {
 	const [AdminMenuStatus, setAdminMenuStatus] = useState(false);
 	const [collapsed, setCollapsed] = useState(false);
+	const [loading, setLoading] = useState(false);
 	const [hotelRooms, setHotelRooms] = useState("");
 	const [hotelDetails, setHotelDetails] = useState("");
 	const [roomsSummary, setRoomsSummary] = useState("");
@@ -182,7 +185,40 @@ const NewReservationMain = () => {
 			getReservationSearch(searchQuery).then((data) => {
 				if (data && data.error) {
 					console.log(data.error, "Error rendering");
-					toast.error("No available value, please try again...");
+					if (hotelDetails && hotelDetails._id) {
+						setLoading(true);
+						singlePreReservation(
+							searchQuery,
+							hotelDetails._id,
+							hotelDetails.belongsTo._id
+						).then((data2) => {
+							if (data2 && data2.error) {
+								toast.error("No available value, please try again...");
+							} else {
+								if (
+									data2 &&
+									data2.reservations &&
+									data2.reservations.length === 0
+								) {
+									toast.error("Incorrect Confirmation #, Please try again...");
+									setLoading(false);
+								} else {
+									setCustomer_details(data2.customer_details);
+									setStart_date(data2.start_date);
+									setEnd_date(data2.end_date);
+									setDays_of_residence(data2.days_of_residence);
+									setPaymentStatus(data2.payment_status);
+									setBookingComment(data2.booking_comment);
+									setBookingSource(data2.booking_source);
+									setConfirmationNumber(data2.confirmation_number);
+									setPaymentStatus(data2.payment_status);
+									setSearchedReservation(data2);
+
+									setLoading(false);
+								}
+							}
+						});
+					}
 				} else {
 					setCustomer_details(data.customer_details);
 					setStart_date(data.start_date);
@@ -445,42 +481,53 @@ const NewReservationMain = () => {
 										</Link>
 									</div>
 								</div>
-								<ZReservationForm
-									customer_details={customer_details}
-									setCustomer_details={setCustomer_details}
-									start_date={start_date}
-									setStart_date={setStart_date}
-									end_date={end_date}
-									setEnd_date={setEnd_date}
-									disabledDate={disabledDate}
-									days_of_residence={days_of_residence}
-									setDays_of_residence={setDays_of_residence}
-									chosenLanguage={chosenLanguage}
-									hotelDetails={hotelDetails}
-									hotelRooms={hotelRooms}
-									values={values}
-									clickSubmit={clickSubmit}
-									pickedHotelRooms={pickedHotelRooms}
-									setPickedHotelRooms={setPickedHotelRooms}
-									payment_status={payment_status}
-									setPaymentStatus={setPaymentStatus}
-									total_amount={total_amount}
-									setTotal_Amount={setTotal_Amount}
-									setPickedRoomPricing={setPickedRoomPricing}
-									pickedRoomPricing={pickedRoomPricing}
-									allReservations={allReservations}
-									setBookingComment={setBookingComment}
-									booking_comment={booking_comment}
-									setBookingSource={setBookingSource}
-									booking_source={booking_source}
-									setConfirmationNumber={setConfirmationNumber}
-									confirmation_number={confirmation_number}
-									searchQuery={searchQuery}
-									setSearchQuery={setSearchQuery}
-									searchClicked={searchClicked}
-									setSearchClicked={setSearchClicked}
-									searchedReservation={searchedReservation}
-								/>
+								{loading ? (
+									<>
+										<div className='text-center my-5'>
+											<Spin size='large' />
+											<p>Loading Reservations...</p>
+										</div>
+									</>
+								) : (
+									<>
+										<ZReservationForm
+											customer_details={customer_details}
+											setCustomer_details={setCustomer_details}
+											start_date={start_date}
+											setStart_date={setStart_date}
+											end_date={end_date}
+											setEnd_date={setEnd_date}
+											disabledDate={disabledDate}
+											days_of_residence={days_of_residence}
+											setDays_of_residence={setDays_of_residence}
+											chosenLanguage={chosenLanguage}
+											hotelDetails={hotelDetails}
+											hotelRooms={hotelRooms}
+											values={values}
+											clickSubmit={clickSubmit}
+											pickedHotelRooms={pickedHotelRooms}
+											setPickedHotelRooms={setPickedHotelRooms}
+											payment_status={payment_status}
+											setPaymentStatus={setPaymentStatus}
+											total_amount={total_amount}
+											setTotal_Amount={setTotal_Amount}
+											setPickedRoomPricing={setPickedRoomPricing}
+											pickedRoomPricing={pickedRoomPricing}
+											allReservations={allReservations}
+											setBookingComment={setBookingComment}
+											booking_comment={booking_comment}
+											setBookingSource={setBookingSource}
+											booking_source={booking_source}
+											setConfirmationNumber={setConfirmationNumber}
+											confirmation_number={confirmation_number}
+											searchQuery={searchQuery}
+											setSearchQuery={setSearchQuery}
+											searchClicked={searchClicked}
+											setSearchClicked={setSearchClicked}
+											searchedReservation={searchedReservation}
+										/>
+									</>
+								)}
 							</>
 						) : (
 							<>

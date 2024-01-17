@@ -2,6 +2,7 @@ import React from "react";
 import styled from "styled-components";
 // import { Link } from "react-router-dom";
 import moment from "moment";
+import { Link } from "react-router-dom/cjs/react-router-dom.min";
 
 const PreReservationTable = ({ allPreReservations, q, setQ }) => {
 	function search(reservations) {
@@ -13,6 +14,7 @@ const PreReservationTable = ({ allPreReservations, q, setQ }) => {
 				customerDetails.name.toLowerCase().includes(query) ||
 				customerDetails.phone.toLowerCase().includes(query) ||
 				customerDetails.email.toLowerCase().includes(query) ||
+				reservation.confirmation_number.toLowerCase().includes(query) ||
 				reservation.payment_status.toLowerCase().includes(query)
 			);
 		});
@@ -59,12 +61,15 @@ const PreReservationTable = ({ allPreReservations, q, setQ }) => {
 						<th scope='col'>Client Name</th>
 						<th scope='col'>Client Phone</th>
 						<th scope='col'>Client Email</th>
+						<th scope='col'>Confirmation</th>
 						<th scope='col'>Check In</th>
 						<th scope='col'>Check Out</th>
 						<th scope='col'>Payment Status</th>
-						<th scope='col'>Room Types</th>
+						<th scope='col' style={{ width: "13%" }}>
+							Room Types (Price x Count)
+						</th>
 						<th scope='col'>Total Amount</th>
-						<th scope='col'>UPDATE...</th>
+						<th scope='col'>DETAILS...</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -75,6 +80,7 @@ const PreReservationTable = ({ allPreReservations, q, setQ }) => {
 								<td>{reservation.customer_details.name}</td>
 								<td>{reservation.customer_details.phone}</td>
 								<td>{reservation.customer_details.email}</td>
+								<td>{reservation.confirmation_number}</td>
 								<td>{moment(reservation.start_date).format("YYYY-MM-DD")}</td>
 								<td>{moment(reservation.end_date).format("YYYY-MM-DD")}</td>
 								<td>{reservation.payment_status}</td>
@@ -86,15 +92,24 @@ const PreReservationTable = ({ allPreReservations, q, setQ }) => {
 										</div>
 									))}
 								</td>
-								<td>{getTotalAmount(reservation)} SAR</td>
+								<td>{Number(getTotalAmount(reservation)).toFixed(2)} SAR</td>
 								<td
-									style={
-										{
-											/* existing style */
-										}
-									}
+									style={{
+										fontWeight: "bolder",
+										color: "darkgreen",
+										textDecoration: "underline",
+										fontSize: "13px",
+										cursor: "pointer",
+									}}
+									onClick={() => {
+										window.scrollTo({ behavior: "smooth", top: 0 });
+									}}
 								>
-									UPDATE
+									<Link
+										to={`/single/prereservation/${reservation.confirmation_number}`}
+									>
+										Details...
+									</Link>
 								</td>
 							</tr>
 						))}

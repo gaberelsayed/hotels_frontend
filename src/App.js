@@ -21,6 +21,7 @@ import ReservationsMain from "./HotelModule/ReservationsFolder/ReservationsMain"
 import NewReservationMain from "./HotelModule/NewReservation/NewReservationMain";
 import HotelSettingsMain from "./HotelModule/HotelSettings/HotelSettingsMain";
 import SignupNew from "./HotelModule/HotelStaff/SignupNew";
+import SinglePrereservationPage from "./HotelModule/ReservationsFolder/SinglePrereservationPage";
 
 function App() {
 	const { languageToggle, chosenLanguage } = useCartContext();
@@ -81,6 +82,12 @@ function App() {
 						path='/hotel-management/staff'
 						exact
 						component={SignupNew}
+					/>
+
+					<HotelRoute
+						path='/single/prereservation/:confirmationNumber'
+						exact
+						component={SinglePrereservationPage}
 					/>
 				</Switch>
 			</>

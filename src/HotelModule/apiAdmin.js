@@ -210,3 +210,29 @@ export const prerservationAuto = (hotelId, belongsTo) => {
 		})
 		.catch((err) => console.log(err));
 };
+
+export const singlePreReservation = (reservationNumber, hotelId, belongsTo) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/single-prereservation/${reservationNumber}/${hotelId}/${belongsTo}`,
+		{
+			method: "GET",
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
+export const singlePreReservationHotelRunner = (reservationNumber) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/single-reservation/hotel-runner/${reservationNumber}`,
+		{
+			method: "GET",
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};

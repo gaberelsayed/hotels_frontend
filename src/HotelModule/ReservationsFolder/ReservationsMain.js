@@ -39,7 +39,7 @@ const isActive = (history, path) => {
 };
 
 const ReservationsMain = () => {
-	const [websiteMenu, setWebsiteMenu] = useState("Occupied Reservation");
+	const [websiteMenu, setWebsiteMenu] = useState("Pre-Reservation");
 	const [AdminMenuStatus, setAdminMenuStatus] = useState(false);
 	const [collapsed, setCollapsed] = useState(false);
 	const [allReservations, setAllReservations] = useState([]);
@@ -97,6 +97,7 @@ const ReservationsMain = () => {
 				customerDetails.name.toLowerCase().includes(query) ||
 				customerDetails.phone.toLowerCase().includes(query) ||
 				customerDetails.email.toLowerCase().includes(query) ||
+				reservation.confirmation_number.toLowerCase().includes(query) ||
 				rooms.includes(query) ||
 				reservation.payment_status.toLowerCase().includes(query)
 			);
@@ -111,7 +112,7 @@ const ReservationsMain = () => {
 		return dailyTotal * reservation.days_of_residence;
 	}
 
-	console.log(allPreReservations, "allPre");
+	// console.log(allPreReservations, "allPre");
 
 	return (
 		<ReservationsMainWrapper
@@ -242,12 +243,13 @@ const ReservationsMain = () => {
 											<th scope='col'>Client Name</th>
 											<th scope='col'>Client Phone</th>
 											<th scope='col'>Client Email</th>
+											<th scope='col'>Confirmation</th>
 											<th scope='col'>Check In</th>
 											<th scope='col'>Check Out</th>
 											<th scope='col'>Payment Status</th>
 											<th scope='col'>Booked Rooms</th>
 											<th scope='col'>Total Amount</th>
-											<th scope='col'>UPDATE...</th>
+											<th scope='col'>DETAILS...</th>
 										</tr>
 									</thead>
 									<tbody>
@@ -259,6 +261,7 @@ const ReservationsMain = () => {
 													<td>{reservation.customer_details.name}</td>
 													<td>{reservation.customer_details.phone}</td>
 													<td>{reservation.customer_details.email}</td>
+													<td>{reservation.confirmation_number}</td>
 													<td>
 														{moment(reservation.start_date).format(
 															"YYYY-MM-DD"
@@ -274,22 +277,29 @@ const ReservationsMain = () => {
 																key={room._id}
 																style={{ textTransform: "capitalize" }}
 															>
-																{`${room.room_type}: ${room.room_pricing.basePrice} SAR`}
+																{`${room.room_type} (${room.room_number}): ${room.room_pricing.basePrice} SAR`}
 																<br />
 															</div>
 														))}
 													</td>
 													<td>{getTotalAmount(reservation)} SAR</td>
 													<td
+														onClick={() => {
+															window.scrollTo({ behavior: "smooth", top: 0 });
+														}}
 														style={{
 															fontWeight: "bolder",
 															color: "darkgreen",
 															textDecoration: "underline",
-															fontSize: "15px",
+															fontSize: "13px",
 															cursor: "pointer",
 														}}
 													>
-														UPDATE
+														<Link
+															to={`/single/prereservation/${reservation.confirmation_number}`}
+														>
+															Details...
+														</Link>
 													</td>
 												</tr>
 											))}
