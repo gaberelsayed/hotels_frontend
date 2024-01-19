@@ -17,6 +17,7 @@ const HotelOverviewReservation = ({
 	start_date,
 	end_date,
 	allReservations,
+	chosenLanguage,
 }) => {
 	const [selectedRoomType, setSelectedRoomType] = useState(null);
 	const [isModalVisible, setIsModalVisible] = useState(false);
@@ -182,7 +183,7 @@ const HotelOverviewReservation = ({
 						}}
 					></div>
 					<span style={{ textTransform: "capitalize", fontSize: "13px" }}>
-						Select All
+						{chosenLanguage === "Arabic" ? "اختر الكل" : "Select All"}
 					</span>
 				</div>
 				{Object.entries(roomTypeColors).map(([roomType, color], i) => (
@@ -209,7 +210,9 @@ const HotelOverviewReservation = ({
 			<FloorsContainer>
 				{floors.map((floor, index) => (
 					<Floor key={index} delay={index * 0.3}>
-						Floor {floor}
+						<h2 className='mb-4'>
+							{chosenLanguage === "Arabic" ? "الطابق" : "Floor"} {floor}
+						</h2>
 						<div style={{ display: "flex", flexWrap: "wrap" }}>
 							{filteredRooms &&
 								filteredRooms
@@ -272,7 +275,9 @@ const HotelOverviewReservation = ({
 						Last Minute Deal Price:{" "}
 						{currentRoom?.room_pricing.lastMinuteDealPrice}
 					</Option>
-					<Option value='custom'>Custom Price</Option>
+					<Option value='custom'>
+						{chosenLanguage === "Arabic" ? "" : ""}Custom Price
+					</Option>
 				</Select>
 				{selectedPrice === "custom" && (
 					<InputNumber

@@ -19,6 +19,8 @@ import {
 import { Button, Menu } from "antd";
 import LastAddedLogoImage from "./LastAddedLogoImage";
 import { useCartContext } from "../../cart_context";
+import { signout } from "../../auth";
+import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 
 function getItem(label, key, icon, children, type, className) {
 	return {
@@ -30,6 +32,12 @@ function getItem(label, key, icon, children, type, className) {
 		className,
 	};
 }
+
+const handleSignout = (history) => {
+	signout(() => {
+		history.push("/");
+	});
+};
 
 const items = [
 	getItem(
@@ -133,6 +141,16 @@ const items = [
 		"divider2"
 	),
 	getItem("Payments", "sub18", <CreditCardOutlined />, null, null, "red-bg"),
+	getItem(
+		<div style={{ fontWeight: "bold", textDecoration: "underline" }}>
+			Signout
+		</div>,
+		"signout", // The key used in the Menu's onClick handler
+		<CreditCardOutlined />,
+		null,
+		null,
+		"reddish-bg"
+	),
 
 	// getItem("Option 3", "4", <ContainerOutlined />),
 ];
@@ -150,6 +168,8 @@ const AdminNavbar = ({
 		setCollapsed(!collapsed);
 		setAdminMenuStatus(!collapsed);
 	};
+
+	const history = useHistory();
 
 	return (
 		<AdminNavbarWrapper
@@ -215,11 +235,16 @@ const AdminNavbar = ({
 				inlineCollapsed={collapsed}
 				items={items}
 				onClick={(e) => {
+					if (e.key === "signout") {
+						handleSignout(history);
+					}
+
 					if (e.key === "StoreLogo") {
 						setClickedOn(true);
 					} else {
 						setClickedOn(false);
 					}
+
 					return <Redirect to={e.key} />;
 				}}
 			/>

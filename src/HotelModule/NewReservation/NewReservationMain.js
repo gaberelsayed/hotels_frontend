@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import AdminNavbar from "../AdminNavbar/AdminNavbar";
 import AdminNavbarArabic from "../AdminNavbar/AdminNavbarArabic";
 import styled from "styled-components";
+// eslint-disable-next-line
 import { Link } from "react-router-dom";
 import { useCartContext } from "../../cart_context";
 import moment from "moment";
@@ -22,7 +23,9 @@ import { isAuthenticated } from "../../auth";
 import { toast } from "react-toastify";
 import ZReservationForm2 from "./ZReservationForm2";
 import { Spin } from "antd";
+import HotelRunnerReservationList from "./HotelRunnerReservationList";
 
+// eslint-disable-next-line
 const isActive = (history, path) => {
 	if (history === path) {
 		return {
@@ -73,6 +76,7 @@ const NewReservationMain = () => {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [searchClicked, setSearchClicked] = useState(false);
 	const [searchedReservation, setSearchedReservation] = useState("");
+	const [activeTab, setActiveTab] = useState("reserveARoom");
 
 	const [customer_details, setCustomer_details] = useState({
 		name: "",
@@ -443,15 +447,36 @@ const NewReservationMain = () => {
 					</div>
 
 					<div className='container-wrapper'>
-						<h3>
-							{" "}
-							{chosenLanguage === "Arabic"
-								? "حجز جديد:"
-								: "New Reservation:"}{" "}
-						</h3>
-						{clickedMenu === "reserveARoom" ? (
+						{activeTab === "reserveARoom" ? (
 							<>
-								<div className='row text-center ml-5 my-5'>
+								<div className='my-2 tab-grid col-md-8'>
+									<Tab
+										isActive={activeTab === "reserveARoom"}
+										onClick={() => setActiveTab("reserveARoom")}
+									>
+										{chosenLanguage === "Arabic"
+											? "حجز الغرف"
+											: "Reserve A Room"}
+									</Tab>
+									<Tab
+										isActive={activeTab === "newReservation"}
+										onClick={() => setActiveTab("newReservation")}
+									>
+										{chosenLanguage === "Arabic"
+											? "حجز جديد (بدون غرف)"
+											: "New Reservation"}
+									</Tab>
+									<Tab
+										isActive={activeTab === "list"}
+										onClick={() => setActiveTab("list")}
+									>
+										{chosenLanguage === "Arabic"
+											? "قائمة الحجوزات"
+											: "Reservation List"}
+									</Tab>
+								</div>
+
+								{/* <div className='row text-center ml-5 my-3'>
 									<div
 										style={isActive(clickedMenu, "reserveARoom")}
 										className='col-md-6 col-6  menuItems'
@@ -480,7 +505,7 @@ const NewReservationMain = () => {
 											New Reservation WITH NO ROOM
 										</Link>
 									</div>
-								</div>
+								</div> */}
 								{loading ? (
 									<>
 										<div className='text-center my-5'>
@@ -529,37 +554,64 @@ const NewReservationMain = () => {
 									</>
 								)}
 							</>
+						) : activeTab === "list" ? (
+							<>
+								<div className='my-2 tab-grid col-md-8'>
+									<Tab
+										isActive={activeTab === "reserveARoom"}
+										onClick={() => setActiveTab("reserveARoom")}
+									>
+										{chosenLanguage === "Arabic"
+											? "حجز الغرف"
+											: "Reserve A Room"}
+									</Tab>
+									<Tab
+										isActive={activeTab === "newReservation"}
+										onClick={() => setActiveTab("newReservation")}
+									>
+										{chosenLanguage === "Arabic"
+											? "حجز جديد (بدون غرف)"
+											: "New Reservation"}
+									</Tab>
+									<Tab
+										isActive={activeTab === "list"}
+										onClick={() => setActiveTab("list")}
+									>
+										{chosenLanguage === "Arabic"
+											? "قائمة الحجوزات"
+											: "Reservation List"}
+									</Tab>
+								</div>
+
+								<HotelRunnerReservationList />
+							</>
 						) : (
 							<>
-								<div className='row text-center ml-5 my-5'>
-									<div
-										style={isActive(clickedMenu, "reserveARoom")}
-										className='col-md-6 col-6  menuItems'
-										onClick={() => setClickedMenu("reserveARoom")}
+								<div className='my-2 tab-grid col-md-8'>
+									<Tab
+										isActive={activeTab === "reserveARoom"}
+										onClick={() => setActiveTab("reserveARoom")}
 									>
-										<Link
-											className='dashboardLinks p-0'
-											style={isActive(clickedMenu, "reserveARoom")}
-											to='/hotel-management/new-reservation?reserveARoom'
-										>
-											<i className='fa-brands fa-servicestack mx-1'></i>
-											Reservation WITH a ROOM
-										</Link>
-									</div>
-									<div
-										style={isActive(clickedMenu, "newReservation")}
-										className='col-md-6 col-6  menuItems'
-										onClick={() => setClickedMenu("newReservation")}
+										{chosenLanguage === "Arabic"
+											? "حجز الغرف"
+											: "Reserve A Room"}
+									</Tab>
+									<Tab
+										isActive={activeTab === "newReservation"}
+										onClick={() => setActiveTab("newReservation")}
 									>
-										<Link
-											className='dashboardLinks p-0'
-											style={isActive(clickedMenu, "newReservation")}
-											to='/hotel-management/new-reservation?newReservation'
-										>
-											<i className='fa-brands fa-servicestack mx-1'></i>
-											New Reservation WITH NO ROOM
-										</Link>
-									</div>
+										{chosenLanguage === "Arabic"
+											? "حجز جديد (بدون غرف)"
+											: "New Reservation"}
+									</Tab>
+									<Tab
+										isActive={activeTab === "list"}
+										onClick={() => setActiveTab("list")}
+									>
+										{chosenLanguage === "Arabic"
+											? "قائمة الحجوزات"
+											: "Reservation List"}
+									</Tab>
 								</div>
 								<ZReservationForm2
 									customer_details={customer_details}
@@ -607,7 +659,8 @@ const NewReservationMainWrapper = styled.div`
 	overflow-x: hidden;
 	/* background: #ededed; */
 	margin-top: 20px;
-	min-height: 715px;
+	min-height: 750px;
+	/* background-color: #f0f0f0; */
 
 	.grid-container-main {
 		display: grid;
@@ -615,11 +668,16 @@ const NewReservationMainWrapper = styled.div`
 	}
 
 	.container-wrapper {
-		border: 2px solid lightgrey;
+		/* border: 2px solid lightgrey; */
 		padding: 20px;
 		border-radius: 20px;
-		background: white;
+		/* background: white; */
 		margin: 0px 10px;
+	}
+
+	.tab-grid {
+		display: flex;
+		/* Additional styling for grid layout */
 	}
 
 	h3 {
@@ -632,4 +690,22 @@ const NewReservationMainWrapper = styled.div`
 	@media (max-width: 1400px) {
 		background: white;
 	}
+`;
+
+const Tab = styled.div`
+	cursor: pointer;
+	margin: 0 3px; /* 3px margin between tabs */
+	padding: 15px 5px; /* Adjust padding as needed */
+	font-weight: ${(props) => (props.isActive ? "bold" : "bold")};
+	background-color: ${(props) =>
+		props.isActive
+			? "transparent"
+			: "#bbbbbb"}; /* Light grey for unselected tabs */
+	box-shadow: ${(props) =>
+		props.isActive ? "inset 0px 0px 10px rgba(0, 0, 0, 0.2)" : "none"};
+	transition: all 0.3s ease; /* Smooth transition for changes */
+	min-width: 25px; /* Minimum width of the tab */
+	width: 100%; /* Full width within the container */
+	text-align: center; /* Center the text inside the tab */
+	/* Additional styling for tabs */
 `;

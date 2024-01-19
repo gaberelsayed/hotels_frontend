@@ -15,6 +15,7 @@ const PreReservationTable = ({ allPreReservations, q, setQ }) => {
 				customerDetails.phone.toLowerCase().includes(query) ||
 				customerDetails.email.toLowerCase().includes(query) ||
 				reservation.confirmation_number.toLowerCase().includes(query) ||
+				reservation.overallBookingStatus.toLowerCase().includes(query) ||
 				reservation.payment_status.toLowerCase().includes(query)
 			);
 		});
@@ -60,11 +61,12 @@ const PreReservationTable = ({ allPreReservations, q, setQ }) => {
 						<th scope='col'>#</th>
 						<th scope='col'>Client Name</th>
 						<th scope='col'>Client Phone</th>
-						<th scope='col'>Client Email</th>
+						{/* <th scope='col'>Client Email</th> */}
 						<th scope='col'>Confirmation</th>
 						<th scope='col'>Check In</th>
 						<th scope='col'>Check Out</th>
 						<th scope='col'>Payment Status</th>
+						<th scope='col'>Status</th>
 						<th scope='col' style={{ width: "13%" }}>
 							Room Types (Price x Count)
 						</th>
@@ -79,11 +81,22 @@ const PreReservationTable = ({ allPreReservations, q, setQ }) => {
 								<td>{index + 1}</td>
 								<td>{reservation.customer_details.name}</td>
 								<td>{reservation.customer_details.phone}</td>
-								<td>{reservation.customer_details.email}</td>
+								{/* <td>{reservation.customer_details.email}</td> */}
 								<td>{reservation.confirmation_number}</td>
 								<td>{moment(reservation.start_date).format("YYYY-MM-DD")}</td>
 								<td>{moment(reservation.end_date).format("YYYY-MM-DD")}</td>
 								<td>{reservation.payment_status}</td>
+								<td
+									style={{
+										background:
+											reservation &&
+											reservation.overallBookingStatus === "canceled"
+												? "red"
+												: "",
+									}}
+								>
+									{reservation.overallBookingStatus}
+								</td>
 								<td>
 									{reservation.pickedRoomsType.map((room, roomIndex) => (
 										<div key={roomIndex}>
@@ -121,4 +134,8 @@ const PreReservationTable = ({ allPreReservations, q, setQ }) => {
 
 export default PreReservationTable;
 
-const PreReservationTableWrapper = styled.div``;
+const PreReservationTableWrapper = styled.div`
+	td {
+		text-transform: capitalize;
+	}
+`;

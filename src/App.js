@@ -40,7 +40,10 @@ function App() {
 	return (
 		<BrowserRouter>
 			<>
-				<ToastContainer />
+				<ToastContainer
+					position='top-center'
+					toastStyle={{ width: "auto", minWidth: "400px" }}
+				/>
 
 				<Switch>
 					<Route path='/signup' exact component={Signup} />

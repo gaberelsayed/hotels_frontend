@@ -236,3 +236,16 @@ export const singlePreReservationHotelRunner = (reservationNumber) => {
 		})
 		.catch((err) => console.log(err));
 };
+
+export const getPaginatedListHotelRunner = (page, per_page) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/reservation/list/paginated/${page}/${per_page}`,
+		{
+			method: "GET",
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};

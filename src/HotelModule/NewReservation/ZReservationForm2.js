@@ -189,24 +189,33 @@ const ZReservationForm2 = ({
 			{loading ? (
 				<div className='text-center my-5'>
 					<Spin size='large' />
-					<p>Loading Reservations...</p>
+					<p>
+						{" "}
+						{chosenLanguage === "Arabic" ? "" : ""} Loading Reservations...
+					</p>
 				</div>
 			) : (
-				<ZReservationFormWrapper>
+				<ZReservationFormWrapper arabic={chosenLanguage === "Arabic"}>
 					<Modal
 						title='Update Picked Room'
 						open={isModalVisible}
 						onOk={handleOk}
 						onCancel={handleCancel}
 					>
-						<p>Update the count for the room:</p>
+						<p>
+							{chosenLanguage === "Arabic" ? "" : ""}Update the count for the
+							room:
+						</p>
 						<InputNumber
 							min={1}
 							value={updatedRoomCount}
 							onChange={setUpdatedRoomCount}
 						/>
 
-						<p className='mt-4'>Update the price for the room:</p>
+						<p className='mt-4'>
+							{chosenLanguage === "Arabic" ? "" : ""}Update the price for the
+							room:
+						</p>
 						<InputNumber
 							min={0}
 							value={updatedRoomPrice}
@@ -217,19 +226,20 @@ const ZReservationForm2 = ({
 								onClick={() => removeRoom(selectedRoomIndex)}
 								className='btn btn-danger'
 							>
-								Remove Room
+								{chosenLanguage === "Arabic" ? "" : ""}Remove Room
 							</button>
 						</div>
 					</Modal>
 
 					<div
-						className='mx-auto mb-5 text-center'
+						className='mx-auto mb-5 mt-4 text-center'
 						onClick={() => {
 							addPreReservations();
 						}}
 					>
 						<button className='btn btn-success' style={{ fontWeight: "bold" }}>
-							Get All Reservations from Booking.com, Expedia & Trivago?
+							{chosenLanguage === "Arabic" ? "" : ""}Get All Reservations from
+							Booking.com, Expedia & Trivago?
 						</button>
 					</div>
 
@@ -240,293 +250,387 @@ const ZReservationForm2 = ({
 							fontWeight: "bold",
 						}}
 					>
-						WARNING... THIS IS A preliminary RESERVATION
+						{chosenLanguage === "Arabic"
+							? "تحذير... هذا حجز أولي"
+							: "WARNING... THIS IS A preliminary RESERVATION"}
 					</h6>
-					<h4>Customer Details:</h4>
 
 					<div className='row'>
-						<div className='col-md-4'>
-							<div
-								className='form-group'
-								style={{ marginTop: "10px", marginBottom: "10px" }}
-							>
-								<label style={{ fontWeight: "bold" }}> Visitor Name</label>
-								<input
-									background='red'
-									type='text'
-									value={customer_details.name}
-									onChange={(e) =>
-										setCustomer_details({
-											...customer_details,
-											name: e.target.value,
-										})
-									}
-								/>
-							</div>
-						</div>
-						<div className='col-md-4'>
-							<div
-								className='form-group'
-								style={{ marginTop: "10px", marginBottom: "10px" }}
-							>
-								<label style={{ fontWeight: "bold" }}> Visitor Phone</label>
-								<input
-									background='red'
-									type='text'
-									value={customer_details.phone}
-									onChange={(e) =>
-										setCustomer_details({
-											...customer_details,
-											phone: e.target.value,
-										})
-									}
-								/>
-							</div>
-						</div>
-						<div className='col-md-4'>
-							<div
-								className='form-group'
-								style={{ marginTop: "10px", marginBottom: "10px" }}
-							>
-								<label style={{ fontWeight: "bold" }}> Visitor Email</label>
-								<input
-									background='red'
-									type='text'
-									value={customer_details.email}
-									onChange={(e) =>
-										setCustomer_details({
-											...customer_details,
-											email: e.target.value,
-										})
-									}
-								/>
-							</div>
-						</div>
+						<div className='col-md-8'>
+							<div className='row'>
+								<div className='col-md-4'>
+									<div
+										className='form-group'
+										style={{ marginTop: "10px", marginBottom: "10px" }}
+									>
+										<label style={{ fontWeight: "bold" }}>
+											{" "}
+											{chosenLanguage === "Arabic" ? "الاسم" : "Guest Name"}
+										</label>
+										<input
+											background='red'
+											type='text'
+											value={customer_details.name}
+											onChange={(e) =>
+												setCustomer_details({
+													...customer_details,
+													name: e.target.value,
+												})
+											}
+										/>
+									</div>
+								</div>
+								<div className='col-md-4'>
+									<div
+										className='form-group'
+										style={{ marginTop: "10px", marginBottom: "10px" }}
+									>
+										<label style={{ fontWeight: "bold" }}>
+											{" "}
+											{chosenLanguage === "Arabic" ? "الهاتف" : "Guest Phone"}
+										</label>
+										<input
+											background='red'
+											type='text'
+											value={customer_details.phone}
+											onChange={(e) =>
+												setCustomer_details({
+													...customer_details,
+													phone: e.target.value,
+												})
+											}
+										/>
+									</div>
+								</div>
+								<div className='col-md-4'>
+									<div
+										className='form-group'
+										style={{ marginTop: "10px", marginBottom: "10px" }}
+									>
+										<label style={{ fontWeight: "bold" }}>
+											{chosenLanguage === "Arabic"
+												? "البريد الإلكتروني"
+												: "Guest Email"}{" "}
+										</label>
+										<input
+											background='red'
+											type='text'
+											value={customer_details.email}
+											onChange={(e) =>
+												setCustomer_details({
+													...customer_details,
+													email: e.target.value,
+												})
+											}
+										/>
+									</div>
+								</div>
 
-						<div className='col-md-4'>
-							<div
-								className='form-group'
-								style={{ marginTop: "10px", marginBottom: "10px" }}
-							>
-								<label style={{ fontWeight: "bold" }}>
-									{" "}
-									Visitor Passport #
-								</label>
-								<input
-									background='red'
-									type='text'
-									value={customer_details.passport}
-									onChange={(e) =>
-										setCustomer_details({
-											...customer_details,
-											passport: e.target.value,
-										})
-									}
-								/>
-							</div>
-						</div>
+								<div className='col-md-4'>
+									<div
+										className='form-group'
+										style={{ marginTop: "10px", marginBottom: "10px" }}
+									>
+										<label style={{ fontWeight: "bold" }}>
+											{" "}
+											{chosenLanguage === "Arabic"
+												? "رقم جواز السفر"
+												: "Guest Passport #"}
+										</label>
+										<input
+											background='red'
+											type='text'
+											value={customer_details.passport}
+											onChange={(e) =>
+												setCustomer_details({
+													...customer_details,
+													passport: e.target.value,
+												})
+											}
+										/>
+									</div>
+								</div>
 
-						<div className='col-md-4'>
-							<div
-								className='form-group'
-								style={{ marginTop: "10px", marginBottom: "10px" }}
-							>
-								<label style={{ fontWeight: "bold" }}>
-									Passport Expiry Date
-								</label>
-								<input
-									background='red'
-									type='text'
-									value={customer_details.passportExpiry}
-									onChange={(e) =>
-										setCustomer_details({
-											...customer_details,
-											passportExpiry: e.target.value,
-										})
-									}
-								/>
-							</div>
-						</div>
+								<div className='col-md-4'>
+									<div
+										className='form-group'
+										style={{ marginTop: "10px", marginBottom: "10px" }}
+									>
+										<label style={{ fontWeight: "bold" }}>
+											{chosenLanguage === "Arabic"
+												? "تاريخ انتهاء جواز السفر"
+												: "Passport Expiry Date"}
+										</label>
+										<input
+											background='red'
+											type='text'
+											value={customer_details.passportExpiry}
+											onChange={(e) =>
+												setCustomer_details({
+													...customer_details,
+													passportExpiry: e.target.value,
+												})
+											}
+										/>
+									</div>
+								</div>
 
-						<div className='col-md-4'>
-							<div
-								className='form-group'
-								style={{ marginTop: "10px", marginBottom: "10px" }}
-							>
-								<label style={{ fontWeight: "bold" }}>Nationality</label>
-								<input
-									background='red'
-									type='text'
-									value={customer_details.nationality}
-									onChange={(e) =>
-										setCustomer_details({
-											...customer_details,
-											nationality: e.target.value,
-										})
-									}
-								/>
-							</div>
-						</div>
+								<div className='col-md-4'>
+									<div
+										className='form-group'
+										style={{ marginTop: "10px", marginBottom: "10px" }}
+									>
+										<label style={{ fontWeight: "bold" }}>
+											{chosenLanguage === "Arabic" ? "الجنسية" : "Nationality"}
+										</label>
+										<input
+											background='red'
+											type='text'
+											value={customer_details.nationality}
+											onChange={(e) =>
+												setCustomer_details({
+													...customer_details,
+													nationality: e.target.value,
+												})
+											}
+										/>
+									</div>
+								</div>
 
-						<div
-							className={
-								booking_source !== "manual" && booking_source
-									? "col-md-3 mx-auto"
-									: "col-md-4 mx-auto"
-							}
-						>
-							<div
-								className='form-group'
-								style={{ marginTop: "10px", marginBottom: "10px" }}
-							>
-								<label style={{ fontWeight: "bold" }}>Booking Source</label>
-								<select
-									onChange={(e) => setBookingSource(e.target.value)}
-									style={{
-										height: "auto",
-										width: "100%",
-										padding: "10px",
-										boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
-										borderRadius: "10px",
-									}}
-								>
-									<option value=''>Please Select</option>
-									<option value='manual'>Manual Reservation</option>
-									<option value='booking.com'>Booking.com</option>
-									<option value='trivago'>Trivago</option>
-									<option value='expedia'>Expedia</option>
-									<option value='hotel.com'>Hotel.com</option>
-								</select>
-							</div>
-						</div>
+								<div className='col-md-6'>
+									<label
+										className='dataPointsReview mt-3'
+										style={{
+											fontWeight: "bold",
+											fontSize: "1.05rem",
+											color: "#32322b",
+										}}
+									>
+										{chosenLanguage === "Arabic"
+											? "تاريخ الوصول"
+											: "Checkin Date"}{" "}
+										{start_date
+											? `(${new Date(start_date).toDateString()})`
+											: ""}
+									</label>
+									<br />
+									<DatePicker
+										className='inputFields'
+										disabledDate={disabledDate}
+										inputReadOnly
+										size='small'
+										showToday={true}
+										placeholder='Please pick the desired schedule checkin date'
+										style={{
+											height: "auto",
+											width: "100%",
+											padding: "10px",
+											boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
+											borderRadius: "10px",
+										}}
+										onChange={onStartDateChange}
+									/>
+								</div>
 
-						{booking_source !== "manual" && booking_source && (
-							<div className='col-md-3'>
-								<div
-									className='form-group'
-									style={{ marginTop: "10px", marginBottom: "10px" }}
-								>
-									<label style={{ fontWeight: "bold" }}>Confirmation #</label>
-									<input
-										background='red'
-										type='text'
-										value={confirmation_number}
-										onChange={(e) => setConfirmationNumber(e.target.value)}
+								<div className='col-md-6'>
+									<label
+										className='dataPointsReview mt-3'
+										style={{
+											fontWeight: "bold",
+											fontSize: "1.05rem",
+											color: "#32322b",
+										}}
+									>
+										{chosenLanguage === "Arabic"
+											? "موعد انتهاء الأقامة"
+											: "Checkout Date"}{" "}
+										{end_date ? `(${new Date(end_date).toDateString()})` : ""}
+									</label>
+									<br />
+									<DatePicker
+										className='inputFields'
+										disabledDate={disabledEndDate}
+										inputReadOnly
+										size='small'
+										showToday={true}
+										placeholder='Please pick the desired schedule checkout date'
+										style={{
+											height: "auto",
+											width: "100%",
+											padding: "10px",
+											boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
+											borderRadius: "10px",
+										}}
+										onChange={onEndDateChange}
 									/>
 								</div>
 							</div>
-						)}
 
-						<div
-							className={
-								booking_source !== "manual" && booking_source
-									? "col-md-3 mx-auto"
-									: "col-md-4 mx-auto"
-							}
-						>
 							<div
-								className='form-group'
-								style={{ marginTop: "10px", marginBottom: "10px" }}
+								className='row my-4 mx-auto'
+								style={{
+									background: "#d3d3d3",
+									width: "99%",
+									minHeight: "250px",
+								}}
 							>
-								<label style={{ fontWeight: "bold" }}>Payment</label>
-								<select
-									onChange={(e) => setPaymentStatus(e.target.value)}
-									style={{
-										height: "auto",
-										width: "100%",
-										padding: "10px",
-										boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
-										borderRadius: "10px",
+								<div className='col-md-6 mx-auto my-2'>
+									<div
+										className='form-group'
+										style={{ marginTop: "10px", marginBottom: "10px" }}
+									>
+										<label style={{ fontWeight: "bold" }}>
+											{chosenLanguage === "Arabic"
+												? "مصدر الحجز"
+												: "Booking Source"}
+										</label>
+										<select
+											onChange={(e) => setBookingSource(e.target.value)}
+											style={{
+												height: "auto",
+												width: "100%",
+												padding: "10px",
+												boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
+												borderRadius: "10px",
+											}}
+										>
+											<option value=''>
+												{booking_source ? booking_source : "Please Select"}
+											</option>
+											<option value='manual'>Manual Reservation</option>
+											<option value='booking.com'>Booking.com</option>
+											<option value='trivago'>Trivago</option>
+											<option value='expedia'>Expedia</option>
+											<option value='hotel.com'>Hotel.com</option>
+										</select>
+									</div>
+								</div>
+
+								{booking_source !== "manual" && booking_source && (
+									<div className='col-md-6 mx-auto my-2'>
+										<div
+											className='form-group'
+											style={{ marginTop: "10px", marginBottom: "10px" }}
+										>
+											<label style={{ fontWeight: "bold" }}>
+												{chosenLanguage === "Arabic"
+													? "رقم التأكيد"
+													: "Confirmation #"}
+											</label>
+											<input
+												background='red'
+												type='text'
+												value={confirmation_number}
+												onChange={(e) => setConfirmationNumber(e.target.value)}
+											/>
+										</div>
+									</div>
+								)}
+
+								<div className='col-md-6 mx-auto my-auto'>
+									<div className='form-group'>
+										<label style={{ fontWeight: "bold" }}>
+											{chosenLanguage === "Arabic"
+												? " الدفع او السداد"
+												: "Payment"}
+										</label>
+										<select
+											onChange={(e) => setPaymentStatus(e.target.value)}
+											style={{
+												height: "auto",
+												width: "100%",
+												padding: "10px",
+												boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
+												borderRadius: "10px",
+											}}
+										>
+											<option value=''>Please Select</option>
+											<option value='not paid'>Not Paid</option>
+											<option value='credit/ debit'>Credit/ Debit</option>
+											<option value='cash'>Cash</option>
+										</select>
+									</div>
+								</div>
+
+								<div className='col-md-6 mx-auto my-2'>
+									<div
+										className='form-group'
+										style={{ marginTop: "10px", marginBottom: "10px" }}
+									>
+										<label style={{ fontWeight: "bold" }}>
+											{chosenLanguage === "Arabic" ? "تعليق الضيف" : "Comment"}
+										</label>
+										<textarea
+											background='red'
+											cols={6}
+											type='text'
+											value={booking_comment}
+											onChange={(e) => setBookingComment(e.target.value)}
+										/>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div className='col-md-4 taskeen'>
+							<h4 className='my-4'>
+								{chosenLanguage === "Arabic"
+									? "حجز غرفة للضيف"
+									: "Reserve A Room For The Guest"}
+							</h4>
+
+							<div className='row' style={{ textTransform: "capitalize" }}>
+								<div className='col-md-6 my-2'>
+									{chosenLanguage === "Arabic"
+										? "رقم التأكيد"
+										: "Confirmation #"}
+								</div>
+
+								<div className='col-md-6 my-2'>{confirmation_number}</div>
+
+								<div className='col-md-6 my-2'>
+									{chosenLanguage === "Arabic" ? "تاريخ الوصول" : "Arrival"}
+									<div style={{ background: "#bfbfbf", padding: "2px" }}>
+										{start_date ? `${new Date(start_date).toDateString()}` : ""}
+									</div>
+								</div>
+
+								<div className='col-md-6 my-2'>
+									{chosenLanguage === "Arabic" ? "تاريخ المغادرة" : "Departure"}
+									<div style={{ background: "#bfbfbf", padding: "2px" }}>
+										{end_date ? `${new Date(end_date).toDateString()}` : ""}
+									</div>
+								</div>
+								<div className='col-md-6 my-2'>
+									{chosenLanguage === "Arabic" ? "طريقة الدفع" : "Payment"}
+								</div>
+								<div className='col-md-6 my-2'>Not Paid</div>
+								<div className='col-md-6 my-2'>
+									{chosenLanguage === "Arabic" ? "حالة الحجز" : "Status"}
+								</div>
+								<div className='col-md-6 my-2'></div>
+							</div>
+							<h4 className='my-4 text-center' style={{ color: "#006ad1" }}>
+								{chosenLanguage === "Arabic"
+									? "المبلغ الإجمالي"
+									: "Total Amount:"}{" "}
+								{(
+									calculateTotalAmountPerDay() * Number(days_of_residence)
+								).toLocaleString()}{" "}
+								SAR
+							</h4>
+							<div className='text-center mx-auto'>
+								<button
+									className='btn btn-info'
+									onClick={() => {
+										window.scrollTo({ top: 1000, behavior: "smooth" });
 									}}
 								>
-									<option value=''>Please Select</option>
-									<option value='not paid'>Not Paid</option>
-									<option value='credit/ debit'>Credit/ Debit</option>
-									<option value='cash'>Cash</option>
-								</select>
+									{chosenLanguage === "Arabic"
+										? "تسجيل دخول الزائر..."
+										: "Check The Guest In..."}
+								</button>
 							</div>
-						</div>
-
-						<div
-							className={
-								booking_source !== "manual" && booking_source
-									? "col-md-3 mx-auto"
-									: "col-md-4 mx-auto"
-							}
-						>
-							<div
-								className='form-group'
-								style={{ marginTop: "10px", marginBottom: "10px" }}
-							>
-								<label style={{ fontWeight: "bold" }}>Comment</label>
-								<textarea
-									background='red'
-									cols={4}
-									type='text'
-									value={booking_comment}
-									onChange={(e) => setBookingComment(e.target.value)}
-								/>
-							</div>
-						</div>
-
-						<div className='col-md-6'>
-							<label
-								className='dataPointsReview mt-3'
-								style={{
-									fontWeight: "bold",
-									fontSize: "1.05rem",
-									color: "#32322b",
-								}}
-							>
-								Checkin Date
-							</label>
-							<br />
-							<DatePicker
-								className='inputFields'
-								disabledDate={disabledDate}
-								inputReadOnly
-								size='small'
-								showToday={true}
-								placeholder='Please pick the desired schedule checkin date'
-								style={{
-									height: "auto",
-									width: "100%",
-									padding: "10px",
-									boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
-									borderRadius: "10px",
-								}}
-								onChange={onStartDateChange}
-							/>
-						</div>
-
-						<div className='col-md-6'>
-							<label
-								className='dataPointsReview mt-3'
-								style={{
-									fontWeight: "bold",
-									fontSize: "1.05rem",
-									color: "#32322b",
-								}}
-							>
-								Checkout Date
-							</label>
-							<br />
-							<DatePicker
-								className='inputFields'
-								disabledDate={disabledEndDate}
-								inputReadOnly
-								size='small'
-								showToday={true}
-								placeholder='Please pick the desired schedule checkout date'
-								style={{
-									height: "auto",
-									width: "100%",
-									padding: "10px",
-									boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
-									borderRadius: "10px",
-								}}
-								onChange={onEndDateChange}
-							/>
 						</div>
 					</div>
 
@@ -536,26 +640,53 @@ const ZReservationForm2 = ({
 								className='col-md-4'
 								style={{ marginTop: "20px", marginBottom: "20px" }}
 							>
-								<label style={{ fontWeight: "bold" }}>Room Type</label>
-								<select
-									onChange={handleRoomTypeChange}
-									value={selectedRoomType}
-									style={{
-										height: "auto",
-										width: "100%",
-										padding: "10px",
-										boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
-										borderRadius: "10px",
-										textTransform: "capitalize",
-									}}
-								>
-									<option value=''>Select Room Type</option>
-									{roomsSummary.map((room) => (
-										<option key={room.room_type} value={room.room_type}>
-											{room.room_type} | Available: {room.available} Rooms
-										</option>
-									))}
-								</select>
+								{chosenLanguage === "Arabic" ? (
+									<>
+										<label style={{ fontWeight: "bold" }}>نوع الغرفة</label>
+										<select
+											onChange={handleRoomTypeChange}
+											value={selectedRoomType}
+											style={{
+												height: "auto",
+												width: "100%",
+												padding: "10px",
+												boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
+												borderRadius: "10px",
+												textTransform: "capitalize",
+											}}
+										>
+											<option value=''>اختر نوع الغرفة</option>
+											{roomsSummary.map((room) => (
+												<option key={room.room_type} value={room.room_type}>
+													{room.room_type} | المتاح: {room.available} غرف
+												</option>
+											))}
+										</select>
+									</>
+								) : (
+									<>
+										<label style={{ fontWeight: "bold" }}>Room Type</label>
+										<select
+											onChange={handleRoomTypeChange}
+											value={selectedRoomType}
+											style={{
+												height: "auto",
+												width: "100%",
+												padding: "10px",
+												boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
+												borderRadius: "10px",
+												textTransform: "capitalize",
+											}}
+										>
+											<option value=''>Select Room Type</option>
+											{roomsSummary.map((room) => (
+												<option key={room.room_type} value={room.room_type}>
+													{room.room_type} | Available: {room.available} Rooms
+												</option>
+											))}
+										</select>
+									</>
+								)}
 							</div>
 						)}
 
@@ -684,6 +815,7 @@ const ZReservationFormWrapper = styled.div`
 		font-size: 1.35rem;
 		font-weight: bolder;
 	}
+	text-align: ${(props) => (props.arabic ? "right" : "")};
 
 	h5 {
 		font-size: 1.2rem;
