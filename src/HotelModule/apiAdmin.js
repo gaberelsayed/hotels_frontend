@@ -198,9 +198,9 @@ export const prereservationList = () => {
 		.catch((err) => console.log(err));
 };
 
-export const prerservationAuto = (hotelId, belongsTo) => {
+export const prerservationAuto = (page, hotelId, belongsTo) => {
 	return fetch(
-		`${process.env.REACT_APP_API_URL}/reservations-from-platforms/${hotelId}/${belongsTo}`,
+		`${process.env.REACT_APP_API_URL}/reservations-from-platforms/${page}/${hotelId}/${belongsTo}`,
 		{
 			method: "GET",
 		}

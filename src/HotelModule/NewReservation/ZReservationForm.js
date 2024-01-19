@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { DatePicker } from "antd";
 import HotelOverviewReservation from "./HotelOverviewReservation";
 import moment from "moment";
+import { toast } from "react-toastify";
 
 const ZReservationForm = ({
 	customer_details,
@@ -472,6 +473,25 @@ const ZReservationForm = ({
 						<button
 							className='btn btn-info'
 							onClick={() => {
+								if (!customer_details.name) {
+									return toast.error("Name is required");
+								}
+								if (!customer_details.phone) {
+									return toast.error("Phone is required");
+								}
+								if (!customer_details.passport) {
+									return toast.error("passport is required");
+								}
+								if (!customer_details.nationality) {
+									return toast.error("nationality is required");
+								}
+								if (!start_date) {
+									return toast.error("Check in Date is required");
+								}
+
+								if (!end_date) {
+									return toast.error("Check out Date is required");
+								}
 								window.scrollTo({ top: 1000, behavior: "smooth" });
 							}}
 						>

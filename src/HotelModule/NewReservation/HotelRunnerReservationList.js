@@ -15,12 +15,12 @@ const HotelRunnerReservationList = ({ chosenLanguage }) => {
 
 	const fetchReservations = (page) => {
 		setLoading(true);
-		getPaginatedListHotelRunner(page, 50).then((data) => {
+		getPaginatedListHotelRunner(page, 15).then((data) => {
 			if (data.error) {
 				console.log(data.error);
 			} else {
 				setReservations(data.reservations);
-				setTotalPages(data.pages * 50); // Assuming 'pages' times 'per_page' gives total record count
+				setTotalPages(data.pages * 15); // Assuming 'pages' times 'per_page' gives total record count
 				setLoading(false);
 			}
 		});

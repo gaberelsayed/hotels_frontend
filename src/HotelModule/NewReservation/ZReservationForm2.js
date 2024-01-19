@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { DatePicker, Spin } from "antd";
 import moment from "moment";
 import { Modal, InputNumber } from "antd";
-import { prerservationAuto } from "../apiAdmin";
+import { getPaginatedListHotelRunner, prerservationAuto } from "../apiAdmin";
 
 const ZReservationForm2 = ({
 	customer_details,
@@ -42,6 +42,7 @@ const ZReservationForm2 = ({
 	const [selectedRoomIndex, setSelectedRoomIndex] = useState(null);
 	const [updatedRoomCount, setUpdatedRoomCount] = useState(0);
 	const [updatedRoomPrice, setUpdatedRoomPrice] = useState(0);
+	const [decrement, setDecrement] = useState(0);
 
 	const openModal = (room, index) => {
 		setIsModalVisible(true);
@@ -174,14 +175,23 @@ const ZReservationForm2 = ({
 		if (!isConfirmed) return;
 
 		setLoading(true);
-		prerservationAuto(hotelDetails._id, hotelDetails.belongsTo._id).then(
-			(data) => {
-				if (data) {
-					console.log(data, "data from prereservation");
-				}
-				setLoading(false);
+		getPaginatedListHotelRunner(1, 15).then((data0) => {
+			if (data0 && data0.error) {
+				console.log(data0.error);
+			} else {
+				prerservationAuto(
+					data0.pages - decrement,
+					hotelDetails._id,
+					hotelDetails.belongsTo._id
+				).then((data) => {
+					if (data) {
+						console.log(data, "data from prereservation");
+					}
+					setDecrement(decrement + 1);
+					setLoading(false);
+				});
 			}
-		);
+		});
 	};
 
 	return (
