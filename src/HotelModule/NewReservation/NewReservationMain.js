@@ -72,6 +72,7 @@ const NewReservationMain = () => {
 	const [values, setValues] = useState("");
 	const [pickedRoomsType, setPickedRoomsType] = useState([]);
 	const [total_amount, setTotal_Amount] = useState(0);
+	// eslint-disable-next-line
 	const [clickedMenu, setClickedMenu] = useState("reserveARoom");
 	const [searchQuery, setSearchQuery] = useState("");
 	const [searchClicked, setSearchClicked] = useState(false);
@@ -101,14 +102,16 @@ const NewReservationMain = () => {
 		}
 
 		if (window.location.search.includes("reserveARoom")) {
-			setClickedMenu("reserveARoom");
+			setActiveTab("reserveARoom");
 		} else if (window.location.search.includes("newReservation")) {
-			setClickedMenu("newReservation");
+			setActiveTab("newReservation");
+		} else if (window.location.search.includes("list")) {
+			setActiveTab("list");
 		} else {
-			setClickedMenu("reserveARoom");
+			setActiveTab("reserveARoom");
 		}
 		// eslint-disable-next-line
-	}, []);
+	}, [activeTab]);
 
 	const disabledDate = (current) => {
 		// Can not select days before today and today
@@ -449,31 +452,45 @@ const NewReservationMain = () => {
 					<div className='container-wrapper'>
 						{activeTab === "reserveARoom" ? (
 							<>
-								<div className='my-2 tab-grid col-md-8'>
-									<Tab
-										isActive={activeTab === "reserveARoom"}
-										onClick={() => setActiveTab("reserveARoom")}
-									>
-										{chosenLanguage === "Arabic"
-											? "حجز الغرف"
-											: "Reserve A Room"}
-									</Tab>
-									<Tab
-										isActive={activeTab === "newReservation"}
-										onClick={() => setActiveTab("newReservation")}
-									>
-										{chosenLanguage === "Arabic"
-											? "حجز جديد (بدون غرف)"
-											: "New Reservation"}
-									</Tab>
-									<Tab
-										isActive={activeTab === "list"}
-										onClick={() => setActiveTab("list")}
-									>
-										{chosenLanguage === "Arabic"
-											? "قائمة الحجوزات"
-											: "Reservation List"}
-									</Tab>
+								<div style={{ background: "#8a8a8a", padding: "1px" }}>
+									<div className='my-2 tab-grid col-md-8'>
+										<Tab
+											isActive={activeTab === "reserveARoom"}
+											onClick={() => {
+												setActiveTab("reserveARoom");
+											}}
+										>
+											<Link to='/hotel-management/new-reservation?reserveARoom'>
+												{chosenLanguage === "Arabic"
+													? "حجز الغرف"
+													: "Reserve A Room"}
+											</Link>
+										</Tab>
+										<Tab
+											isActive={activeTab === "newReservation"}
+											onClick={() => {
+												setActiveTab("newReservation");
+											}}
+										>
+											<Link to='/hotel-management/new-reservation?newReservation'>
+												{chosenLanguage === "Arabic"
+													? "حجز جديد (بدون غرف)"
+													: "New Reservation"}
+											</Link>
+										</Tab>
+										<Tab
+											isActive={activeTab === "list"}
+											onClick={() => {
+												setActiveTab("list");
+											}}
+										>
+											<Link to='/hotel-management/new-reservation?list'>
+												{chosenLanguage === "Arabic"
+													? "قائمة الحجوزات"
+													: "Reservation List"}
+											</Link>
+										</Tab>
+									</div>
 								</div>
 
 								{/* <div className='row text-center ml-5 my-3'>
@@ -556,62 +573,93 @@ const NewReservationMain = () => {
 							</>
 						) : activeTab === "list" ? (
 							<>
-								<div className='my-2 tab-grid col-md-8'>
-									<Tab
-										isActive={activeTab === "reserveARoom"}
-										onClick={() => setActiveTab("reserveARoom")}
-									>
-										{chosenLanguage === "Arabic"
-											? "حجز الغرف"
-											: "Reserve A Room"}
-									</Tab>
-									<Tab
-										isActive={activeTab === "newReservation"}
-										onClick={() => setActiveTab("newReservation")}
-									>
-										{chosenLanguage === "Arabic"
-											? "حجز جديد (بدون غرف)"
-											: "New Reservation"}
-									</Tab>
-									<Tab
-										isActive={activeTab === "list"}
-										onClick={() => setActiveTab("list")}
-									>
-										{chosenLanguage === "Arabic"
-											? "قائمة الحجوزات"
-											: "Reservation List"}
-									</Tab>
+								<div style={{ background: "#8a8a8a", padding: "1px" }}>
+									<div className='my-2 tab-grid col-md-8'>
+										<Tab
+											isActive={activeTab === "reserveARoom"}
+											onClick={() => {
+												setActiveTab("reserveARoom");
+											}}
+										>
+											<Link to='/hotel-management/new-reservation?reserveARoom'>
+												{chosenLanguage === "Arabic"
+													? "حجز الغرف"
+													: "Reserve A Room"}
+											</Link>
+										</Tab>
+										<Tab
+											isActive={activeTab === "newReservation"}
+											onClick={() => {
+												setActiveTab("newReservation");
+											}}
+										>
+											<Link to='/hotel-management/new-reservation?newReservation'>
+												{chosenLanguage === "Arabic"
+													? "حجز جديد (بدون غرف)"
+													: "New Reservation"}
+											</Link>
+										</Tab>
+										<Tab
+											isActive={activeTab === "list"}
+											onClick={() => {
+												setActiveTab("list");
+											}}
+										>
+											<Link to='/hotel-management/new-reservation?list'>
+												{chosenLanguage === "Arabic"
+													? "قائمة الحجوزات"
+													: "Reservation List"}
+											</Link>
+										</Tab>
+									</div>
 								</div>
 
-								<HotelRunnerReservationList />
+								<HotelRunnerReservationList
+									hotelDetails={hotelDetails}
+									chosenLanguage={chosenLanguage}
+								/>
 							</>
 						) : (
 							<>
-								<div className='my-2 tab-grid col-md-8'>
-									<Tab
-										isActive={activeTab === "reserveARoom"}
-										onClick={() => setActiveTab("reserveARoom")}
-									>
-										{chosenLanguage === "Arabic"
-											? "حجز الغرف"
-											: "Reserve A Room"}
-									</Tab>
-									<Tab
-										isActive={activeTab === "newReservation"}
-										onClick={() => setActiveTab("newReservation")}
-									>
-										{chosenLanguage === "Arabic"
-											? "حجز جديد (بدون غرف)"
-											: "New Reservation"}
-									</Tab>
-									<Tab
-										isActive={activeTab === "list"}
-										onClick={() => setActiveTab("list")}
-									>
-										{chosenLanguage === "Arabic"
-											? "قائمة الحجوزات"
-											: "Reservation List"}
-									</Tab>
+								<div style={{ background: "#8a8a8a", padding: "1px" }}>
+									<div className='my-2 tab-grid col-md-8'>
+										<Tab
+											isActive={activeTab === "reserveARoom"}
+											onClick={() => {
+												setActiveTab("reserveARoom");
+											}}
+										>
+											<Link to='/hotel-management/new-reservation?reserveARoom'>
+												{chosenLanguage === "Arabic"
+													? "حجز الغرف"
+													: "Reserve A Room"}
+											</Link>
+										</Tab>
+										<Tab
+											isActive={activeTab === "newReservation"}
+											onClick={() => {
+												setActiveTab("newReservation");
+											}}
+										>
+											<Link to='/hotel-management/new-reservation?newReservation'>
+												{chosenLanguage === "Arabic"
+													? "حجز جديد (بدون غرف)"
+													: "New Reservation"}
+											</Link>
+										</Tab>
+										<Tab
+											isActive={activeTab === "list"}
+											onClick={() => {
+												setActiveTab("list");
+											}}
+										>
+											<Link to='/hotel-management/new-reservation?list'>
+												{chosenLanguage === "Arabic"
+													? "قائمة الحجوزات"
+													: "Reservation List"}
+											</Link>
+										</Tab>
+									</div>
 								</div>
 								<ZReservationForm2
 									customer_details={customer_details}
@@ -664,7 +712,7 @@ const NewReservationMainWrapper = styled.div`
 
 	.grid-container-main {
 		display: grid;
-		grid-template-columns: ${(props) => (props.show ? "5% 75%" : "17% 75%")};
+		grid-template-columns: ${(props) => (props.show ? "5% 90%" : "13.5% 80%")};
 	}
 
 	.container-wrapper {
@@ -702,10 +750,16 @@ const Tab = styled.div`
 			? "transparent"
 			: "#bbbbbb"}; /* Light grey for unselected tabs */
 	box-shadow: ${(props) =>
-		props.isActive ? "inset 0px 0px 10px rgba(0, 0, 0, 0.2)" : "none"};
+		props.isActive ? "inset 5px 5px 5px rgba(0, 0, 0, 0.3)" : "none"};
 	transition: all 0.3s ease; /* Smooth transition for changes */
 	min-width: 25px; /* Minimum width of the tab */
 	width: 100%; /* Full width within the container */
 	text-align: center; /* Center the text inside the tab */
 	/* Additional styling for tabs */
+	z-index: 100;
+	font-size: 1.2rem;
+
+	a {
+		color: ${(props) => (props.isActive ? "white" : "black")};
+	}
 `;

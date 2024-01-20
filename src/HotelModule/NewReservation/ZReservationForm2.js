@@ -170,7 +170,9 @@ const ZReservationForm2 = ({
 
 	const addPreReservations = () => {
 		const isConfirmed = window.confirm(
-			"This may take a few minutes, Do you want to proceed?"
+			chosenLanguage === "Arabic"
+				? "قد تستغرق هذه العملية بضع دقائق، هل تريد المتابعة؟"
+				: "This may take a few minutes, Do you want to proceed?"
 		);
 		if (!isConfirmed) return;
 
@@ -248,8 +250,9 @@ const ZReservationForm2 = ({
 						}}
 					>
 						<button className='btn btn-success' style={{ fontWeight: "bold" }}>
-							{chosenLanguage === "Arabic" ? "" : ""}Get All Reservations from
-							Booking.com, Expedia & Trivago?
+							{chosenLanguage === "Arabic"
+								? "تنزيل جميع الحجوزات من Booking.com وExpedia وTrivago؟"
+								: "Get All Reservations from Booking.com, Expedia & Trivago?"}
 						</button>
 					</div>
 
@@ -783,6 +786,7 @@ const ZReservationForm2 = ({
 											style={{
 												fontWeight: "bold",
 												textTransform: "capitalize",
+												cursor: "pointer",
 											}}
 											onClick={() => openModal(room, index)}
 										>
@@ -862,5 +866,11 @@ const ZReservationFormWrapper = styled.div`
 		box-shadow: 5px 8px 3px 0px rgba(0, 0, 0, 0.3);
 		transition: var(--mainTransition);
 		font-weight: bold;
+	}
+
+	.taskeen {
+		background-color: white;
+		min-height: 250px;
+		border-radius: 5px;
 	}
 `;

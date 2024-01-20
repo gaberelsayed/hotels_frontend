@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import styled, { keyframes } from "styled-components";
+// eslint-disable-next-line
 import { roomTypeColors } from "../../AdminModule/NewHotels/Assets";
 import { InputNumber, Modal, Select } from "antd";
 import moment from "moment";
@@ -166,6 +167,19 @@ const HotelOverviewReservation = ({
 		});
 	};
 
+	const distinctRoomTypesWithColors =
+		hotelRooms &&
+		hotelRooms.reduce((accumulator, room) => {
+			// Check if this room_type is already processed
+			if (!accumulator.some((item) => item.room_type === room.room_type)) {
+				accumulator.push({
+					room_type: room.room_type,
+					roomColorCode: room.roomColorCode,
+				});
+			}
+			return accumulator;
+		}, []);
+
 	return (
 		<HotelOverviewWrapper>
 			<div className='colors-grid mt-3'>
@@ -186,26 +200,30 @@ const HotelOverviewReservation = ({
 						{chosenLanguage === "Arabic" ? "اختر الكل" : "Select All"}
 					</span>
 				</div>
-				{Object.entries(roomTypeColors).map(([roomType, color], i) => (
-					<div
-						key={i}
-						style={{ textAlign: "center", cursor: "pointer" }}
-						onClick={() => handleRoomTypeClick(roomType)}
-					>
+				{distinctRoomTypesWithColors &&
+					distinctRoomTypesWithColors.map((room, i) => (
 						<div
+							key={i}
 							style={{
-								width: "20px",
-								height: "20px",
-								backgroundColor: color,
-								margin: "0 auto",
-								marginBottom: "5px",
+								textAlign: "center",
+								cursor: "pointer",
 							}}
-						></div>
-						<span style={{ textTransform: "capitalize", fontSize: "13px" }}>
-							{roomType.replace(/([A-Z])/g, " $1").trim()}
-						</span>
-					</div>
-				))}
+							onClick={() => handleRoomTypeClick(room.room_type)}
+						>
+							<div
+								style={{
+									width: "20px",
+									height: "20px",
+									backgroundColor: room.roomColorCode,
+									margin: "0 auto",
+									marginBottom: "5px",
+								}}
+							></div>
+							<span style={{ textTransform: "capitalize", fontSize: "13px" }}>
+								{room.room_type.replace(/([A-Z])/g, " $1").trim()}
+							</span>
+						</div>
+					))}
 			</div>
 			<FloorsContainer>
 				{floors.map((floor, index) => (
@@ -313,10 +331,12 @@ const HotelOverviewWrapper = styled.div`
 	.colors-grid {
 		display: grid;
 		grid-template-columns: repeat(
-			13,
-			1fr
-		); /* Creates four columns of equal width */
-		gap: 2px; /* Optional: Adds some space between grid items */
+			auto-fit,
+			minmax(20px, 1fr)
+		); // Adjust 'minmax' as needed
+		gap: 2px;
+		justify-content: center; // Horizontally center grid items
+		align-items: center; // Vertically center grid items
 	}
 `;
 

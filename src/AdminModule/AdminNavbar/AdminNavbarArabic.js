@@ -20,6 +20,8 @@ import {
 import { Button, Menu } from "antd";
 import LastAddedLogoImage from "./LastAddedLogoImage";
 import { useCartContext } from "../../cart_context";
+import { signout } from "../../auth";
+import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 
 function getItem(label, key, icon, children, type, className) {
 	return {
@@ -31,6 +33,12 @@ function getItem(label, key, icon, children, type, className) {
 		className,
 	};
 }
+
+const handleSignout = (history) => {
+	signout(() => {
+		history.push("/");
+	});
+};
 
 const items = [
 	getItem(
@@ -138,6 +146,16 @@ const items = [
 		"divider2"
 	),
 	getItem("مدفوعاتي", "sub18", <CreditCardOutlined />, null, null, "red-bg"),
+	getItem(
+		<div style={{ fontWeight: "bold", textDecoration: "underline" }}>
+			Signout
+		</div>,
+		"signout", // The key used in the Menu's onClick handler
+		<CreditCardOutlined />,
+		null,
+		null,
+		"reddish-bg"
+	),
 
 	// getItem("Option 3", "4", <ContainerOutlined />),
 ];
@@ -155,6 +173,8 @@ const AdminNavbarArabic = ({
 		setCollapsed(!collapsed);
 		setAdminMenuStatus(!collapsed);
 	};
+
+	const history = useHistory();
 
 	return (
 		<AdminNavbarWrapper
@@ -183,24 +203,24 @@ const AdminNavbarArabic = ({
 					fromPage === "AdminDasboard"
 						? "sub1"
 						: fromPage === "OverallReports"
-						? "sub2"
-						: fromPage === "StoreSettings"
-						? "sub3"
-						: fromPage === "AddCategories"
-						? "sub4"
-						: fromPage === "StoreBilling"
-						? "sub5"
-						: fromPage === "AddSubCategory"
-						? "sub6"
-						: fromPage === "AddOccasions"
-						? "sub7"
-						: fromPage === "AddProducts"
-						? "sub8"
-						: fromPage === "WebsiteManagement"
-						? "sub10"
-						: fromPage === "CouponManagement"
-						? "sub12"
-						: "sub1"
+						  ? "sub2"
+						  : fromPage === "StoreSettings"
+						    ? "sub3"
+						    : fromPage === "AddCategories"
+						      ? "sub4"
+						      : fromPage === "StoreBilling"
+						        ? "sub5"
+						        : fromPage === "AddSubCategory"
+						          ? "sub6"
+						          : fromPage === "AddOccasions"
+						            ? "sub7"
+						            : fromPage === "AddProducts"
+						              ? "sub8"
+						              : fromPage === "WebsiteManagement"
+						                ? "sub10"
+						                : fromPage === "CouponManagement"
+						                  ? "sub12"
+						                  : "sub1"
 				}
 				defaultOpenKeys={[
 					"sub1",
@@ -220,6 +240,10 @@ const AdminNavbarArabic = ({
 				inlineCollapsed={collapsed}
 				items={items}
 				onClick={(e) => {
+					if (e.key === "signout") {
+						handleSignout(history);
+					}
+
 					if (e.key === "StoreLogo") {
 						setClickedOn(true);
 					} else {

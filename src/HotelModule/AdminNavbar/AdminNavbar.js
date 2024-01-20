@@ -263,6 +263,11 @@ const AdminNavbarWrapper = styled.div`
 	position: absolute;
 	padding: 0px !important;
 
+	position: fixed; // Add this line
+	top: 0; // Adjust as needed
+	left: 0; // Since the menu is on the right hand side
+	height: 100vh; // Make it full height
+
 	ul {
 		height: 90vh !important;
 	}

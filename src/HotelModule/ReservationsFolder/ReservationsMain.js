@@ -312,6 +312,7 @@ const ReservationsMain = () => {
 									allPreReservations={allPreReservations}
 									setQ={setQ2}
 									q={q2}
+									chosenLanguage={chosenLanguage}
 								/>
 							</div>
 						)}

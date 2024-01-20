@@ -1,97 +1,64 @@
 import React, { useState, useEffect } from "react";
-import { Table, Pagination, Spin } from "antd";
-import { getPaginatedListHotelRunner } from "../apiAdmin";
+import {
+	getPaginatedListHotelRunner,
+	prereservationList,
+	prerservationAuto,
+} from "../apiAdmin";
 import styled from "styled-components";
+import { isAuthenticated } from "../../auth";
+import PreReservationTable from "../ReservationsFolder/PreReservationTable";
+import { Spin } from "antd";
 
-const HotelRunnerReservationList = ({ chosenLanguage }) => {
-	const [reservations, setReservations] = useState([]);
-	const [currentPage, setCurrentPage] = useState(1);
-	const [totalPages, setTotalPages] = useState(0);
-	const [loading, setLoading] = useState(true);
+const HotelRunnerReservationList = ({ chosenLanguage, hotelDetails }) => {
+	const [allPreReservations, setAllPreReservations] = useState([]);
+	const [loading, setLoading] = useState(false);
+	const [q, setQ] = useState("");
+	const [decrement, setDecrement] = useState(0);
 
-	useEffect(() => {
-		fetchReservations(currentPage);
-	}, [currentPage]);
+	const { user } = isAuthenticated();
 
-	const fetchReservations = (page) => {
-		setLoading(true);
-		getPaginatedListHotelRunner(page, 15).then((data) => {
-			if (data.error) {
-				console.log(data.error);
+	const getAllPreReservation = () => {
+		prereservationList(user._id).then((data3) => {
+			if (data3 && data3.error) {
+				console.log(data3.error);
 			} else {
-				setReservations(data.reservations);
-				setTotalPages(data.pages * 15); // Assuming 'pages' times 'per_page' gives total record count
-				setLoading(false);
+				setAllPreReservations(data3 && data3.length > 0 ? data3 : []);
 			}
 		});
 	};
 
-	const columns = [
-		{
-			title: "Confirmation #",
-			dataIndex: "provider_number",
-			key: "provider_number",
-		},
-		{
-			title: "Guest",
-			dataIndex: "guest",
-			key: "guest",
-		},
-		{
-			title: "Check-In Date",
-			dataIndex: "checkin_date",
-			key: "checkin_date",
-		},
-		{
-			title: "Check-Out Date",
-			dataIndex: "checkout_date",
-			key: "checkout_date",
-		},
-		{
-			title: "Total Amount",
-			dataIndex: "total",
-			key: "total",
-		},
-		{
-			title: "Reservation State",
-			dataIndex: "state",
-			key: "state",
-		},
-		{
-			title: "Payment Method",
-			dataIndex: "payment",
-			key: "payment",
-		},
-		{
-			title: "Address",
-			dataIndex: "address",
-			key: "address",
-			render: (address) =>
-				`${address.street}, ${address.city}, ${address.country}`,
-		},
-		{
-			title: "Created At",
-			dataIndex: "completed_at",
-			key: "completed_at",
-			render: (text) => new Date(text).toDateString(),
-		},
-		{
-			title: "Room Count",
-			key: "room_count",
-			render: (record) => record.rooms.length,
-		},
-		{
-			title: "Total Individuals",
-			key: "total_individuals",
-			render: (record) =>
-				record.rooms.reduce((sum, room) => sum + room.total_guest, 0),
-		},
-		{
-			title: "Room Type",
-			key: "room_type",
-			render: (record) => record.rooms.map((room) => room.name).join(", "),
-		},
-	];
+	useEffect(() => {
+		getAllPreReservation();
+		// eslint-disable-next-line
+	}, []);
+
+	const addPreReservations = () => {
+		const isConfirmed = window.confirm(
+			chosenLanguage === "Arabic"
+				? "قد تستغرق هذه العملية بضع دقائق، هل تريد المتابعة؟"
+				: "This may take a few minutes, Do you want to proceed?"
+		);
+		if (!isConfirmed) return;
+
+		setLoading(true);
+		getPaginatedListHotelRunner(1, 15).then((data0) => {
+			if (data0 && data0.error) {
+				console.log(data0.error);
+			} else {
+				prerservationAuto(
+					data0.pages - decrement,
+					hotelDetails._id,
+					hotelDetails.belongsTo._id
+				).then((data) => {
+					if (data) {
+						console.log(data, "data from prereservation");
+					}
+					setDecrement(decrement + 1);
+					setLoading(false);
+				});
+			}
+		});
+	};
 
 	return (
 		<HotelRunnerReservationListWrapper>
@@ -99,29 +66,32 @@ const HotelRunnerReservationList = ({ chosenLanguage }) => {
 				<>
 					<div className='text-center my-5'>
 						<Spin size='large' />
-						<p>Loading...</p>
+						<p>
+							{" "}
+							{chosenLanguage === "Arabic" ? "" : ""} Loading Reservations...
+						</p>
 					</div>
 				</>
 			) : (
 				<>
-					<Table
-						columns={columns}
-						dataSource={reservations}
-						rowKey={(record) => record.hr_number}
-						pagination={false} // Disable Table's own pagination
-					/>
 					<div
-						className='my-3'
+						className='mx-auto mb-5 mt-4 text-center'
 						onClick={() => {
-							window.scrollTo({ top: 5, behavior: "smooth" });
+							addPreReservations();
 						}}
 					>
-						<Pagination
-							current={currentPage}
-							total={totalPages}
-							onChange={(page) => setCurrentPage(page)}
-							pageSize={50}
-							style={{ background: "white" }}
+						<button className='btn btn-success' style={{ fontWeight: "bold" }}>
+							{chosenLanguage === "Arabic"
+								? "تنزيل جميع الحجوزات من Booking.com وExpedia وTrivago؟"
+								: "Get All Reservations from Booking.com, Expedia & Trivago?"}
+						</button>
+					</div>
+					<div>
+						<PreReservationTable
+							allPreReservations={allPreReservations}
+							setQ={setQ}
+							q={q}
+							chosenLanguage={chosenLanguage}
 						/>
 					</div>
 				</>
@@ -135,4 +105,5 @@ export default HotelRunnerReservationList;
 const HotelRunnerReservationListWrapper = styled.div`
 	margin-top: 50px;
 	margin-bottom: 50px;
+	margin-right: 20px;
 `;

@@ -1,10 +1,69 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 // import { Link } from "react-router-dom";
 import moment from "moment";
 import { Link } from "react-router-dom/cjs/react-router-dom.min";
+import FilterComponent from "./FilterComponent";
 
-const PreReservationTable = ({ allPreReservations, q, setQ }) => {
+const PreReservationTable = ({
+	allPreReservations,
+	q,
+	setQ,
+	chosenLanguage,
+}) => {
+	const [selectedFilter, setSelectedFilter] = useState("");
+
+	const [filteredReservations, setFilteredReservations] = useState([]);
+
+	useEffect(() => {
+		let filtered = allPreReservations;
+		const today = new Date();
+		today.setHours(0, 0, 0, 0); // Normalize today to the beginning of the day
+
+		switch (selectedFilter) {
+			case "Today's New Reservations":
+				filtered = allPreReservations.filter(
+					(reservation) =>
+						new Date(reservation.bookedOn).toDateString() ===
+						today.toDateString()
+				);
+				break;
+			case "Cancelations":
+				filtered = allPreReservations.filter(
+					(reservation) =>
+						reservation.overallBookingStatus.toLowerCase() === "canceled"
+				);
+				break;
+			case "Today's Arrivals":
+				filtered = allPreReservations.filter(
+					(reservation) =>
+						new Date(reservation.start_date).toDateString() ===
+						today.toDateString()
+				);
+				break;
+			case "Today's Departures":
+				filtered = allPreReservations.filter(
+					(reservation) =>
+						new Date(reservation.end_date).toDateString() ===
+						today.toDateString()
+				);
+				break;
+
+			case "Incomplete reservations":
+				filtered = allPreReservations.filter(
+					(reservation) =>
+						reservation.overallBookingStatus.toLowerCase() !== "closed" &&
+						reservation.overallBookingStatus.toLowerCase() !== "canceled"
+				);
+				break;
+			default:
+				// No filter selected or "Select All"
+				filtered = allPreReservations;
+		}
+
+		setFilteredReservations(filtered);
+	}, [selectedFilter, allPreReservations]);
+
 	function search(reservations) {
 		return reservations.filter((reservation) => {
 			const customerDetails = reservation.customer_details;
@@ -30,7 +89,7 @@ const PreReservationTable = ({ allPreReservations, q, setQ }) => {
 	}
 
 	return (
-		<PreReservationTableWrapper>
+		<PreReservationTableWrapper isArabic={chosenLanguage === "Arabic"}>
 			<div className='form-group mx-3 text-center'>
 				<label
 					className='mt-2 mx-3'
@@ -52,82 +111,127 @@ const PreReservationTable = ({ allPreReservations, q, setQ }) => {
 					style={{ borderRadius: "20px", width: "50%" }}
 				/>
 			</div>
-			<table
-				className='table table-bordered table-md-responsive table-hover table-striped'
-				style={{ fontSize: "0.75rem" }}
-			>
-				<thead style={{ background: "#191919", color: "white" }}>
-					<tr>
-						<th scope='col'>#</th>
-						<th scope='col'>Client Name</th>
-						<th scope='col'>Client Phone</th>
-						{/* <th scope='col'>Client Email</th> */}
-						<th scope='col'>Confirmation</th>
-						<th scope='col'>Check In</th>
-						<th scope='col'>Check Out</th>
-						<th scope='col'>Payment Status</th>
-						<th scope='col'>Status</th>
-						<th scope='col' style={{ width: "13%" }}>
-							Room Types (Price x Count)
-						</th>
-						<th scope='col'>Total Amount</th>
-						<th scope='col'>DETAILS...</th>
-					</tr>
-				</thead>
-				<tbody>
-					{allPreReservations &&
-						search(allPreReservations).map((reservation, index) => (
-							<tr key={index}>
-								<td>{index + 1}</td>
-								<td>{reservation.customer_details.name}</td>
-								<td>{reservation.customer_details.phone}</td>
-								{/* <td>{reservation.customer_details.email}</td> */}
-								<td>{reservation.confirmation_number}</td>
-								<td>{moment(reservation.start_date).format("YYYY-MM-DD")}</td>
-								<td>{moment(reservation.end_date).format("YYYY-MM-DD")}</td>
-								<td>{reservation.payment_status}</td>
-								<td
-									style={{
-										background:
-											reservation &&
-											reservation.overallBookingStatus === "canceled"
-												? "red"
-												: "",
-									}}
-								>
-									{reservation.overallBookingStatus}
-								</td>
-								<td>
-									{reservation.pickedRoomsType.map((room, roomIndex) => (
-										<div key={roomIndex}>
-											{`${room.room_type}: ${room.chosenPrice} x ${room.count}`}
-											<br />
-										</div>
-									))}
-								</td>
-								<td>{Number(getTotalAmount(reservation)).toFixed(2)} SAR</td>
-								<td
-									style={{
-										fontWeight: "bolder",
-										color: "darkgreen",
-										textDecoration: "underline",
-										fontSize: "13px",
-										cursor: "pointer",
-									}}
-									onClick={() => {
-										window.scrollTo({ behavior: "smooth", top: 0 });
-									}}
-								>
-									<Link
-										to={`/single/prereservation/${reservation.confirmation_number}`}
+
+			<FilterComponent
+				setSelectedFilter={setSelectedFilter}
+				selectedFilter={selectedFilter}
+				chosenLanguage={chosenLanguage}
+			/>
+
+			<div style={{ maxHeight: "1000px", overflow: "auto" }}>
+				<table
+					className='table table-bordered table-md-responsive table-hover table-striped'
+					style={{ fontSize: "0.75rem", overflow: "auto" }}
+				>
+					<thead style={{ background: "white", color: "black" }}>
+						<tr>
+							<th scope='col'>#</th>
+							<th scope='col'>
+								{" "}
+								{chosenLanguage === "Arabic"
+									? "اسم الزائر"
+									: "Client Name"}{" "}
+							</th>
+							<th scope='col'>
+								{chosenLanguage === "Arabic" ? "الهاتف" : "Client Phone"}
+							</th>
+							{/* <th scope='col'>Client Email</th> */}
+							<th scope='col'>
+								{chosenLanguage === "Arabic" ? "رقم التأكيد" : "Confirmation"}
+							</th>
+							<th scope='col'>
+								{chosenLanguage === "Arabic" ? "تاريخ الحجز" : "Booked On"}
+							</th>
+							<th scope='col'>
+								{chosenLanguage === "Arabic" ? "تاريخ الوصول" : "Check In"}
+							</th>
+							<th scope='col'>
+								{chosenLanguage === "Arabic" ? "تاريخ المغادرة" : "Check Out"}
+							</th>
+							<th scope='col'>
+								{chosenLanguage === "Arabic" ? "حالة السداد" : "Payment Status"}
+							</th>
+							<th scope='col'>
+								{chosenLanguage === "Arabic" ? "حالة الحجز" : "Status"}
+							</th>
+							<th scope='col' style={{ width: "13%" }}>
+								{chosenLanguage === "Arabic"
+									? "أنواع الغرف (السعر × العدد)"
+									: "Room Types (Price x Count)"}
+							</th>
+							<th scope='col'>
+								{chosenLanguage === "Arabic"
+									? "المبلغ الإجمالي"
+									: "Total Amount"}
+							</th>
+							<th scope='col'>
+								{chosenLanguage === "Arabic" ? "تفاصيل" : "DETAILS..."}
+							</th>
+						</tr>
+					</thead>
+					<tbody>
+						{filteredReservations &&
+							search(filteredReservations).map((reservation, index) => (
+								<tr key={index}>
+									<td>{index + 1}</td>
+									<td>{reservation.customer_details.name}</td>
+									<td>{reservation.customer_details.phone}</td>
+									{/* <td>{reservation.customer_details.email}</td> */}
+									<td>{reservation.confirmation_number}</td>
+									<td>{new Date(reservation.bookedOn).toDateString()}</td>
+									<td>{moment(reservation.start_date).format("YYYY-MM-DD")}</td>
+									<td>{moment(reservation.end_date).format("YYYY-MM-DD")}</td>
+									<td>{reservation.payment_status}</td>
+									<td
+										style={{
+											background:
+												reservation &&
+												reservation.overallBookingStatus === "canceled"
+													? "red"
+													: "",
+											color:
+												reservation &&
+												reservation.overallBookingStatus === "canceled"
+													? "white"
+													: "",
+										}}
 									>
-										Details...
-									</Link>
-								</td>
-							</tr>
-						))}
-				</tbody>
-			</table>
+										{reservation.overallBookingStatus}
+									</td>
+									<td>
+										{reservation.pickedRoomsType.map((room, roomIndex) => (
+											<div key={roomIndex}>
+												{`${room.room_type}: ${room.chosenPrice} x ${room.count}`}
+												<br />
+											</div>
+										))}
+									</td>
+									<td>{Number(getTotalAmount(reservation)).toFixed(2)} SAR</td>
+									<td
+										style={{
+											fontWeight: "bolder",
+											color: "darkgreen",
+											textDecoration: "underline",
+											fontSize: "13px",
+											cursor: "pointer",
+										}}
+										onClick={() => {
+											window.scrollTo({ behavior: "smooth", top: 0 });
+										}}
+									>
+										<Link
+											to={`/single/prereservation/${reservation.confirmation_number}`}
+										>
+											{chosenLanguage === "Arabic"
+												? "التفاصيل..."
+												: "Details..."}
+										</Link>
+									</td>
+								</tr>
+							))}
+					</tbody>
+				</table>
+			</div>
 		</PreReservationTableWrapper>
 	);
 };
@@ -135,7 +239,20 @@ const PreReservationTable = ({ allPreReservations, q, setQ }) => {
 export default PreReservationTable;
 
 const PreReservationTableWrapper = styled.div`
+	text-align: ${(props) => (props.isArabic ? "right" : "")};
+
 	td {
 		text-transform: capitalize;
+	}
+
+	.table thead th {
+		position: sticky;
+		top: 0;
+		z-index: 10; // Ensure the header is above other content when scrolling
+		background-color: white; // Match the header background color
+	}
+
+	.table {
+		border-collapse: collapse; // Ensure borders are well aligned
 	}
 `;
