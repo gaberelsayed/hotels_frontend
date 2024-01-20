@@ -370,13 +370,22 @@ const NewReservationMain = () => {
 			}, 0);
 		};
 
+		const timezoneOffset = new Date().getTimezoneOffset() * -1; // Get the timezone offset in minutes
+		const offsetHours = Math.floor(Math.abs(timezoneOffset) / 60);
+		const offsetMinutes = Math.abs(timezoneOffset) % 60;
+		const timezoneFormatted = `${timezoneOffset >= 0 ? "+" : "-"}${offsetHours
+			.toString()
+			.padStart(2, "0")}:${offsetMinutes.toString().padStart(2, "0")}`;
+
 		const new_reservation = {
 			customer_details: customer_details,
 			start_date: start_date,
 			end_date: end_date,
 			days_of_residence: days_of_residence,
 			payment_status: payment_status,
-			bookedOn: new Date(),
+			bookedOn: moment(new Date()).format(
+				`YYYY-MM-DDTHH:mm:ss${timezoneFormatted}`
+			),
 			total_amount: calculateTotalAmountPerDay() * Number(days_of_residence),
 			booking_source: booking_source,
 			belongsTo: hotelDetails.belongsTo._id,
