@@ -376,6 +376,7 @@ const NewReservationMain = () => {
 			end_date: end_date,
 			days_of_residence: days_of_residence,
 			payment_status: payment_status,
+			bookedOn: new Date(),
 			total_amount: calculateTotalAmountPerDay() * Number(days_of_residence),
 			booking_source: booking_source,
 			belongsTo: hotelDetails.belongsTo._id,
