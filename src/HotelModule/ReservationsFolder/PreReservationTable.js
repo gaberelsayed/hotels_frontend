@@ -31,6 +31,29 @@ const PreReservationTable = ({
 	const [isModalVisible, setIsModalVisible] = useState(false);
 	const [selectedReservation, setSelectedReservation] = useState(null);
 
+	const searchSubmit = (e) => {
+		e.preventDefault();
+		if (!q) {
+			setSearchClicked(!searchClicked);
+			setQ("");
+			return;
+		}
+
+		getReservationSearchAllMatches(q)
+			.then((data) => {
+				if (data && data.error) {
+					console.log("Search error:", data.error);
+				} else {
+					setAllPreReservations(Array.isArray(data) ? data : [data]);
+					console.log(data, "Hello");
+				}
+			})
+			.catch((error) => {
+				console.error("Error in getReservationSearch:", error);
+				// Handle additional error logic here
+			});
+	};
+
 	function getTotalAmount(reservation) {
 		const dailyTotal = reservation.pickedRoomsType.reduce(
 			(acc, room) => acc + Number(room.chosenPrice) * room.count,
@@ -187,54 +210,7 @@ const PreReservationTable = ({
 		setSelectedReservation(null); // Reset the selected reservation
 	};
 
-	const searchSubmit = (e) => {
-		e.preventDefault();
-		if (!q) {
-			setSearchClicked(!searchClicked);
-			setQ("");
-			return;
-		}
-
-		getReservationSearchAllMatches(q)
-			.then((data) => {
-				if (data && data.error) {
-					console.log("Search error:", data.error);
-
-					// Check if hotelDetails are available
-					if (hotelDetails && hotelDetails._id) {
-						singlePreReservation(
-							q,
-							hotelDetails._id,
-							hotelDetails.belongsTo._id
-						)
-							.then((data2) => {
-								if (data2 && data2.error) {
-									toast.error("No available value, please try again...");
-								} else if (
-									data2 &&
-									data2.reservations &&
-									data2.reservations.length > 0
-								) {
-									setAllPreReservations(data2.reservations);
-								} else {
-									toast.error("Incorrect Confirmation #, Please try again...");
-								}
-							})
-							.catch((error) => {
-								console.error("Error in singlePreReservation:", error);
-								// Handle additional error logic here
-							});
-					}
-				} else if (data) {
-					setAllPreReservations(Array.isArray(data) ? data : [data]);
-				}
-			})
-			.catch((error) => {
-				console.error("Error in getReservationSearch:", error);
-				// Handle additional error logic here
-			});
-	};
-
+	console.log(allPreReservations, "allPreReservations from table");
 	return (
 		<>
 			<PreReservationTableWrapper isArabic={chosenLanguage === "Arabic"}>
@@ -288,13 +264,13 @@ const PreReservationTable = ({
 					selectedFilter={selectedFilter}
 					chosenLanguage={chosenLanguage}
 				/>
-
 				<Table
+					key={Date.now()} // Adds a new key every time the component renders
 					columns={columns}
 					dataSource={allPreReservations}
 					rowKey={(record) => record.confirmation_number}
-					pagination={false} // Disable the table's built-in pagination
-					scroll={{ y: 1000 }} // Adjust the height as needed
+					pagination={false}
+					scroll={{ y: 1000 }}
 				/>
 
 				{allPreReservations && allPreReservations.length <= 49 ? null : (

@@ -53,8 +53,9 @@ const HotelRunnerReservationList = ({ chosenLanguage, hotelDetails }) => {
 				setTotalRecords(data.total); // Set total records
 			}
 		});
-
-		getAllPreReservation();
+		if (!searchClicked || !q) {
+			getAllPreReservation();
+		}
 		// eslint-disable-next-line
 	}, [currentPage, selectedFilter, searchClicked]);
 
@@ -137,6 +138,7 @@ const HotelRunnerReservationList = ({ chosenLanguage, hotelDetails }) => {
 							setAllPreReservations={setAllPreReservations}
 							setSearchClicked={setSearchClicked}
 							searchClicked={searchClicked}
+							getAllPreReservation={getAllPreReservation}
 						/>
 					</div>
 				</>
