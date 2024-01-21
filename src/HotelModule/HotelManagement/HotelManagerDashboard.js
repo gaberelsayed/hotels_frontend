@@ -99,21 +99,6 @@ const HotelManagerDashboard = () => {
 		return roomCountDetails;
 	};
 
-	const getAllReservations = () => {
-		getHotelReservations(user._id).then((data3) => {
-			if (data3 && data3.error) {
-				console.log(data3.error);
-			} else {
-				setAllReservations(data3 && data3.length > 0 ? data3 : []);
-			}
-		});
-	};
-
-	useEffect(() => {
-		getAllReservations();
-		// eslint-disable-next-line
-	}, []);
-
 	const gettingHotelData = () => {
 		hotelAccount(user._id, token, user._id).then((data) => {
 			if (data && data.error) {
@@ -127,6 +112,14 @@ const HotelManagerDashboard = () => {
 					} else {
 						if (data && data.name && data._id && data2 && data2.length > 0) {
 							setHotelDetails(data2[0]);
+
+							getHotelReservations(data2[0]._id).then((data3) => {
+								if (data3 && data3.error) {
+									console.log(data3.error);
+								} else {
+									setAllReservations(data3 && data3.length > 0 ? data3 : []);
+								}
+							});
 
 							getHotelRooms(user._id).then((data3) => {
 								if (data3 && data3.error) {
@@ -341,8 +334,8 @@ const HotelManagerDashboard = () => {
 							<HotelHeatMap
 								hotelRooms={hotelRooms}
 								hotelDetails={hotelDetails}
-								start_date={moment().subtract(30, "days").format("YYYY-MM-DD")}
-								end_date={moment().add(30, "days").format("YYYY-MM-DD")}
+								start_date={moment().subtract(1, "days").format("YYYY-MM-DD")}
+								end_date={moment().add(15, "days").format("YYYY-MM-DD")}
 								allReservations={allReservations}
 							/>
 						) : websiteMenu === "general" ? (

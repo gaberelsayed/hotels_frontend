@@ -107,8 +107,8 @@ export const gettingHotelDetailsForAdmin = (userId, token) => {
 		.catch((err) => console.log(err));
 };
 
-export const getHotelReservations = (userId) => {
-	return fetch(`${process.env.REACT_APP_API_URL}/new-reservation/${userId}`, {
+export const getHotelReservations = (hotelId) => {
+	return fetch(`${process.env.REACT_APP_API_URL}/new-reservation/${hotelId}`, {
 		method: "GET",
 	})
 		.then((response) => {
@@ -117,8 +117,8 @@ export const getHotelReservations = (userId) => {
 		.catch((err) => console.log(err));
 };
 
-export const getHotelReservations2 = (userId) => {
-	return fetch(`${process.env.REACT_APP_API_URL}/new-reservation2/${userId}`, {
+export const getHotelReservations2 = (hotelId) => {
+	return fetch(`${process.env.REACT_APP_API_URL}/new-reservation2/${hotelId}`, {
 		method: "GET",
 	})
 		.then((response) => {
@@ -171,6 +171,19 @@ export const getReservationSearch = (searchQuery) => {
 		.catch((err) => console.log(err));
 };
 
+export const getReservationSearchAllMatches = (searchQuery) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/search-all-matches/${searchQuery}`,
+		{
+			method: "GET",
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
 export const updatingPreReservation = (token, Id) => {
 	return fetch(`${process.env.REACT_APP_API_URL}/update/${Id}`, {
 		method: "PUT",
@@ -188,10 +201,26 @@ export const updatingPreReservation = (token, Id) => {
 		.catch((err) => console.log(err));
 };
 
-export const prereservationList = () => {
-	return fetch(`${process.env.REACT_APP_API_URL}/list-prereservation`, {
-		method: "GET",
-	})
+export const prereservationList = (page, records, filters, hotelId) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/list-prereservation/${page}/${records}/${filters}/${hotelId}`,
+		{
+			method: "GET",
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
+export const prereservationTotalRecords = (hotelId) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/get-total-records/${hotelId}`,
+		{
+			method: "GET",
+		}
+	)
 		.then((response) => {
 			return response.json();
 		})

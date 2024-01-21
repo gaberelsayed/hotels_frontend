@@ -1,84 +1,35 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 // import { Link } from "react-router-dom";
 import moment from "moment";
-import { Link } from "react-router-dom/cjs/react-router-dom.min";
 import FilterComponent from "./FilterComponent";
+import { Modal, Pagination, Table } from "antd";
+import {
+	getReservationSearchAllMatches,
+	singlePreReservation,
+} from "../apiAdmin";
+import { toast } from "react-toastify";
+import ReservationDetail from "./ReservationDetail";
 
 const PreReservationTable = ({
 	allPreReservations,
 	q,
 	setQ,
 	chosenLanguage,
+	handlePageChange,
+	handleFilterChange,
+	currentPage,
+	recordsPerPage,
+	selectedFilter,
+	setSelectedFilter,
+	totalRecords,
+	hotelDetails,
+	setAllPreReservations,
+	setSearchClicked,
+	searchClicked,
 }) => {
-	const [selectedFilter, setSelectedFilter] = useState("");
-
-	const [filteredReservations, setFilteredReservations] = useState([]);
-
-	useEffect(() => {
-		let filtered = allPreReservations;
-		const today = new Date();
-		today.setHours(0, 0, 0, 0); // Normalize today to the beginning of the day
-
-		switch (selectedFilter) {
-			case "Today's New Reservations":
-				filtered = allPreReservations.filter(
-					(reservation) =>
-						new Date(reservation.bookedOn).toDateString() ===
-						today.toDateString()
-				);
-				break;
-			case "Cancelations":
-				filtered = allPreReservations.filter(
-					(reservation) =>
-						reservation.overallBookingStatus.toLowerCase() === "canceled"
-				);
-				break;
-			case "Today's Arrivals":
-				filtered = allPreReservations.filter(
-					(reservation) =>
-						new Date(reservation.start_date).toDateString() ===
-						today.toDateString()
-				);
-				break;
-			case "Today's Departures":
-				filtered = allPreReservations.filter(
-					(reservation) =>
-						new Date(reservation.end_date).toDateString() ===
-						today.toDateString()
-				);
-				break;
-
-			case "Incomplete reservations":
-				filtered = allPreReservations.filter(
-					(reservation) =>
-						reservation.overallBookingStatus.toLowerCase() !== "closed" &&
-						reservation.overallBookingStatus.toLowerCase() !== "canceled"
-				);
-				break;
-			default:
-				// No filter selected or "Select All"
-				filtered = allPreReservations;
-		}
-
-		setFilteredReservations(filtered);
-	}, [selectedFilter, allPreReservations]);
-
-	function search(reservations) {
-		return reservations.filter((reservation) => {
-			const customerDetails = reservation.customer_details;
-			const query = q.toLowerCase();
-
-			return (
-				customerDetails.name.toLowerCase().includes(query) ||
-				customerDetails.phone.toLowerCase().includes(query) ||
-				customerDetails.email.toLowerCase().includes(query) ||
-				reservation.confirmation_number.toLowerCase().includes(query) ||
-				reservation.overallBookingStatus.toLowerCase().includes(query) ||
-				reservation.payment_status.toLowerCase().includes(query)
-			);
-		});
-	}
+	const [isModalVisible, setIsModalVisible] = useState(false);
+	const [selectedReservation, setSelectedReservation] = useState(null);
 
 	function getTotalAmount(reservation) {
 		const dailyTotal = reservation.pickedRoomsType.reduce(
@@ -88,151 +39,302 @@ const PreReservationTable = ({
 		return dailyTotal * reservation.days_of_residence;
 	}
 
-	return (
-		<PreReservationTableWrapper isArabic={chosenLanguage === "Arabic"}>
-			<div className='form-group mx-3 text-center'>
-				<label
-					className='mt-2 mx-3'
+	const columns = [
+		{
+			title: "#",
+			dataIndex: "index",
+			key: "index",
+			render: (text, record, index) =>
+				(currentPage - 1) * recordsPerPage + index + 1,
+		},
+		{
+			title: chosenLanguage === "Arabic" ? "اسم الزائر" : "Client Name",
+			dataIndex: "customer_details",
+			key: "name",
+			render: (customer_details) => customer_details.name,
+		},
+		{
+			title: chosenLanguage === "Arabic" ? "الهاتف" : "Client Phone",
+			dataIndex: "customer_details",
+			key: "phone",
+			render: (customer_details) => customer_details.phone,
+		},
+		{
+			title: chosenLanguage === "Arabic" ? "رقم التأكيد" : "Confirmation",
+			dataIndex: "confirmation_number",
+			key: "confirmation_number",
+		},
+		{
+			title: chosenLanguage === "Arabic" ? "تاريخ الحجز" : "Booked On",
+			dataIndex: "bookedOn",
+			key: "bookedOn",
+			render: (bookedOn) => new Date(bookedOn).toDateString(),
+		},
+		{
+			title: chosenLanguage === "Arabic" ? "تاريخ الوصول" : "Check In",
+			dataIndex: "start_date",
+			key: "start_date",
+			render: (start_date) => moment(start_date).format("YYYY-MM-DD"),
+		},
+		{
+			title: chosenLanguage === "Arabic" ? "تاريخ المغادرة" : "Check Out",
+			dataIndex: "end_date",
+			key: "end_date",
+			render: (end_date) => moment(end_date).format("YYYY-MM-DD"),
+		},
+		{
+			title: chosenLanguage === "Arabic" ? "حالة السداد" : "Payment Status",
+			dataIndex: "payment_status",
+			key: "payment_status",
+		},
+		{
+			title: chosenLanguage === "Arabic" ? "حالة الحجز" : "Status",
+			dataIndex: "overallBookingStatus",
+			key: "overallBookingStatus",
+			render: (overallBookingStatus) => {
+				let style = {};
+				switch (overallBookingStatus.toLowerCase()) {
+					case "canceled":
+						style = {
+							background: "red",
+							color: "white",
+							padding: "4px",
+							textAlign: "center",
+						};
+						break;
+					case "inhouse":
+						style = {
+							background: "#FFFACD",
+							color: "black",
+							padding: "4px",
+							textAlign: "center",
+						}; // Light yellow background
+						break;
+					case "closed":
+						style = {
+							background: "#90EE90",
+							color: "green",
+							padding: "4px",
+							textAlign: "center",
+						}; // Light green background
+						break;
+					case "confirmed":
+						style = {
+							background: "",
+							color: "black",
+							padding: "4px",
+							textAlign: "center",
+						};
+						break;
+					default:
+						style = { padding: "4px", textAlign: "center" };
+				}
+				return <div style={style}>{overallBookingStatus}</div>;
+			},
+		},
+		{
+			title:
+				chosenLanguage === "Arabic"
+					? "أنواع الغرف (السعر × العدد)"
+					: "Room Types (Price x Count)",
+			dataIndex: "pickedRoomsType",
+			key: "pickedRoomsType",
+			render: (pickedRoomsType) =>
+				pickedRoomsType.map((room, index) => (
+					<div
+						key={index}
+					>{`${room.room_type}: ${room.chosenPrice} x ${room.count}`}</div>
+				)),
+		},
+		{
+			title: chosenLanguage === "Arabic" ? "المبلغ الإجمالي" : "Total Amount",
+			dataIndex: "total_amount",
+			key: "total_amount",
+			render: (text, record) =>
+				`${Number(getTotalAmount(record)).toFixed(2)} SAR`,
+		},
+		{
+			title: chosenLanguage === "Arabic" ? "تفاصيل" : "DETAILS...",
+			key: "details",
+			render: (text, record) => (
+				<button
 					style={{
-						fontWeight: "bold",
-						fontSize: "1.05rem",
-						color: "black",
-						borderRadius: "20px",
+						color: "blue",
+						cursor: "pointer",
+						border: "none",
+						backgroundColor: "transparent",
 					}}
+					onClick={() => showDetailsModal(record)}
 				>
-					Search
-				</label>
-				<input
-					className='p-2 my-2 '
-					type='text'
-					value={q}
-					onChange={(e) => setQ(e.target.value.toLowerCase())}
-					placeholder='Search By Client Phone, Client Name, Email, Date, Payment Status'
-					style={{ borderRadius: "20px", width: "50%" }}
+					{chosenLanguage === "Arabic" ? "التفاصيل..." : "Details..."}
+				</button>
+			),
+		},
+	];
+
+	const showDetailsModal = (reservation) => {
+		setSelectedReservation(reservation);
+		setIsModalVisible(true);
+	};
+
+	const handleOk = () => {
+		setIsModalVisible(false);
+		setSelectedReservation(null); // Reset the selected reservation
+	};
+
+	const handleCancel = () => {
+		setIsModalVisible(false);
+		setSelectedReservation(null); // Reset the selected reservation
+	};
+
+	const searchSubmit = (e) => {
+		e.preventDefault();
+		if (!q) {
+			setSearchClicked(!searchClicked);
+			setQ("");
+			return;
+		}
+
+		getReservationSearchAllMatches(q)
+			.then((data) => {
+				if (data && data.error) {
+					console.log("Search error:", data.error);
+
+					// Check if hotelDetails are available
+					if (hotelDetails && hotelDetails._id) {
+						singlePreReservation(
+							q,
+							hotelDetails._id,
+							hotelDetails.belongsTo._id
+						)
+							.then((data2) => {
+								if (data2 && data2.error) {
+									toast.error("No available value, please try again...");
+								} else if (
+									data2 &&
+									data2.reservations &&
+									data2.reservations.length > 0
+								) {
+									setAllPreReservations(data2.reservations);
+								} else {
+									toast.error("Incorrect Confirmation #, Please try again...");
+								}
+							})
+							.catch((error) => {
+								console.error("Error in singlePreReservation:", error);
+								// Handle additional error logic here
+							});
+					}
+				} else if (data) {
+					setAllPreReservations(Array.isArray(data) ? data : [data]);
+				}
+			})
+			.catch((error) => {
+				console.error("Error in getReservationSearch:", error);
+				// Handle additional error logic here
+			});
+	};
+
+	return (
+		<>
+			<PreReservationTableWrapper isArabic={chosenLanguage === "Arabic"}>
+				<div className='form-group mx-3 text-center'>
+					<form className='form' onSubmit={searchSubmit}>
+						<label
+							className='mt-2 mx-3'
+							style={{
+								fontWeight: "bold",
+								fontSize: "1.05rem",
+								color: "black",
+							}}
+						>
+							Search
+						</label>
+						<input
+							className='p-2 my-2 search-input w-50 form-control mx-auto'
+							type='text'
+							value={q}
+							onChange={(e) => setQ(e.target.value.toLowerCase())}
+							placeholder={
+								chosenLanguage === "Arabic"
+									? "البحث حسب هاتف العميل، اسم العميل، البريد الإلكتروني، رقم التأكيد، حالة الدفع"
+									: "Search By Client Phone, Client Name, Email, Confirmation #, Payment Status"
+							}
+							aria-label='Search'
+						/>
+						<button className='btn btn-success mx-2' type='submit'>
+							Search
+						</button>
+					</form>
+				</div>
+				{allPreReservations && allPreReservations.length <= 49 ? null : (
+					<div
+						className='my-3'
+						onClick={() => window.scrollTo({ top: 20, behavior: "smooth" })}
+					>
+						<Pagination
+							current={currentPage}
+							pageSize={recordsPerPage}
+							total={totalRecords}
+							onChange={handlePageChange}
+
+							// Add any additional props you need
+						/>
+					</div>
+				)}
+
+				<FilterComponent
+					setSelectedFilter={setSelectedFilter}
+					selectedFilter={selectedFilter}
+					chosenLanguage={chosenLanguage}
 				/>
-			</div>
 
-			<FilterComponent
-				setSelectedFilter={setSelectedFilter}
-				selectedFilter={selectedFilter}
-				chosenLanguage={chosenLanguage}
-			/>
+				<Table
+					columns={columns}
+					dataSource={allPreReservations}
+					rowKey={(record) => record.confirmation_number}
+					pagination={false} // Disable the table's built-in pagination
+					scroll={{ y: 1000 }} // Adjust the height as needed
+				/>
 
-			<div style={{ maxHeight: "1000px", overflow: "auto" }}>
-				<table
-					className='table table-bordered table-md-responsive table-hover table-striped'
-					style={{ fontSize: "0.75rem", overflow: "auto" }}
-				>
-					<thead style={{ background: "white", color: "black" }}>
-						<tr>
-							<th scope='col'>#</th>
-							<th scope='col'>
-								{" "}
-								{chosenLanguage === "Arabic"
-									? "اسم الزائر"
-									: "Client Name"}{" "}
-							</th>
-							<th scope='col'>
-								{chosenLanguage === "Arabic" ? "الهاتف" : "Client Phone"}
-							</th>
-							{/* <th scope='col'>Client Email</th> */}
-							<th scope='col'>
-								{chosenLanguage === "Arabic" ? "رقم التأكيد" : "Confirmation"}
-							</th>
-							<th scope='col'>
-								{chosenLanguage === "Arabic" ? "تاريخ الحجز" : "Booked On"}
-							</th>
-							<th scope='col'>
-								{chosenLanguage === "Arabic" ? "تاريخ الوصول" : "Check In"}
-							</th>
-							<th scope='col'>
-								{chosenLanguage === "Arabic" ? "تاريخ المغادرة" : "Check Out"}
-							</th>
-							<th scope='col'>
-								{chosenLanguage === "Arabic" ? "حالة السداد" : "Payment Status"}
-							</th>
-							<th scope='col'>
-								{chosenLanguage === "Arabic" ? "حالة الحجز" : "Status"}
-							</th>
-							<th scope='col' style={{ width: "13%" }}>
-								{chosenLanguage === "Arabic"
-									? "أنواع الغرف (السعر × العدد)"
-									: "Room Types (Price x Count)"}
-							</th>
-							<th scope='col'>
-								{chosenLanguage === "Arabic"
-									? "المبلغ الإجمالي"
-									: "Total Amount"}
-							</th>
-							<th scope='col'>
-								{chosenLanguage === "Arabic" ? "تفاصيل" : "DETAILS..."}
-							</th>
-						</tr>
-					</thead>
-					<tbody>
-						{filteredReservations &&
-							search(filteredReservations).map((reservation, index) => (
-								<tr key={index}>
-									<td>{index + 1}</td>
-									<td>{reservation.customer_details.name}</td>
-									<td>{reservation.customer_details.phone}</td>
-									{/* <td>{reservation.customer_details.email}</td> */}
-									<td>{reservation.confirmation_number}</td>
-									<td>{new Date(reservation.bookedOn).toDateString()}</td>
-									<td>{moment(reservation.start_date).format("YYYY-MM-DD")}</td>
-									<td>{moment(reservation.end_date).format("YYYY-MM-DD")}</td>
-									<td>{reservation.payment_status}</td>
-									<td
-										style={{
-											background:
-												reservation &&
-												reservation.overallBookingStatus === "canceled"
-													? "red"
-													: "",
-											color:
-												reservation &&
-												reservation.overallBookingStatus === "canceled"
-													? "white"
-													: "",
-										}}
-									>
-										{reservation.overallBookingStatus}
-									</td>
-									<td>
-										{reservation.pickedRoomsType.map((room, roomIndex) => (
-											<div key={roomIndex}>
-												{`${room.room_type}: ${room.chosenPrice} x ${room.count}`}
-												<br />
-											</div>
-										))}
-									</td>
-									<td>{Number(getTotalAmount(reservation)).toFixed(2)} SAR</td>
-									<td
-										style={{
-											fontWeight: "bolder",
-											color: "darkgreen",
-											textDecoration: "underline",
-											fontSize: "13px",
-											cursor: "pointer",
-										}}
-										onClick={() => {
-											window.scrollTo({ behavior: "smooth", top: 0 });
-										}}
-									>
-										<Link
-											to={`/single/prereservation/${reservation.confirmation_number}`}
-										>
-											{chosenLanguage === "Arabic"
-												? "التفاصيل..."
-												: "Details..."}
-										</Link>
-									</td>
-								</tr>
-							))}
-					</tbody>
-				</table>
-			</div>
-		</PreReservationTableWrapper>
+				{allPreReservations && allPreReservations.length <= 49 ? null : (
+					<div
+						className='my-3'
+						onClick={() => window.scrollTo({ top: 20, behavior: "smooth" })}
+					>
+						<Pagination
+							current={currentPage}
+							pageSize={recordsPerPage}
+							total={totalRecords}
+							onChange={handlePageChange}
+
+							// Add any additional props you need
+						/>
+					</div>
+				)}
+			</PreReservationTableWrapper>
+
+			<Modal
+				title={
+					chosenLanguage === "Arabic" ? "تفاصيل الحجز" : "Reservation Details"
+				}
+				open={isModalVisible}
+				onOk={handleOk}
+				onCancel={handleCancel}
+				width='84.5%' // Set the width to 80%
+				style={{
+					// If Arabic, align to the left, else align to the right
+					position: "absolute",
+					left: chosenLanguage === "Arabic" ? "1%" : "auto",
+					right: chosenLanguage === "Arabic" ? "auto" : "5%",
+					top: "1%",
+				}}
+			>
+				{selectedReservation && (
+					<ReservationDetail reservation={selectedReservation} />
+				)}
+			</Modal>
+		</>
 	);
 };
 

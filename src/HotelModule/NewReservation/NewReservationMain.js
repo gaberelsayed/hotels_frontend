@@ -16,7 +16,6 @@ import {
 	getListOfRoomSummary,
 	createNewReservation2,
 	getReservationSearch,
-	updatingPreReservation,
 	singlePreReservation,
 } from "../apiAdmin";
 import { isAuthenticated } from "../../auth";
@@ -300,18 +299,18 @@ const NewReservationMain = () => {
 				console.log("successful reservation");
 				toast.success("Reservation Was Successfully Booked!");
 
-				if (searchedReservation && searchedReservation._id) {
-					console.log(searchedReservation._id, "searchedReservation");
-					updatingPreReservation(token, searchedReservation._id).then(
-						(data2) => {
-							if (data2 && data2.error) {
-								console.log(data2.error, "Updating Reservation");
-							} else {
-								console.log("Done");
-							}
-						}
-					);
-				}
+				// if (searchedReservation && searchedReservation._id) {
+				// 	console.log(searchedReservation._id, "searchedReservation");
+				// 	updatingPreReservation(token, searchedReservation._id).then(
+				// 		(data2) => {
+				// 			if (data2 && data2.error) {
+				// 				console.log(data2.error, "Updating Reservation");
+				// 			} else {
+				// 				console.log("Done");
+				// 			}
+				// 		}
+				// 	);
+				// }
 
 				setTimeout(() => {
 					window.location.reload(false);
@@ -416,6 +415,7 @@ const NewReservationMain = () => {
 		<NewReservationMainWrapper
 			dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}
 			show={collapsed}
+			showList={window.location.search.includes("list")}
 		>
 			<div className='grid-container-main'>
 				<div className='navcontent'>
@@ -623,11 +623,12 @@ const NewReservationMain = () => {
 										</Tab>
 									</div>
 								</div>
-
-								<HotelRunnerReservationList
-									hotelDetails={hotelDetails}
-									chosenLanguage={chosenLanguage}
-								/>
+								{hotelDetails && hotelDetails._id ? (
+									<HotelRunnerReservationList
+										hotelDetails={hotelDetails}
+										chosenLanguage={chosenLanguage}
+									/>
+								) : null}
 							</>
 						) : (
 							<>
@@ -722,7 +723,8 @@ const NewReservationMainWrapper = styled.div`
 
 	.grid-container-main {
 		display: grid;
-		grid-template-columns: ${(props) => (props.show ? "5% 90%" : "13.5% 80%")};
+		grid-template-columns: ${(props) =>
+			props.show ? "5% 90%" : props.showList ? "13% 87%" : "13.5% 80%"};
 	}
 
 	.container-wrapper {

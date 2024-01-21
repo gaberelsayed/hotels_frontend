@@ -3,7 +3,14 @@ import AdminNavbar from "../AdminNavbar/AdminNavbar";
 import AdminNavbarArabic from "../AdminNavbar/AdminNavbarArabic";
 import styled from "styled-components";
 import { useCartContext } from "../../cart_context";
-import { getHotelReservations2, prereservationList } from "../apiAdmin";
+import {
+	getHotelDetails,
+	getHotelReservations,
+	getHotelReservations2,
+	hotelAccount,
+	prereservationList,
+	prereservationTotalRecords,
+} from "../apiAdmin";
 import { isAuthenticated } from "../../auth";
 import moment from "moment";
 import PreReservationTable from "./PreReservationTable";
@@ -44,8 +51,16 @@ const ReservationsMain = () => {
 	const [collapsed, setCollapsed] = useState(false);
 	const [allReservations, setAllReservations] = useState([]);
 	const [allPreReservations, setAllPreReservations] = useState([]);
+	const [hotelDetails, setHotelDetails] = useState([]);
 	const [q, setQ] = useState("");
 	const [q2, setQ2] = useState("");
+	const [loading, setLoading] = useState(false);
+	const [currentPage, setCurrentPage] = useState(1); // New state for current page
+	const [recordsPerPage] = useState(50); // You can adjust this as needed
+	const [selectedFilter, setSelectedFilter] = useState(""); // New state for selected filter
+	const [totalRecords, setTotalRecords] = useState(0);
+	const [searchClicked, setSearchClicked] = useState(false);
+
 	const { languageToggle, chosenLanguage } = useCartContext();
 
 	// eslint-disable-next-line
@@ -59,30 +74,77 @@ const ReservationsMain = () => {
 	}, []);
 
 	const getAllReservations = () => {
-		getHotelReservations2(user._id).then((data3) => {
-			if (data3 && data3.error) {
-				console.log(data3.error);
+		setLoading(true);
+		hotelAccount(user._id, token, user._id).then((data) => {
+			if (data && data.error) {
+				console.log(data.error, "Error rendering");
 			} else {
-				setAllReservations(data3 && data3.length > 0 ? data3 : []);
-			}
-		});
-	};
+				getHotelDetails(data._id).then((data2) => {
+					if (data2 && data2.error) {
+						console.log(data2.error, "Error rendering");
+					} else {
+						setHotelDetails(data2[0]);
+						if (
+							data &&
+							data.name &&
+							data._id &&
+							data2 &&
+							data2.length > 0 &&
+							data2[0] &&
+							data2[0]._id
+						) {
+							getHotelReservations(data2[0]._id).then((data3) => {
+								if (data3 && data3.error) {
+									console.log(data3.error);
+								} else {
+									getHotelReservations2(data2[0]._id).then((data3) => {
+										if (data3 && data3.error) {
+											console.log(data3.error);
+										} else {
+											setAllReservations(
+												data3 && data3.length > 0 ? data3 : []
+											);
+										}
+									});
 
-	const getAllPreReservation = () => {
-		prereservationList(user._id).then((data3) => {
-			if (data3 && data3.error) {
-				console.log(data3.error);
-			} else {
-				setAllPreReservations(data3 && data3.length > 0 ? data3 : []);
+									prereservationTotalRecords(data2[0]._id).then((data3) => {
+										if (data && data.error) {
+											console.log(data.error);
+										} else {
+											setTotalRecords(data3.total); // Set total records
+										}
+									});
+
+									prereservationList(
+										currentPage,
+										recordsPerPage,
+										JSON.stringify({ selectedFilter }),
+										data2[0]._id
+									)
+										.then((data3) => {
+											if (data3 && data3.error) {
+												console.log(data3.error);
+											} else {
+												setAllPreReservations(
+													data3 && data3.length > 0 ? data3 : []
+												);
+											}
+										})
+										.catch((err) => console.log(err))
+										.finally(() => setLoading(false)); // Set loading to false after fetching
+								}
+							});
+						}
+					}
+				});
 			}
 		});
 	};
 
 	useEffect(() => {
 		getAllReservations();
-		getAllPreReservation();
 		// eslint-disable-next-line
-	}, []);
+	}, [currentPage, recordsPerPage, searchClicked]);
 
 	function search(reservations) {
 		return reservations.filter((reservation) => {
@@ -111,6 +173,15 @@ const ReservationsMain = () => {
 		);
 		return dailyTotal * reservation.days_of_residence;
 	}
+
+	const handlePageChange = (newPage) => {
+		setCurrentPage(newPage);
+	};
+
+	const handleFilterChange = (newFilter) => {
+		setSelectedFilter(newFilter);
+		setCurrentPage(1); // Reset to first page when filter changes
+	};
 
 	// console.log(allPreReservations, "allPre");
 
@@ -313,6 +384,19 @@ const ReservationsMain = () => {
 									setQ={setQ2}
 									q={q2}
 									chosenLanguage={chosenLanguage}
+									handlePageChange={handlePageChange}
+									handleFilterChange={handleFilterChange}
+									currentPage={currentPage}
+									recordsPerPage={recordsPerPage}
+									selectedFilter={selectedFilter}
+									setSelectedFilter={setSelectedFilter}
+									totalRecords={totalRecords}
+									loading={loading}
+									setLoading={setLoading}
+									hotelDetails={hotelDetails}
+									setAllPreReservations={setAllPreReservations}
+									searchClicked={searchClicked}
+									setSearchClicked={setSearchClicked}
 								/>
 							</div>
 						)}

@@ -50,7 +50,7 @@ const FilterComponent = ({
 		Cancelations: "الإلغاءات",
 		"Today's Arrivals": "وصول اليوم",
 		"Today's Departures": "مغادرة اليوم",
-		"In House": "في المنزل",
+		"In House": "In House",
 		"Incomplete reservations": "الحجوزات الغير مكتملة",
 	};
 

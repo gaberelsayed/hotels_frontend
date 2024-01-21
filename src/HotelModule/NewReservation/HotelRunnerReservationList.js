@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import {
 	getPaginatedListHotelRunner,
 	prereservationList,
+	prereservationTotalRecords,
 	prerservationAuto,
 } from "../apiAdmin";
 import styled from "styled-components";
@@ -12,25 +13,59 @@ import { Spin } from "antd";
 const HotelRunnerReservationList = ({ chosenLanguage, hotelDetails }) => {
 	const [allPreReservations, setAllPreReservations] = useState([]);
 	const [loading, setLoading] = useState(false);
+	const [currentPage, setCurrentPage] = useState(1); // New state for current page
+	const [recordsPerPage] = useState(50); // You can adjust this as needed
+	const [selectedFilter, setSelectedFilter] = useState(""); // New state for selected filter
+	const [totalRecords, setTotalRecords] = useState(0);
+
 	const [q, setQ] = useState("");
+	const [searchClicked, setSearchClicked] = useState(false);
 	const [decrement, setDecrement] = useState(0);
 
+	// eslint-disable-next-line
 	const { user } = isAuthenticated();
 
 	const getAllPreReservation = () => {
-		prereservationList(user._id).then((data3) => {
-			if (data3 && data3.error) {
-				console.log(data3.error);
-			} else {
-				setAllPreReservations(data3 && data3.length > 0 ? data3 : []);
-			}
-		});
+		setLoading(true); // Set loading to true when fetching data
+		prereservationList(
+			currentPage,
+			recordsPerPage,
+			JSON.stringify({ selectedFilter }),
+			hotelDetails._id
+		)
+			.then((data) => {
+				if (data && data.error) {
+					console.log(data.error);
+				} else {
+					setAllPreReservations(data && data.length > 0 ? data : []);
+				}
+			})
+			.catch((err) => console.log(err))
+			.finally(() => setLoading(false)); // Set loading to false after fetching
 	};
 
 	useEffect(() => {
+		// Fetch total records
+		prereservationTotalRecords(hotelDetails._id).then((data) => {
+			if (data && data.error) {
+				console.log(data.error);
+			} else {
+				setTotalRecords(data.total); // Set total records
+			}
+		});
+
 		getAllPreReservation();
 		// eslint-disable-next-line
-	}, []);
+	}, [currentPage, selectedFilter, searchClicked]);
+
+	const handlePageChange = (newPage) => {
+		setCurrentPage(newPage);
+	};
+
+	const handleFilterChange = (newFilter) => {
+		setSelectedFilter(newFilter);
+		setCurrentPage(1); // Reset to first page when filter changes
+	};
 
 	const addPreReservations = () => {
 		const isConfirmed = window.confirm(
@@ -53,7 +88,7 @@ const HotelRunnerReservationList = ({ chosenLanguage, hotelDetails }) => {
 					if (data) {
 						console.log(data, "data from prereservation");
 					}
-					setDecrement(decrement + 1);
+					setDecrement(decrement + 3);
 					setLoading(false);
 				});
 			}
@@ -92,6 +127,16 @@ const HotelRunnerReservationList = ({ chosenLanguage, hotelDetails }) => {
 							setQ={setQ}
 							q={q}
 							chosenLanguage={chosenLanguage}
+							handlePageChange={handlePageChange}
+							handleFilterChange={handleFilterChange}
+							currentPage={currentPage}
+							recordsPerPage={recordsPerPage}
+							selectedFilter={selectedFilter}
+							setSelectedFilter={setSelectedFilter}
+							totalRecords={totalRecords}
+							setAllPreReservations={setAllPreReservations}
+							setSearchClicked={setSearchClicked}
+							searchClicked={searchClicked}
 						/>
 					</div>
 				</>
