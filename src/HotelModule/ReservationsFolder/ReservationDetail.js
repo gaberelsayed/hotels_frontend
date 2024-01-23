@@ -106,18 +106,25 @@ const ReservationDetail = ({ reservation }) => {
 		}, 0); // Start with 0 for the total
 	};
 
-	// Function to calculate days between two dates
 	const calculateDaysBetweenDates = (startDate, endDate) => {
 		const start = new Date(startDate);
 		const end = new Date(endDate);
-		return Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+		if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+			console.error("Invalid start or end date");
+			return 0;
+		}
+		const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+		return days > 0 ? days : 1; // Ensures a minimum of 1 day
 	};
 
 	// Calculate the number of days of residency
 	const daysOfResidence = calculateDaysBetweenDates(
-		reservation.start_date,
-		reservation.end_date
+		reservation.checkin_date,
+		reservation.checkout_date
 	);
+
+	console.log(reservation.checkin_date, "daysOfResidence");
+	console.log(reservation.checkout_date, "daysOfResidence");
 
 	// Calculate the total amount
 	const total_amount_hotel_runner =
@@ -126,21 +133,25 @@ const ReservationDetail = ({ reservation }) => {
 		singleReservationHotelRunner.rooms.length > 0
 			? singleReservationHotelRunner.rooms
 					.reduce((acc, room) => {
-						const roomTotal = room.daily_prices.reduce(
-							(sum, price) => sum + price.price,
-							0
-						);
-						return acc + roomTotal * daysOfResidence; // Multiply by days of residence
+						const roomTotal = room.daily_prices.reduce((sum, price) => {
+							return sum + (typeof price.price === "number" ? price.price : 0);
+						}, 0);
+						return acc + roomTotal * daysOfResidence;
 					}, 0)
 					.toFixed(2)
 			: reservation.pickedRoomsType
-					.reduce(
-						(acc, room) =>
-							acc + room.chosenPrice * room.count * daysOfResidence,
-						0
-					) // Multiply by days of residence
+					.reduce((acc, room) => {
+						const chosenPrice = parseFloat(room.chosenPrice);
+						if (!isNaN(chosenPrice) && typeof room.count === "number") {
+							return acc + chosenPrice * room.count * daysOfResidence;
+						} else {
+							console.error("Invalid chosenPrice or count:", room);
+							return acc;
+						}
+					}, 0)
 					.toFixed(2);
 
+	// Revised calculateReservationPeriod function
 	function calculateReservationPeriod(checkin, checkout, language) {
 		const checkinDate = moment(checkin).locale(
 			language === "Arabic" ? "ar" : "en"
@@ -148,15 +159,16 @@ const ReservationDetail = ({ reservation }) => {
 		const checkoutDate = moment(checkout).locale(
 			language === "Arabic" ? "ar" : "en"
 		);
+		console.log(checkinDate.toString(), checkoutDate.toString()); // Debugging
+
 		const duration = moment.duration(checkoutDate.diff(checkinDate));
 		const days = duration.asDays();
+		console.log("Duration in days:", days); // Debugging
+
 		const daysText = language === "Arabic" ? "أيام" : "days";
 		const nightsText = language === "Arabic" ? "ليال" : "nights";
 		return `${days} ${daysText} / ${days - 1} ${nightsText}`;
 	}
-
-	console.log(singleReservationHotelRunner, "singleReservationHotelRunner");
-	console.log(reservation, "reservationProps");
 
 	return (
 		<Wrapper
@@ -397,26 +409,32 @@ const ReservationDetail = ({ reservation }) => {
 											? "تاريخ الحجز"
 											: "Booking Date"}
 										<div className='mx-1'>
-											{singleReservationHotelRunner &&
-											singleReservationHotelRunner.completed_at
-												? new Intl.DateTimeFormat(
-														chosenLanguage === "Arabic" ? "ar-EG" : "en-GB",
-														{
-															year: "numeric",
-															month: "2-digit",
-															day: "2-digit",
-														}
-												  ).format(
-														new Date(singleReservationHotelRunner.completed_at)
-												  )
-												: new Intl.DateTimeFormat(
-														chosenLanguage === "Arabic" ? "ar-EG" : "en-GB",
-														{
-															year: "numeric",
-															month: "2-digit",
-															day: "2-digit",
-														}
-												  ).format(new Date(reservation.bookedOn))}
+											{
+												singleReservationHotelRunner &&
+												singleReservationHotelRunner.completed_at
+													? new Intl.DateTimeFormat(
+															chosenLanguage === "Arabic" ? "ar-EG" : "en-GB",
+															{
+																year: "numeric",
+																month: "2-digit",
+																day: "2-digit",
+															}
+													  ).format(
+															new Date(
+																singleReservationHotelRunner.completed_at
+															)
+													  )
+													: reservation && reservation.booked_at
+													  ? new Intl.DateTimeFormat(
+																chosenLanguage === "Arabic" ? "ar-EG" : "en-GB",
+																{
+																	year: "numeric",
+																	month: "2-digit",
+																	day: "2-digit",
+																}
+													    ).format(new Date(reservation.booked_at))
+													  : "N/A" // Fallback text or handling if date is not available
+											}
 										</div>
 									</div>
 
@@ -427,7 +445,6 @@ const ReservationDetail = ({ reservation }) => {
 										<div
 											className='mx-1'
 											style={{
-												textTransform: "capitalize",
 												background:
 													reservation &&
 													reservation.overallBookingStatus === "canceled"
@@ -439,9 +456,10 @@ const ReservationDetail = ({ reservation }) => {
 														? "white"
 														: "",
 												textAlign: "center",
+												textTransform: "uppercase",
 											}}
 										>
-											{reservation && reservation.overallBookingStatus}
+											{reservation && reservation.reservation_status}
 										</div>
 									</div>
 
@@ -497,7 +515,7 @@ const ReservationDetail = ({ reservation }) => {
 									<div className='col-md-4'>
 										{chosenLanguage === "Arabic" ? "الوصول" : "Arrival"}
 										<div style={{ border: "1px solid black", padding: "3px" }}>
-											{moment(reservation && reservation.start_date)
+											{moment(reservation && reservation.checkin_date)
 												.locale(chosenLanguage === "Arabic" ? "ar" : "en")
 												.format("DD/MM/YYYY")}
 										</div>
@@ -507,7 +525,7 @@ const ReservationDetail = ({ reservation }) => {
 											? "تاريخ المغادرة"
 											: "Check-out"}
 										<div style={{ border: "1px solid black", padding: "3px" }}>
-											{moment(reservation && reservation.end_date)
+											{moment(reservation && reservation.checkout_date)
 												.locale(chosenLanguage === "Arabic" ? "ar" : "en")
 												.format("DD/MM/YYYY")}
 										</div>
@@ -519,8 +537,8 @@ const ReservationDetail = ({ reservation }) => {
 										<div>
 											{reservation
 												? calculateReservationPeriod(
-														reservation.start_date,
-														reservation.end_date,
+														reservation.checkin_date,
+														reservation.checkout_date,
 														chosenLanguage
 												  )
 												: ""}

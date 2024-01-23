@@ -25,13 +25,28 @@ const HotelRunnerReservationList = ({ chosenLanguage, hotelDetails }) => {
 	// eslint-disable-next-line
 	const { user } = isAuthenticated();
 
+	const formatDate = (date) => {
+		const d = new Date(date);
+		let month = "" + (d.getMonth() + 1);
+		let day = "" + d.getDate();
+		const year = d.getFullYear();
+
+		if (month.length < 2) month = "0" + month;
+		if (day.length < 2) day = "0" + day;
+
+		return [year, month, day].join("-");
+	};
+
 	const getAllPreReservation = () => {
 		setLoading(true); // Set loading to true when fetching data
+		const today = formatDate(new Date()); // Format today's date
+
 		prereservationList(
 			currentPage,
 			recordsPerPage,
 			JSON.stringify({ selectedFilter }),
-			hotelDetails._id
+			hotelDetails._id,
+			today // Pass the formatted date
 		)
 			.then((data) => {
 				if (data && data.error) {

@@ -14,9 +14,9 @@ import {
 	hotelAccount,
 	getHotelReservations,
 	getListOfRoomSummary,
-	createNewReservation2,
 	getReservationSearch,
 	singlePreReservation,
+	updateSingleReservation,
 } from "../apiAdmin";
 import { isAuthenticated } from "../../auth";
 import { toast } from "react-toastify";
@@ -129,17 +129,18 @@ const NewReservationMain = () => {
 						console.log(data2.error, "Error rendering");
 					} else {
 						if (data && data.name && data._id && data2 && data2.length > 0) {
-							getHotelReservations(user._id).then((data3) => {
+							getHotelReservations(data2[0]._id).then((data3) => {
 								if (data3 && data3.error) {
 									console.log(data3.error);
 								} else {
 									setAllReservations(data3 && data3.length > 0 ? data3 : []);
+									console.log(data3, "data3");
 								}
 							});
 
 							setHotelDetails(data2[0]);
 
-							getHotelRooms(user._id).then((data3) => {
+							getHotelRooms(data2[0]._id).then((data3) => {
 								if (data3 && data3.error) {
 									console.log(data3.error);
 								} else {
@@ -210,8 +211,8 @@ const NewReservationMain = () => {
 									setLoading(false);
 								} else {
 									setCustomer_details(data2.customer_details);
-									setStart_date(data2.start_date);
-									setEnd_date(data2.end_date);
+									setStart_date(data2.checkin_date);
+									setEnd_date(data2.checkout_date);
 									setDays_of_residence(data2.days_of_residence);
 									setPaymentStatus(data2.payment_status);
 									setBookingComment(data2.booking_comment);
@@ -227,8 +228,8 @@ const NewReservationMain = () => {
 					}
 				} else {
 					setCustomer_details(data.customer_details);
-					setStart_date(data.start_date);
-					setEnd_date(data.end_date);
+					setStart_date(data.checkin_date);
+					setEnd_date(data.checkout_date);
 					setDays_of_residence(data.days_of_residence);
 					setPaymentStatus(data.payment_status);
 					setBookingComment(data.booking_comment);
@@ -274,8 +275,8 @@ const NewReservationMain = () => {
 
 		const new_reservation = {
 			customer_details: customer_details,
-			start_date: start_date,
-			end_date: end_date,
+			checkin_date: start_date,
+			checkout_date: end_date,
 			days_of_residence: days_of_residence,
 			payment_status: payment_status,
 			total_amount: total_amount * days_of_residence,
@@ -283,40 +284,63 @@ const NewReservationMain = () => {
 			belongsTo: hotelDetails.belongsTo._id,
 			hotelId: hotelDetails._id,
 			roomId: pickedHotelRooms,
+			booked_at: new Date(),
+			sub_total: total_amount,
 			pickedRoomsPricing: pickedRoomPricing,
-			confirmation_number: confirmation_number
-				? confirmation_number
-				: Math.floor(Math.random() * 1e12)
-						.toString()
-						.padStart(12, "0"),
+			pickedRoomsType: pickedRoomsType,
+			payment: payment_status,
+			reservation_status: pickedHotelRooms.length > 0 ? "InHouse" : "Confirmed",
+			total_rooms: pickedHotelRooms.length,
+			total_guests: pickedHotelRooms.length,
 			booking_comment: booking_comment,
 		};
 
-		createNewReservation(user._id, token, new_reservation).then((data) => {
-			if (data && data.error) {
-				console.log(data.error, "error create new reservation");
-			} else {
-				console.log("successful reservation");
-				toast.success("Reservation Was Successfully Booked!");
+		if (
+			searchQuery &&
+			searchedReservation &&
+			searchedReservation.confirmation_number
+		) {
+			updateSingleReservation(searchedReservation._id, {
+				...new_reservation,
+				inhouse_date: new Date(),
+			}).then((data) => {
+				if (data && data.error) {
+					console.log(data.error);
+				} else {
+					console.log("successful check in");
+					toast.success("Checkin Was Successfully Processed!");
+					setTimeout(() => {
+						window.location.reload(false);
+					}, 2000);
+				}
+			});
+		} else {
+			createNewReservation(user._id, token, new_reservation).then((data) => {
+				if (data && data.error) {
+					console.log(data.error, "error create new reservation");
+				} else {
+					console.log("successful reservation");
+					toast.success("Reservation Was Successfully Booked!");
 
-				// if (searchedReservation && searchedReservation._id) {
-				// 	console.log(searchedReservation._id, "searchedReservation");
-				// 	updatingPreReservation(token, searchedReservation._id).then(
-				// 		(data2) => {
-				// 			if (data2 && data2.error) {
-				// 				console.log(data2.error, "Updating Reservation");
-				// 			} else {
-				// 				console.log("Done");
-				// 			}
-				// 		}
-				// 	);
-				// }
+					// if (searchedReservation && searchedReservation._id) {
+					// 	console.log(searchedReservation._id, "searchedReservation");
+					// 	updatingPreReservation(token, searchedReservation._id).then(
+					// 		(data2) => {
+					// 			if (data2 && data2.error) {
+					// 				console.log(data2.error, "Updating Reservation");
+					// 			} else {
+					// 				console.log("Done");
+					// 			}
+					// 		}
+					// 	);
+					// }
 
-				setTimeout(() => {
-					window.location.reload(false);
-				}, 2000);
-			}
-		});
+					setTimeout(() => {
+						window.location.reload(false);
+					}, 2000);
+				}
+			});
+		}
 	};
 
 	useEffect(() => {
@@ -363,42 +387,28 @@ const NewReservationMain = () => {
 			return toast.error("Booking Source is required");
 		}
 
-		const calculateTotalAmountPerDay = () => {
-			return pickedRoomsType.reduce((total, room) => {
-				return total + room.count * room.chosenPrice;
-			}, 0);
-		};
-
-		const timezoneOffset = new Date().getTimezoneOffset() * -1; // Get the timezone offset in minutes
-		const offsetHours = Math.floor(Math.abs(timezoneOffset) / 60);
-		const offsetMinutes = Math.abs(timezoneOffset) % 60;
-		const timezoneFormatted = `${timezoneOffset >= 0 ? "+" : "-"}${offsetHours
-			.toString()
-			.padStart(2, "0")}:${offsetMinutes.toString().padStart(2, "0")}`;
-
 		const new_reservation = {
 			customer_details: customer_details,
-			start_date: start_date,
-			end_date: end_date,
+			checkin_date: start_date,
+			checkout_date: end_date,
 			days_of_residence: days_of_residence,
 			payment_status: payment_status,
-			bookedOn: moment(new Date()).format(
-				`YYYY-MM-DDTHH:mm:ss${timezoneFormatted}`
-			),
-			total_amount: calculateTotalAmountPerDay() * Number(days_of_residence),
+			total_amount: total_amount * days_of_residence,
 			booking_source: booking_source,
 			belongsTo: hotelDetails.belongsTo._id,
 			hotelId: hotelDetails._id,
+			booked_at: new Date(),
+			sub_total: total_amount,
+			pickedRoomsPricing: pickedRoomPricing,
 			pickedRoomsType: pickedRoomsType,
-			confirmation_number: confirmation_number
-				? confirmation_number
-				: Math.floor(Math.random() * 1e12)
-						.toString()
-						.padStart(12, "0"),
+			payment: payment_status,
+			reservation_status: pickedHotelRooms.length > 0 ? "InHouse" : "Confirmed",
+			total_rooms: pickedHotelRooms.length,
+			total_guests: pickedHotelRooms.length,
 			booking_comment: booking_comment,
 		};
 
-		createNewReservation2(user._id, token, new_reservation).then((data) => {
+		createNewReservation(user._id, token, new_reservation).then((data) => {
 			if (data && data.error) {
 				console.log(data.error, "error create new reservation");
 			} else {
@@ -577,6 +587,8 @@ const NewReservationMain = () => {
 											searchClicked={searchClicked}
 											setSearchClicked={setSearchClicked}
 											searchedReservation={searchedReservation}
+											pickedRoomsType={pickedRoomsType}
+											setPickedRoomsType={setPickedRoomsType}
 										/>
 									</>
 								)}

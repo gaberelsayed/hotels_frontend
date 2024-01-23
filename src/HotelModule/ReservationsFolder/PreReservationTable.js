@@ -4,11 +4,7 @@ import styled from "styled-components";
 import moment from "moment";
 import FilterComponent from "./FilterComponent";
 import { Modal, Pagination, Table } from "antd";
-import {
-	getReservationSearchAllMatches,
-	singlePreReservation,
-} from "../apiAdmin";
-import { toast } from "react-toastify";
+import { getReservationSearchAllMatches } from "../apiAdmin";
 import ReservationDetail from "./ReservationDetail";
 
 const PreReservationTable = ({
@@ -89,9 +85,9 @@ const PreReservationTable = ({
 		},
 		{
 			title: chosenLanguage === "Arabic" ? "تاريخ الحجز" : "Booked On",
-			dataIndex: "bookedOn",
-			key: "bookedOn",
-			render: (bookedOn) => new Date(bookedOn).toDateString(),
+			dataIndex: "booked_at",
+			key: "booked_at",
+			render: (booked_at) => new Date(booked_at).toDateString(),
 		},
 		{
 			title: chosenLanguage === "Arabic" ? "تاريخ الوصول" : "Check In",
@@ -107,16 +103,16 @@ const PreReservationTable = ({
 		},
 		{
 			title: chosenLanguage === "Arabic" ? "حالة السداد" : "Payment Status",
-			dataIndex: "payment_status",
-			key: "payment_status",
+			dataIndex: "payment",
+			key: "payment",
 		},
 		{
 			title: chosenLanguage === "Arabic" ? "حالة الحجز" : "Status",
-			dataIndex: "overallBookingStatus",
-			key: "overallBookingStatus",
-			render: (overallBookingStatus) => {
+			dataIndex: "reservation_status",
+			key: "reservation_status",
+			render: (reservation_status) => {
 				let style = {};
-				switch (overallBookingStatus.toLowerCase()) {
+				switch (reservation_status.toLowerCase()) {
 					case "canceled":
 						style = {
 							background: "red",
@@ -152,7 +148,7 @@ const PreReservationTable = ({
 					default:
 						style = { padding: "4px", textAlign: "center" };
 				}
-				return <div style={style}>{overallBookingStatus}</div>;
+				return <div style={style}>{reservation_status}</div>;
 			},
 		},
 		{

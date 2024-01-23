@@ -41,6 +41,8 @@ const ZReservationForm = ({
 	searchClicked,
 	setSearchClicked,
 	searchedReservation,
+	pickedRoomsType,
+	setPickedRoomsType,
 }) => {
 	const [decrement, setDecrement] = useState(0);
 	const [loading, setLoading] = useState(false);
@@ -118,9 +120,6 @@ const ZReservationForm = ({
 					hotelDetails._id,
 					hotelDetails.belongsTo._id
 				).then((data) => {
-					if (data) {
-						console.log(data, "data from prereservation");
-					}
 					setDecrement(decrement + 1);
 					setLoading(false);
 				});
@@ -177,8 +176,6 @@ const ZReservationForm = ({
 			window.scrollTo({ top: 760, behavior: "smooth" });
 		}, 1000);
 	};
-
-	console.log(pickedHotelRooms, "pickedHotelRoom");
 
 	return (
 		<ZReservationFormWrapper
@@ -999,6 +996,8 @@ const ZReservationForm = ({
 								start_date={start_date}
 								end_date={end_date}
 								chosenLanguage={chosenLanguage}
+								pickedRoomsType={pickedRoomsType}
+								setPickedRoomsType={setPickedRoomsType}
 							/>
 						</>
 					) : null}
