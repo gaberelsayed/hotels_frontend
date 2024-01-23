@@ -15,8 +15,6 @@ const HotelOverviewReservation = ({
 	setTotal_Amount,
 	setPickedRoomPricing,
 	pickedRoomPricing,
-	pickedRoomsType,
-	setPickedRoomsType,
 	start_date,
 	end_date,
 	allReservations,
@@ -37,6 +35,7 @@ const HotelOverviewReservation = ({
 	const handleRoomClick = (roomId, show, room) => {
 		// eslint-disable-next-line
 		let priceToAdd;
+
 		if (pickedHotelRooms.includes(roomId)) {
 			setPickedHotelRooms(pickedHotelRooms.filter((id) => id !== roomId));
 			// eslint-disable-next-line
@@ -58,7 +57,6 @@ const HotelOverviewReservation = ({
 			setPickedRoomPricing(
 				pickedRoomPricing.filter((room) => room.roomId !== roomId)
 			);
-			updatePickedRoomsType(room, false);
 		} else {
 			setPickedHotelRooms([...pickedHotelRooms, roomId]);
 			setCurrentRoom(room);
@@ -74,6 +72,8 @@ const HotelOverviewReservation = ({
 		setSelectedRoomType(null); // Reset room type filter
 	};
 
+	console.log(pickedRoomPricing, "pickedRoomPricing");
+
 	const filteredRooms = selectedRoomType
 		? hotelRooms.filter((room) => room.room_type === selectedRoomType)
 		: hotelRooms;
@@ -87,19 +87,26 @@ const HotelOverviewReservation = ({
 		let priceToAdd = null;
 		if (selectedPrice === "custom" && customPrice) {
 			priceToAdd = customPrice;
+			// Add room pricing information
+			setPickedRoomPricing([
+				...pickedRoomPricing,
+				{ roomId: currentRoom._id, chosenPrice: customPrice },
+			]);
 		} else if (selectedPrice) {
 			priceToAdd = currentRoom?.room_pricing[selectedPrice];
-		}
-
-		if (priceToAdd !== null) {
+			// Add room pricing information
 			setPickedRoomPricing([
 				...pickedRoomPricing,
 				{ roomId: currentRoom._id, chosenPrice: priceToAdd },
 			]);
-			setTotal_Amount((prevTotal) => prevTotal + Number(priceToAdd));
-			updatePickedRoomsType(currentRoom, priceToAdd, true); // Pass the correct price
 		} else {
+			// Deselect the room if no price is selected
 			handleRoomDeselection();
+		}
+
+		// Update total amount if a valid price is added
+		if (priceToAdd !== null) {
+			setTotal_Amount((prevTotal) => prevTotal + Number(priceToAdd));
 		}
 
 		setIsModalVisible(false);
@@ -139,8 +146,6 @@ const HotelOverviewReservation = ({
 					(pricing) => pricing.roomId !== currentRoom._id
 				)
 			);
-
-			updatePickedRoomsType(currentRoom, false);
 		}
 	};
 
@@ -151,8 +156,8 @@ const HotelOverviewReservation = ({
 		const endDate = moment(end_date);
 
 		return allReservations.some((reservation) => {
-			const reservationStart = moment(reservation.checkin_date);
-			const reservationEnd = moment(reservation.checkout_date);
+			const reservationStart = moment(reservation.start_date);
+			const reservationEnd = moment(reservation.end_date);
 
 			return (
 				reservation.roomId.includes(roomId) &&
@@ -175,39 +180,6 @@ const HotelOverviewReservation = ({
 			return accumulator;
 		}, []);
 
-	const updatePickedRoomsType = (room, chosenPrice, isAdding) => {
-		setPickedRoomsType((prev) => {
-			const existingTypeIndex = prev.findIndex(
-				(type) => type.room_type === room.room_type
-			);
-
-			if (existingTypeIndex >= 0) {
-				const updatedTypes = [...prev];
-				if (isAdding) {
-					updatedTypes[existingTypeIndex].count += 1;
-				} else {
-					updatedTypes[existingTypeIndex].count -= 1;
-					if (updatedTypes[existingTypeIndex].count === 0) {
-						updatedTypes.splice(existingTypeIndex, 1);
-					}
-				}
-				return updatedTypes;
-			} else if (isAdding) {
-				return [
-					...prev,
-					{
-						room_type: room.room_type,
-						chosenPrice: chosenPrice,
-						count: 1,
-					},
-				];
-			} else {
-				return prev;
-			}
-		});
-	};
-
-	// console.log(pickedRoomsType, "pickedRoomsTypepickedRoomsTypepickedRoomsType");
 	return (
 		<HotelOverviewWrapper>
 			<div className='colors-grid mt-3'>

@@ -245,6 +245,31 @@ const NewReservationMain = () => {
 		}
 	};
 
+	const calculatePickedRoomsType = () => {
+		const roomTypeCounts = new Map();
+
+		pickedHotelRooms.forEach((roomId) => {
+			const room = hotelRooms.find((room) => room._id === roomId);
+			const pricing = pickedRoomPricing.find(
+				(pricing) => pricing.roomId === roomId
+			);
+
+			if (room && pricing) {
+				const existing = roomTypeCounts.get(room.room_type) || {
+					count: 0,
+					chosenPrice: 0,
+				};
+				roomTypeCounts.set(room.room_type, {
+					room_type: room.room_type,
+					chosenPrice: pricing.chosenPrice,
+					count: existing.count + 1,
+				});
+			}
+		});
+
+		return Array.from(roomTypeCounts.values());
+	};
+
 	const clickSubmit = () => {
 		if (!customer_details.name) {
 			return toast.error("Name is required");
@@ -273,6 +298,8 @@ const NewReservationMain = () => {
 			return toast.error("Booking Source is required");
 		}
 
+		const calculatedPickedRoomsType = calculatePickedRoomsType();
+
 		const new_reservation = {
 			customer_details: customer_details,
 			checkin_date: start_date,
@@ -287,7 +314,7 @@ const NewReservationMain = () => {
 			booked_at: new Date(),
 			sub_total: total_amount,
 			pickedRoomsPricing: pickedRoomPricing,
-			pickedRoomsType: pickedRoomsType,
+			pickedRoomsType: calculatedPickedRoomsType,
 			payment: payment_status,
 			reservation_status: pickedHotelRooms.length > 0 ? "InHouse" : "Confirmed",
 			total_rooms: pickedHotelRooms.length,
