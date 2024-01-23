@@ -91,15 +91,15 @@ const PreReservationTable = ({
 		},
 		{
 			title: chosenLanguage === "Arabic" ? "تاريخ الوصول" : "Check In",
-			dataIndex: "start_date",
-			key: "start_date",
-			render: (start_date) => moment(start_date).format("YYYY-MM-DD"),
+			dataIndex: "checkin_date",
+			key: "checkin_date",
+			render: (checkin_date) => moment(checkin_date).format("YYYY-MM-DD"),
 		},
 		{
 			title: chosenLanguage === "Arabic" ? "تاريخ المغادرة" : "Check Out",
-			dataIndex: "end_date",
-			key: "end_date",
-			render: (end_date) => moment(end_date).format("YYYY-MM-DD"),
+			dataIndex: "checkout_date",
+			key: "checkout_date",
+			render: (checkout_date) => moment(checkout_date).format("YYYY-MM-DD"),
 		},
 		{
 			title: chosenLanguage === "Arabic" ? "حالة السداد" : "Payment Status",

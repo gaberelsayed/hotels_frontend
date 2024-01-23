@@ -263,3 +263,20 @@ export const updateSingleReservation = (reservationId, reservation) => {
 		})
 		.catch((err) => console.log(err));
 };
+
+export const updateRoomInventoryInHotelRunner = (room) => {
+	return fetch(`${process.env.REACT_APP_API_URL}/room-inventory-update`, {
+		method: "PUT",
+		headers: {
+			// content type?
+			"Content-Type": "application/json",
+			Accept: "application/json",
+			// Authorization: `Bearer ${token}`,
+		},
+		body: JSON.stringify(room),
+	})
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};

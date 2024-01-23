@@ -17,6 +17,7 @@ import {
 	getReservationSearch,
 	singlePreReservation,
 	updateSingleReservation,
+	updateRoomInventoryInHotelRunner,
 } from "../apiAdmin";
 import { isAuthenticated } from "../../auth";
 import { toast } from "react-toastify";
@@ -322,6 +323,16 @@ const NewReservationMain = () => {
 			booking_comment: booking_comment,
 		};
 
+		const room_adjustment = {
+			roomType: "",
+			startDate: "",
+			endDate: "",
+			availability: "",
+			price: "",
+			minStay: "",
+			stopSale: 0,
+		};
+
 		if (
 			searchQuery &&
 			searchedReservation &&
@@ -334,6 +345,9 @@ const NewReservationMain = () => {
 				if (data && data.error) {
 					console.log(data.error);
 				} else {
+					updateRoomInventoryInHotelRunner(room_adjustment).then((data) => {
+						console.log("Room Successfully adjusted");
+					});
 					console.log("successful check in");
 					toast.success("Checkin Was Successfully Processed!");
 					setTimeout(() => {
@@ -348,19 +362,6 @@ const NewReservationMain = () => {
 				} else {
 					console.log("successful reservation");
 					toast.success("Reservation Was Successfully Booked!");
-
-					// if (searchedReservation && searchedReservation._id) {
-					// 	console.log(searchedReservation._id, "searchedReservation");
-					// 	updatingPreReservation(token, searchedReservation._id).then(
-					// 		(data2) => {
-					// 			if (data2 && data2.error) {
-					// 				console.log(data2.error, "Updating Reservation");
-					// 			} else {
-					// 				console.log("Done");
-					// 			}
-					// 		}
-					// 	);
-					// }
 
 					setTimeout(() => {
 						window.location.reload(false);
