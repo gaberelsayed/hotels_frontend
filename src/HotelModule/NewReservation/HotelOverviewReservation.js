@@ -36,6 +36,12 @@ const HotelOverviewReservation = ({
 		// eslint-disable-next-line
 		let priceToAdd;
 
+		if (isRoomBooked(roomId)) {
+			// If the room is booked, do not proceed further
+			console.log("Room is booked. Cannot select.");
+			return;
+		}
+
 		if (pickedHotelRooms.includes(roomId)) {
 			setPickedHotelRooms(pickedHotelRooms.filter((id) => id !== roomId));
 			// eslint-disable-next-line
@@ -72,7 +78,7 @@ const HotelOverviewReservation = ({
 		setSelectedRoomType(null); // Reset room type filter
 	};
 
-	console.log(pickedRoomPricing, "pickedRoomPricing");
+	// console.log(pickedRoomPricing, "pickedRoomPricing");
 
 	const filteredRooms = selectedRoomType
 		? hotelRooms.filter((room) => room.room_type === selectedRoomType)
@@ -156,13 +162,14 @@ const HotelOverviewReservation = ({
 		const endDate = moment(end_date);
 
 		return allReservations.some((reservation) => {
-			const reservationStart = moment(reservation.start_date);
-			const reservationEnd = moment(reservation.end_date);
+			const reservationStart = moment(reservation.checkin_date);
+			const reservationEnd = moment(reservation.checkout_date);
 
+			// Check if the date range overlaps and the room ID is in the reservation's roomId array
 			return (
-				reservation.roomId.includes(roomId) &&
 				startDate.isBefore(reservationEnd) &&
-				endDate.isAfter(reservationStart)
+				endDate.isAfter(reservationStart) &&
+				reservation.roomId.some((room) => room._id === roomId)
 			);
 		});
 	};
@@ -242,10 +249,10 @@ const HotelOverviewReservation = ({
 												key={idx}
 												color={
 													roomIsBooked
-														? "#e7e7e7"
+														? "#e7e7e7" // Grey color for booked rooms
 														: pickedHotelRooms.includes(room._id)
-														  ? "darkgreen"
-														  : room.roomColorCode
+														  ? "darkgreen" // Dark green for selected rooms
+														  : room.roomColorCode // Default room color
 												}
 												onClick={() => {
 													if (!roomIsBooked) {
@@ -255,7 +262,11 @@ const HotelOverviewReservation = ({
 												picked={pickedHotelRooms.includes(room._id)}
 												reserved={roomIsBooked}
 												style={{
-													pointerEvents: roomIsBooked ? "none" : "auto",
+													cursor: roomIsBooked ? "not-allowed" : "pointer",
+													opacity: roomIsBooked ? 0.5 : 1, // Reduce opacity for booked rooms
+													textDecoration: roomIsBooked
+														? "line-through"
+														: "none", // Line-through for booked rooms
 												}}
 											>
 												{room.room_number}

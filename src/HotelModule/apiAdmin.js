@@ -107,10 +107,13 @@ export const gettingHotelDetailsForAdmin = (userId, token) => {
 		.catch((err) => console.log(err));
 };
 
-export const getHotelReservations = (hotelId) => {
-	return fetch(`${process.env.REACT_APP_API_URL}/reservations/${hotelId}`, {
-		method: "GET",
-	})
+export const getHotelReservations = (hotelId, startdate, enddate) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/reservations/${startdate}/${enddate}/${hotelId}`,
+		{
+			method: "GET",
+		}
+	)
 		.then((response) => {
 			return response.json();
 		})
@@ -275,6 +278,19 @@ export const updateRoomInventoryInHotelRunner = (room) => {
 		},
 		body: JSON.stringify(room),
 	})
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
+export const gettingRoomInventory = (startdate, enddate) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/room-inventory-reserved/${startdate}/${enddate}`,
+		{
+			method: "GET",
+		}
+	)
 		.then((response) => {
 			return response.json();
 		})

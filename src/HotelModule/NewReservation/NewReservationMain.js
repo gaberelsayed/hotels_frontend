@@ -18,6 +18,7 @@ import {
 	singlePreReservation,
 	updateSingleReservation,
 	updateRoomInventoryInHotelRunner,
+	gettingRoomInventory,
 } from "../apiAdmin";
 import { isAuthenticated } from "../../auth";
 import { toast } from "react-toastify";
@@ -77,6 +78,7 @@ const NewReservationMain = () => {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [searchClicked, setSearchClicked] = useState(false);
 	const [searchedReservation, setSearchedReservation] = useState("");
+	const [roomInventory, setRoomInventory] = useState("");
 	const [activeTab, setActiveTab] = useState("reserveARoom");
 
 	const [customer_details, setCustomer_details] = useState({
@@ -118,43 +120,6 @@ const NewReservationMain = () => {
 		return current < moment();
 	};
 
-	const gettingHotelData = () => {
-		hotelAccount(user._id, token, user._id).then((data) => {
-			if (data && data.error) {
-				console.log(data.error, "Error rendering");
-			} else {
-				setValues(data);
-
-				getHotelDetails(data._id).then((data2) => {
-					if (data2 && data2.error) {
-						console.log(data2.error, "Error rendering");
-					} else {
-						if (data && data.name && data._id && data2 && data2.length > 0) {
-							getHotelReservations(data2[0]._id).then((data3) => {
-								if (data3 && data3.error) {
-									console.log(data3.error);
-								} else {
-									setAllReservations(data3 && data3.length > 0 ? data3 : []);
-									console.log(data3, "data3");
-								}
-							});
-
-							setHotelDetails(data2[0]);
-
-							getHotelRooms(data2[0]._id).then((data3) => {
-								if (data3 && data3.error) {
-									console.log(data3.error);
-								} else {
-									setHotelRooms(data3);
-								}
-							});
-						}
-					}
-				});
-			}
-		});
-	};
-
 	const formatDate = (date) => {
 		if (!date) return "";
 
@@ -167,6 +132,53 @@ const NewReservationMain = () => {
 		if (day.length < 2) day = "0" + day;
 
 		return [year, month, day].join("-");
+	};
+
+	const gettingHotelData = () => {
+		hotelAccount(user._id, token, user._id).then((data) => {
+			if (data && data.error) {
+				console.log(data.error, "Error rendering");
+			} else {
+				setValues(data);
+				const formattedStartDate = formatDate(start_date);
+				const formattedEndDate = formatDate(end_date);
+				getHotelDetails(data._id).then((data2) => {
+					if (data2 && data2.error) {
+						console.log(data2.error, "Error rendering");
+					} else {
+						if (data && data.name && data._id && data2 && data2.length > 0) {
+							if (start_date && end_date) {
+								getHotelReservations(
+									data2[0]._id,
+									formattedStartDate,
+									formattedEndDate
+								).then((data3) => {
+									if (data3 && data3.error) {
+										console.log(data3.error);
+									} else {
+										setAllReservations(data3 && data3.length > 0 ? data3 : []);
+									}
+								});
+							}
+
+							if (!hotelDetails) {
+								setHotelDetails(data2[0]);
+							}
+
+							if (!hotelRooms || hotelRooms.length === 0) {
+								getHotelRooms(data2[0]._id).then((data3) => {
+									if (data3 && data3.error) {
+										console.log(data3.error);
+									} else {
+										setHotelRooms(data3);
+									}
+								});
+							}
+						}
+					}
+				});
+			}
+		});
 	};
 
 	const gettingOverallRoomsSummary = () => {
@@ -271,6 +283,43 @@ const NewReservationMain = () => {
 		return Array.from(roomTypeCounts.values());
 	};
 
+	const calculateMinStay = (startDate, endDate) => {
+		const start = new Date(startDate);
+		const end = new Date(endDate);
+		return (end - start) / (1000 * 60 * 60 * 24); // Convert milliseconds to days
+	};
+
+	const constructReqBodyForHotelRunner = () => {
+		const calculatedPickedRoomsType = calculatePickedRoomsType();
+
+		const roomTypes = calculatedPickedRoomsType.map((item) => item.room_type);
+		const startDate = formatDate(start_date);
+		const endDate = formatDate(end_date);
+
+		// Calculate availability based on the inventory summary
+		const availability = calculatedPickedRoomsType.map((item) => {
+			const inventoryItem = roomInventory.find(
+				(invItem) => invItem.room_type === item.room_type
+			);
+			const availableRooms = inventoryItem
+				? inventoryItem.available - item.count
+				: 0;
+			return availableRooms > 0 ? availableRooms : 0; // Ensure availability is not negative
+		});
+
+		const minStay = calculateMinStay(startDate, endDate);
+
+		const reqBody = {
+			roomTypes,
+			startDate,
+			endDate,
+			availability,
+			minStay,
+		};
+
+		return reqBody;
+	};
+
 	const clickSubmit = () => {
 		if (!customer_details.name) {
 			return toast.error("Name is required");
@@ -323,15 +372,8 @@ const NewReservationMain = () => {
 			booking_comment: booking_comment,
 		};
 
-		const room_adjustment = {
-			roomType: "",
-			startDate: "",
-			endDate: "",
-			availability: "",
-			price: "",
-			minStay: "",
-			stopSale: 0,
-		};
+		//Req.body to update hotel runner
+		const reqBody = constructReqBodyForHotelRunner();
 
 		if (
 			searchQuery &&
@@ -345,9 +387,15 @@ const NewReservationMain = () => {
 				if (data && data.error) {
 					console.log(data.error);
 				} else {
-					updateRoomInventoryInHotelRunner(room_adjustment).then((data) => {
-						console.log("Room Successfully adjusted");
+					updateRoomInventoryInHotelRunner(reqBody).then((data) => {
+						if (data && data.error) {
+							console.log("Error updating hotel runner");
+						} else {
+							toast.success("Inventory Was successfully adjusted");
+							console.log("Room Successfully adjusted");
+						}
 					});
+
 					console.log("successful check in");
 					toast.success("Checkin Was Successfully Processed!");
 					setTimeout(() => {
@@ -360,6 +408,15 @@ const NewReservationMain = () => {
 				if (data && data.error) {
 					console.log(data.error, "error create new reservation");
 				} else {
+					updateRoomInventoryInHotelRunner(reqBody).then((data) => {
+						if (data && data.error) {
+							console.log("Error updating hotel runner");
+						} else {
+							toast.success("Inventory Was successfully adjusted");
+							console.log("Room Successfully adjusted");
+						}
+					});
+
 					console.log("successful reservation");
 					toast.success("Reservation Was Successfully Booked!");
 
@@ -375,10 +432,26 @@ const NewReservationMain = () => {
 		gettingHotelData();
 
 		// eslint-disable-next-line
-	}, []);
+	}, [start_date, end_date]);
+
+	const getRoomInventory = () => {
+		const formattedStartDate = formatDate(start_date);
+		const formattedEndDate = formatDate(end_date);
+		gettingRoomInventory(formattedStartDate, formattedEndDate).then((data) => {
+			if (data && data.error) {
+				console.log(data.error, "Error rendering");
+			} else {
+				setRoomInventory(data);
+			}
+		});
+	};
 
 	useEffect(() => {
 		gettingOverallRoomsSummary();
+
+		if (start_date && end_date) {
+			getRoomInventory();
+		}
 		// eslint-disable-next-line
 	}, [start_date, end_date]);
 
@@ -386,68 +459,6 @@ const NewReservationMain = () => {
 		gettingSearchQuery();
 		// eslint-disable-next-line
 	}, [searchClicked]);
-
-	const clickSubmit2 = () => {
-		if (!customer_details.name) {
-			return toast.error("Name is required");
-		}
-		if (!customer_details.phone) {
-			return toast.error("Phone is required");
-		}
-		if (!customer_details.passport) {
-			return toast.error("passport is required");
-		}
-		if (!customer_details.nationality) {
-			return toast.error("nationality is required");
-		}
-		if (!start_date) {
-			return toast.error("Check in Date is required");
-		}
-
-		if (!end_date) {
-			return toast.error("Check out Date is required");
-		}
-		if (pickedRoomsType && pickedRoomsType.length <= 0) {
-			return toast.error("Please Pick Up Rooms To Reserve");
-		}
-
-		if (!booking_source) {
-			return toast.error("Booking Source is required");
-		}
-
-		const new_reservation = {
-			customer_details: customer_details,
-			checkin_date: start_date,
-			checkout_date: end_date,
-			days_of_residence: days_of_residence,
-			payment_status: payment_status,
-			total_amount: total_amount * days_of_residence,
-			booking_source: booking_source,
-			belongsTo: hotelDetails.belongsTo._id,
-			hotelId: hotelDetails._id,
-			booked_at: new Date(),
-			sub_total: total_amount,
-			pickedRoomsPricing: pickedRoomPricing,
-			pickedRoomsType: pickedRoomsType,
-			payment: payment_status,
-			reservation_status: pickedHotelRooms.length > 0 ? "InHouse" : "Confirmed",
-			total_rooms: pickedHotelRooms.length,
-			total_guests: pickedHotelRooms.length,
-			booking_comment: booking_comment,
-		};
-
-		createNewReservation(user._id, token, new_reservation).then((data) => {
-			if (data && data.error) {
-				console.log(data.error, "error create new reservation");
-			} else {
-				console.log("successful reservation");
-				toast.success("Reservation Was Successfully Booked!");
-				setTimeout(() => {
-					window.location.reload(false);
-				}, 2000);
-			}
-		});
-	};
 
 	return (
 		<NewReservationMainWrapper
@@ -723,7 +734,7 @@ const NewReservationMain = () => {
 									days_of_residence={days_of_residence}
 									setDays_of_residence={setDays_of_residence}
 									chosenLanguage={chosenLanguage}
-									clickSubmit2={clickSubmit2}
+									clickSubmit2={clickSubmit}
 									payment_status={payment_status}
 									setPaymentStatus={setPaymentStatus}
 									total_amount={total_amount}
