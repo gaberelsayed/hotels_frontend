@@ -136,7 +136,7 @@ const ReservationDetail = ({ reservation }) => {
 						const roomTotal = room.daily_prices.reduce((sum, price) => {
 							return sum + (typeof price.price === "number" ? price.price : 0);
 						}, 0);
-						return acc + roomTotal * daysOfResidence;
+						return acc + roomTotal;
 					}, 0)
 					.toFixed(2)
 			: reservation.pickedRoomsType

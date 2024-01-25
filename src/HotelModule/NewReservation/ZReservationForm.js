@@ -627,9 +627,12 @@ const ZReservationForm = ({
 								{chosenLanguage === "Arabic"
 									? "المبلغ الإجمالي"
 									: "Total Amount:"}{" "}
-								{(
-									calculateTotalAmountPerDay() * Number(days_of_residence)
-								).toLocaleString()}{" "}
+								{calculateTotalAmountPerDay() &&
+								searchedReservation &&
+								searchedReservation.reservation_id
+									? calculateTotalAmountPerDay() &&
+									  calculateTotalAmountPerDay().toLocaleString()
+									: searchedReservation.total_amount}{" "}
 								{chosenLanguage === "Arabic" ? "ريال سعودي" : "SAR"}
 							</h4>
 							<div className='text-center mx-auto'>
@@ -672,7 +675,16 @@ const ZReservationForm = ({
 												{chosenLanguage === "Arabic"
 													? "المبلغ الإجمالي ليوم واحد:"
 													: "Total Amount Per Day:"}{" "}
-												{calculateTotalAmountPerDay()}{" "}
+												{calculateTotalAmountPerDay() &&
+												searchedReservation &&
+												searchedReservation.reservation_id
+													? (
+															calculateTotalAmountPerDay() / days_of_residence
+													  ).toLocaleString()
+													: (
+															searchedReservation.total_amount /
+															days_of_residence
+													  ).toLocaleString()}{" "}
 												{chosenLanguage === "Arabic"
 													? "ريال سعودي/ يوم"
 													: "SAR/ Day"}
@@ -821,7 +833,18 @@ const ZReservationForm = ({
 																		padding: "5px",
 																	}}
 																>
-																	{room.chosenPrice}
+																	{calculateTotalAmountPerDay() &&
+																	searchedReservation.reservation_id
+																		? calculateTotalAmountPerDay() /
+																				days_of_residence &&
+																		  (
+																				calculateTotalAmountPerDay() /
+																				days_of_residence
+																		  ).toLocaleString()
+																		: (
+																				searchedReservation.total_amount /
+																				days_of_residence
+																		  ).toLocaleString()}
 																</div>
 															</div>
 														</div>
@@ -960,7 +983,7 @@ const ZReservationForm = ({
 										{chosenLanguage === "Arabic"
 											? "المبلغ الإجمالي"
 											: "Total Amount:"}{" "}
-										{Number(total_amount * days_of_residence).toLocaleString()}{" "}
+										{Number(total_amount * days_of_residence)}{" "}
 										{chosenLanguage === "Arabic" ? "ريال سعودي" : "SAR"}
 									</h4>{" "}
 								</div>
