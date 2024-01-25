@@ -39,13 +39,14 @@ const HotelHeatMap = ({
 		const endDate = moment(end_date);
 
 		return allReservations.some((reservation) => {
-			const reservationStart = moment(reservation.start_date);
-			const reservationEnd = moment(reservation.end_date);
+			const reservationStart = moment(reservation.checkin_date);
+			const reservationEnd = moment(reservation.checkout_date);
 
+			// Check if the date range overlaps and the room ID is in the reservation's roomId array
 			return (
-				reservation.roomId.includes(roomId) &&
 				startDate.isBefore(reservationEnd) &&
-				endDate.isAfter(reservationStart)
+				endDate.isAfter(reservationStart) &&
+				reservation.roomId.some((room) => room._id === roomId)
 			);
 		});
 	};

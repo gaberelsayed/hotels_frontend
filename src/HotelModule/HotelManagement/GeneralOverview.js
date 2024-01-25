@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { getListOfRoomSummary } from "../apiAdmin";
+import { gettingRoomInventory } from "../apiAdmin";
 
-const GeneralOverview = () => {
+const GeneralOverview = ({ chosenLanguage }) => {
 	const [roomsSummary, setRoomsSummary] = useState("");
 
 	const currentDate = new Date();
 	const oneDayMilliseconds = 24 * 60 * 60 * 1000; // Milliseconds in a day
 
 	const start_date = new Date(currentDate.getTime() - oneDayMilliseconds);
-	const end_date = new Date(currentDate.getTime() + 60 * oneDayMilliseconds);
+	const end_date = new Date(currentDate.getTime() + 30 * oneDayMilliseconds);
 
 	const formatDate = (date) => {
 		if (!date) return "";
@@ -25,55 +25,68 @@ const GeneralOverview = () => {
 		return [year, month, day].join("-");
 	};
 
-	const gettingOverallRoomsSummary = () => {
-		if (start_date && end_date) {
-			const formattedStartDate = formatDate(start_date);
-			const formattedEndDate = formatDate(end_date);
-
-			getListOfRoomSummary(formattedStartDate, formattedEndDate).then(
-				(data) => {
-					if (data && data.error) {
-						console.log(data.error, "Error rendering");
-					} else {
-						setRoomsSummary(data);
-					}
-				}
-			);
-		} else {
-			setRoomsSummary("");
-		}
+	const getRoomInventory = () => {
+		const formattedStartDate = formatDate(start_date);
+		const formattedEndDate = formatDate(end_date);
+		gettingRoomInventory(formattedStartDate, formattedEndDate).then((data) => {
+			if (data && data.error) {
+				console.log(data.error, "Error rendering");
+			} else {
+				setRoomsSummary(data);
+			}
+		});
 	};
 
 	useEffect(() => {
-		gettingOverallRoomsSummary();
+		getRoomInventory();
 		// eslint-disable-next-line
 	}, []);
 
-	console.log(roomsSummary, "summary");
-
 	return (
-		<GeneralOverviewWrapper>
-			<h4>Overall Rooms Summary</h4>
-			<StyledTableWrapper className='col-md-10 mx-auto'>
+		<GeneralOverviewWrapper isArabic={chosenLanguage === "Arabic"}>
+			<h4>
+				Overall Rooms Summary (
+				{new Date(start_date).toDateString() +
+					" To " +
+					new Date(end_date).toDateString()}
+				)
+			</h4>
+			<StyledTableWrapper
+				className='col-md-10 mx-auto'
+				isArabic={chosenLanguage === "Arabic"}
+			>
 				<table>
-					<thead>
-						<tr>
-							<th>Room Type</th>
-							<th>Total Rooms</th>
-							<th>Available</th>
-							<th>Occupied</th>
-							<th>Reserved</th>
-						</tr>
-					</thead>
+					{chosenLanguage === "Arabic" ? (
+						<thead>
+							<tr>
+								<th>نوع الغرفة</th>
+								<th>إجمالي الغرف</th>
+								<th>متاح</th>
+								<th>مشغول</th>
+								<th>محجوز</th>
+							</tr>
+						</thead>
+					) : (
+						<thead>
+							<tr>
+								<th>Room Type</th>
+								<th>Total Rooms</th>
+								<th>Reserved</th>
+								<th>Occupied</th>
+								<th>Available</th>
+							</tr>
+						</thead>
+					)}
+
 					<tbody>
 						{roomsSummary &&
 							roomsSummary.map((room, index) => (
 								<tr key={index}>
 									<td>{room.room_type}</td>
-									<td>{room.totalRooms}</td>
 									<td>{room.available}</td>
-									<td>{room.occupiedRooms}</td>
-									<td>{room.reservedRooms}</td>
+									<td>{room.reserved}</td>
+									<td>{room.occupied}</td>
+									<td>{room.total_available}</td>
 								</tr>
 							))}
 					</tbody>
@@ -88,6 +101,8 @@ const GeneralOverview = () => {
 export default GeneralOverview;
 
 const GeneralOverviewWrapper = styled.div`
+	text-align: ${(props) => (props.isArabic ? "right" : "")};
+
 	h4 {
 		font-weight: bolder;
 		font-size: 1.3rem;
@@ -103,6 +118,8 @@ const GeneralOverviewWrapper = styled.div`
 `;
 
 const StyledTableWrapper = styled.div`
+	text-align: ${(props) => (props.isArabic ? "right" : "")};
+
 	table {
 		width: 100%;
 		border-collapse: collapse;

@@ -1,81 +1,54 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import AdminNavbar from "../AdminNavbar/AdminNavbar";
 import AdminNavbarArabic from "../AdminNavbar/AdminNavbarArabic";
-import styled from "styled-components";
-import { useCartContext } from "../../cart_context";
 import {
 	getHotelDetails,
-	getHotelReservations,
-	getHotelReservations2,
+	getPaginatedListHotelRunner,
 	hotelAccount,
 	prereservationList,
 	prereservationTotalRecords,
+	prerservationAuto,
 } from "../apiAdmin";
+import styled from "styled-components";
 import { isAuthenticated } from "../../auth";
-import PreReservationTable from "./PreReservationTable";
-import { Link } from "react-router-dom";
-
-const isActive = (history, path) => {
-	if (history === path) {
-		return {
-			background: "#0f377e",
-			fontWeight: "bold",
-			borderRadius: "5px",
-			fontSize: "1.1rem",
-			textAlign: "center",
-			padding: "10px",
-			color: "white",
-			transition: "var(--mainTransition)",
-
-			// textDecoration: "underline",
-		};
-	} else {
-		return {
-			backgroundColor: "grey",
-			padding: "10px",
-			borderRadius: "5px",
-			fontSize: "1rem",
-			fontWeight: "bold",
-			textAlign: "center",
-			cursor: "pointer",
-			transition: "var(--mainTransition)",
-			color: "white",
-		};
-	}
-};
+import PreReservationTable from "../ReservationsFolder/PreReservationTable";
+import { Spin } from "antd";
+import { useCartContext } from "../../cart_context";
 
 const ReservationsMain = () => {
-	const [websiteMenu, setWebsiteMenu] = useState("Pre-Reservation");
 	const [AdminMenuStatus, setAdminMenuStatus] = useState(false);
 	const [collapsed, setCollapsed] = useState(false);
-	// eslint-disable-next-line
-	const [allReservations, setAllReservations] = useState([]);
 	const [allPreReservations, setAllPreReservations] = useState([]);
-	const [hotelDetails, setHotelDetails] = useState([]);
-	// eslint-disable-next-line
-	const [q, setQ] = useState("");
-	const [q2, setQ2] = useState("");
 	const [loading, setLoading] = useState(false);
 	const [currentPage, setCurrentPage] = useState(1); // New state for current page
 	const [recordsPerPage] = useState(50); // You can adjust this as needed
 	const [selectedFilter, setSelectedFilter] = useState(""); // New state for selected filter
 	const [totalRecords, setTotalRecords] = useState(0);
-	const [searchClicked, setSearchClicked] = useState(false);
+	const [hotelDetails, setHotelDetails] = useState(0);
 
-	const { languageToggle, chosenLanguage } = useCartContext();
+	const [q, setQ] = useState("");
+	const [searchClicked, setSearchClicked] = useState(false);
+	const [decrement, setDecrement] = useState(0);
 
 	// eslint-disable-next-line
 	const { user, token } = isAuthenticated();
+	const { chosenLanguage, languageToggle } = useCartContext();
 
-	useEffect(() => {
-		if (window.innerWidth <= 1000) {
-			setCollapsed(true);
-		}
-		// eslint-disable-next-line
-	}, []);
+	const formatDate = (date) => {
+		const d = new Date(date);
+		let month = "" + (d.getMonth() + 1);
+		let day = "" + d.getDate();
+		const year = d.getFullYear();
 
-	const getAllReservations = () => {
-		setLoading(true);
+		if (month.length < 2) month = "0" + month;
+		if (day.length < 2) day = "0" + day;
+
+		return [year, month, day].join("-");
+	};
+
+	const getAllPreReservation = () => {
+		setLoading(true); // Set loading to true when fetching data
+
 		hotelAccount(user._id, token, user._id).then((data) => {
 			if (data && data.error) {
 				console.log(data.error, "Error rendering");
@@ -84,57 +57,34 @@ const ReservationsMain = () => {
 					if (data2 && data2.error) {
 						console.log(data2.error, "Error rendering");
 					} else {
-						setHotelDetails(data2[0]);
-						if (
-							data &&
-							data.name &&
-							data._id &&
-							data2 &&
-							data2.length > 0 &&
-							data2[0] &&
-							data2[0]._id
-						) {
-							getHotelReservations(data2[0]._id).then((data3) => {
-								if (data3 && data3.error) {
-									console.log(data3.error);
-								} else {
-									getHotelReservations2(data2[0]._id).then((data3) => {
-										if (data3 && data3.error) {
-											console.log(data3.error);
-										} else {
-											setAllReservations(
-												data3 && data3.length > 0 ? data3 : []
-											);
-										}
-									});
+						if (data && data.name && data._id && data2 && data2.length > 0) {
+							setHotelDetails(data2[0]);
+							const today = formatDate(new Date()); // Format today's date
 
-									prereservationTotalRecords(data2[0]._id).then((data3) => {
-										if (data && data.error) {
-											console.log(data.error);
-										} else {
-											setTotalRecords(data3.total); // Set total records
-										}
-									});
-
-									prereservationList(
-										currentPage,
-										recordsPerPage,
-										JSON.stringify({ selectedFilter }),
-										data2[0]._id
-									)
-										.then((data3) => {
-											if (data3 && data3.error) {
-												console.log(data3.error);
+							prereservationList(
+								currentPage,
+								recordsPerPage,
+								JSON.stringify({ selectedFilter }),
+								data2[0]._id,
+								today // Pass the formatted date
+							)
+								.then((data) => {
+									if (data && data.error) {
+										console.log(data.error);
+									} else {
+										setAllPreReservations(data && data.length > 0 ? data : []);
+										prereservationTotalRecords(data2[0]._id).then((data) => {
+											if (data && data.error) {
+												console.log(data.error);
 											} else {
-												setAllPreReservations(
-													data3 && data3.length > 0 ? data3 : []
-												);
+												setTotalRecords(data.total); // Set total records
 											}
-										})
-										.catch((err) => console.log(err))
-										.finally(() => setLoading(false)); // Set loading to false after fetching
-								}
-							});
+										});
+										setLoading(false);
+									}
+								})
+								.catch((err) => console.log(err))
+								.finally(() => setLoading(false)); // Set loading to false after fetching
 						}
 					}
 				});
@@ -143,9 +93,13 @@ const ReservationsMain = () => {
 	};
 
 	useEffect(() => {
-		getAllReservations();
+		// Fetch total records
+
+		if (!searchClicked || !q) {
+			getAllPreReservation();
+		}
 		// eslint-disable-next-line
-	}, [currentPage, recordsPerPage, searchClicked]);
+	}, [currentPage, selectedFilter, searchClicked]);
 
 	const handlePageChange = (newPage) => {
 		setCurrentPage(newPage);
@@ -156,107 +110,134 @@ const ReservationsMain = () => {
 		setCurrentPage(1); // Reset to first page when filter changes
 	};
 
-	// console.log(allPreReservations, "allPre");
+	const addPreReservations = () => {
+		const isConfirmed = window.confirm(
+			chosenLanguage === "Arabic"
+				? "قد تستغرق هذه العملية بضع دقائق، هل تريد المتابعة؟"
+				: "This may take a few minutes, Do you want to proceed?"
+		);
+		if (!isConfirmed) return;
+
+		setLoading(true);
+		getPaginatedListHotelRunner(1, 15).then((data0) => {
+			if (data0 && data0.error) {
+				console.log(data0.error);
+			} else {
+				prerservationAuto(
+					data0.pages - decrement,
+					hotelDetails._id,
+					hotelDetails.belongsTo._id
+				).then((data) => {
+					if (data) {
+						console.log(data, "data from prereservation");
+					}
+					setDecrement(decrement + 3);
+					setLoading(false);
+				});
+			}
+		});
+	};
 
 	return (
 		<ReservationsMainWrapper
 			dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}
 			show={collapsed}
+			isArabic={chosenLanguage === "Arabic"}
 		>
-			<div className='grid-container-main'>
-				<div className='navcontent'>
-					{chosenLanguage === "Arabic" ? (
-						<AdminNavbarArabic
-							fromPage='Reservations'
-							AdminMenuStatus={AdminMenuStatus}
-							setAdminMenuStatus={setAdminMenuStatus}
-							collapsed={collapsed}
-							setCollapsed={setCollapsed}
-							chosenLanguage={chosenLanguage}
-						/>
-					) : (
-						<AdminNavbar
-							fromPage='Reservations'
-							AdminMenuStatus={AdminMenuStatus}
-							setAdminMenuStatus={setAdminMenuStatus}
-							collapsed={collapsed}
-							setCollapsed={setCollapsed}
-							chosenLanguage={chosenLanguage}
-						/>
-					)}
-				</div>
-
-				<div className='otherContentWrapper'>
-					<div
-						style={{
-							textAlign: chosenLanguage === "Arabic" ? "left" : "right",
-							fontWeight: "bold",
-							textDecoration: "underline",
-							cursor: "pointer",
-						}}
-						onClick={() => {
-							if (chosenLanguage === "English") {
-								languageToggle("Arabic");
-							} else {
-								languageToggle("English");
-							}
-						}}
-					>
-						{chosenLanguage === "English" ? "ARABIC" : "English"}
+			{loading ? (
+				<>
+					<div className='text-center my-5'>
+						<Spin size='large' />
+						<p>
+							{" "}
+							{chosenLanguage === "Arabic" ? "" : ""} Loading Reservations...
+						</p>
 					</div>
+				</>
+			) : (
+				<>
+					<div className='grid-container-main'>
+						<div className='navcontent'>
+							{chosenLanguage === "Arabic" ? (
+								<AdminNavbarArabic
+									fromPage='Reservations'
+									AdminMenuStatus={AdminMenuStatus}
+									setAdminMenuStatus={setAdminMenuStatus}
+									collapsed={collapsed}
+									setCollapsed={setCollapsed}
+									chosenLanguage={chosenLanguage}
+								/>
+							) : (
+								<AdminNavbar
+									fromPage='Reservations'
+									AdminMenuStatus={AdminMenuStatus}
+									setAdminMenuStatus={setAdminMenuStatus}
+									collapsed={collapsed}
+									setCollapsed={setCollapsed}
+									chosenLanguage={chosenLanguage}
+								/>
+							)}
+						</div>
 
-					<div className='container-wrapper'>
-						<div
-							className='row text-center'
-							style={{
-								justifyContent: "center",
-							}}
-						>
+						<div className='otherContentWrapper'>
 							<div
-								style={isActive(websiteMenu, "Pre-Reservation")}
-								className='menuItems col-md-4 col-5 my-3'
-								onClick={() => setWebsiteMenu("Pre-Reservation")}
+								style={{
+									textAlign: chosenLanguage === "Arabic" ? "left" : "right",
+									fontWeight: "bold",
+									textDecoration: "underline",
+									cursor: "pointer",
+								}}
+								onClick={() => {
+									if (chosenLanguage === "English") {
+										languageToggle("Arabic");
+									} else {
+										languageToggle("English");
+									}
+								}}
 							>
-								<Link
-									style={{
-										color:
-											websiteMenu === "Pre-Reservation" ? "white" : "white",
+								{chosenLanguage === "English" ? "ARABIC" : "English"}
+							</div>
+
+							<div className='container-wrapper'>
+								<div
+									className='mx-auto mb-5 mt-4 text-center'
+									onClick={() => {
+										addPreReservations();
 									}}
-									onClick={() => setWebsiteMenu("Pre-Reservation")}
-									to='#'
 								>
-									<i className='fa fa-edit mx-1'></i>
-									{chosenLanguage === "Arabic"
-										? "Pre-Reservation"
-										: "Pre-Reservation"}
-								</Link>
+									<button
+										className='btn btn-success'
+										style={{ fontWeight: "bold" }}
+									>
+										{chosenLanguage === "Arabic"
+											? "تنزيل جميع الحجوزات من Booking.com وExpedia وTrivago؟"
+											: "Get All Reservations from Booking.com, Expedia & Trivago?"}
+									</button>
+								</div>
+								<div>
+									<PreReservationTable
+										allPreReservations={allPreReservations}
+										setQ={setQ}
+										q={q}
+										chosenLanguage={chosenLanguage}
+										handlePageChange={handlePageChange}
+										handleFilterChange={handleFilterChange}
+										currentPage={currentPage}
+										recordsPerPage={recordsPerPage}
+										selectedFilter={selectedFilter}
+										setSelectedFilter={setSelectedFilter}
+										totalRecords={totalRecords}
+										setAllPreReservations={setAllPreReservations}
+										setSearchClicked={setSearchClicked}
+										searchClicked={searchClicked}
+										getAllPreReservation={getAllPreReservation}
+									/>
+								</div>
 							</div>
 						</div>
-
-						<div>
-							<PreReservationTable
-								allPreReservations={allPreReservations}
-								setQ={setQ2}
-								q={q2}
-								chosenLanguage={chosenLanguage}
-								handlePageChange={handlePageChange}
-								handleFilterChange={handleFilterChange}
-								currentPage={currentPage}
-								recordsPerPage={recordsPerPage}
-								selectedFilter={selectedFilter}
-								setSelectedFilter={setSelectedFilter}
-								totalRecords={totalRecords}
-								loading={loading}
-								setLoading={setLoading}
-								hotelDetails={hotelDetails}
-								setAllPreReservations={setAllPreReservations}
-								searchClicked={searchClicked}
-								setSearchClicked={setSearchClicked}
-							/>
-						</div>
 					</div>
-				</div>
-			</div>
+				</>
+			)}
 		</ReservationsMainWrapper>
 	);
 };
@@ -267,30 +248,34 @@ const ReservationsMainWrapper = styled.div`
 	overflow-x: hidden;
 	/* background: #ededed; */
 	margin-top: 20px;
-	min-height: 715px;
+	min-height: 750px;
+	/* background-color: #f0f0f0; */
 
 	.grid-container-main {
 		display: grid;
-		grid-template-columns: ${(props) => (props.show ? "5% 90%" : "15% 84%")};
+		grid-template-columns: ${(props) => (props.show ? "5% 90%" : "15% 85%")};
 	}
 
+	text-align: ${(props) => (props.isArabic ? "right" : "")};
+
 	.container-wrapper {
-		border: 2px solid lightgrey;
+		/* border: 2px solid lightgrey; */
 		padding: 20px;
 		border-radius: 20px;
-		background: white;
+		/* background: white; */
 		margin: 0px 10px;
+	}
 
-		table {
-			width: 100%; // Ensures the table uses the full width
+	.tab-grid {
+		display: flex;
+		/* Additional styling for grid layout */
+	}
 
-			th,
-			td {
-				vertical-align: middle; // Centers content vertically in each cell
-				text-align: center; // Centers content horizontally
-				padding: 8px; // Adds some padding for better readability
-			}
-		}
+	h3 {
+		font-weight: bold;
+		font-size: 2rem;
+		text-align: center;
+		color: #006ad1;
 	}
 
 	@media (max-width: 1400px) {

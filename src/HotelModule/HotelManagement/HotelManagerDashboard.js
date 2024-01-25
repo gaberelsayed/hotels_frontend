@@ -49,6 +49,7 @@ const HotelManagerDashboard = () => {
 	const [collapsed, setCollapsed] = useState(false);
 	const [websiteMenu, setWebsiteMenu] = useState("Operations");
 	const [hotelRooms, setHotelRooms] = useState("");
+	// eslint-disable-next-line
 	const [alreadyAddedRooms, setAlreadyAddedRooms] = useState("");
 	const [hotelDetails, setHotelDetails] = useState("");
 	const [currentAddingRoom, setCurrentAddingRoom] = useState("");
@@ -105,15 +106,20 @@ const HotelManagerDashboard = () => {
 				console.log(data.error, "Error rendering");
 			} else {
 				setValues(data);
-
+				const formattedStartDate = moment()
+					.subtract(1, "days")
+					.format("YYYY-MM-DD");
+				const formattedEndDate = moment().add(20, "days").format("YYYY-MM-DD");
 				getHotelDetails(data._id).then((data2) => {
 					if (data2 && data2.error) {
 						console.log(data2.error, "Error rendering");
 					} else {
 						if (data && data.name && data._id && data2 && data2.length > 0) {
-							setHotelDetails(data2[0]);
-
-							getHotelReservations(data2[0]._id).then((data3) => {
+							getHotelReservations(
+								data2[0]._id,
+								formattedStartDate,
+								formattedEndDate
+							).then((data3) => {
 								if (data3 && data3.error) {
 									console.log(data3.error);
 								} else {
@@ -121,12 +127,13 @@ const HotelManagerDashboard = () => {
 								}
 							});
 
-							getHotelRooms(user._id).then((data3) => {
+							setHotelDetails(data2[0]);
+
+							getHotelRooms(data2[0]._id).then((data3) => {
 								if (data3 && data3.error) {
 									console.log(data3.error);
 								} else {
 									setHotelRooms(data3);
-									setAlreadyAddedRooms(data3);
 								}
 							});
 						}
@@ -204,6 +211,7 @@ const HotelManagerDashboard = () => {
 		<HotelManagerDashboardWrapper
 			dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}
 			show={collapsed}
+			isArabic={chosenLanguage === "Arabic"}
 		>
 			<div className='grid-container-main'>
 				<div className='navcontent'>
@@ -339,7 +347,7 @@ const HotelManagerDashboard = () => {
 								allReservations={allReservations}
 							/>
 						) : websiteMenu === "general" ? (
-							<GeneralOverview />
+							<GeneralOverview chosenLanguage={chosenLanguage} />
 						) : null}
 					</div>
 				</div>
@@ -367,6 +375,10 @@ const HotelManagerDashboardWrapper = styled.div`
 		border-radius: 20px;
 		background: white;
 		margin: 0px 10px;
+	}
+
+	tr {
+		text-align: ${(props) => (props.isArabic ? "right" : "")};
 	}
 
 	@media (max-width: 1400px) {
