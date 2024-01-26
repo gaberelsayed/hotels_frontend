@@ -94,14 +94,6 @@ const ZReservationForm = ({
 		return current && current < moment(start_date).startOf("day");
 	};
 
-	const calculateTotalAmountPerDay = () => {
-		if (searchedReservation && searchedReservation.pickedRoomsType) {
-			return searchedReservation.pickedRoomsType.reduce((total, room) => {
-				return total + room.count * room.chosenPrice;
-			}, 0);
-		}
-	};
-
 	const handleTaskeenClicked = () => {
 		if (!customer_details.name) {
 			return toast.error(
@@ -641,12 +633,9 @@ const ZReservationForm = ({
 								{chosenLanguage === "Arabic"
 									? "المبلغ الإجمالي"
 									: "Total Amount:"}{" "}
-								{calculateTotalAmountPerDay() &&
-								searchedReservation &&
-								searchedReservation.reservation_id
-									? calculateTotalAmountPerDay() &&
-									  calculateTotalAmountPerDay().toLocaleString()
-									: searchedReservation.total_amount}{" "}
+								{searchedReservation &&
+									searchedReservation.confirmation_number &&
+									searchedReservation.total_amount.toLocaleString()}{" "}
 								{chosenLanguage === "Arabic" ? "ريال سعودي" : "SAR"}
 							</h4>
 							<div className='text-center mx-auto'>
@@ -689,16 +678,12 @@ const ZReservationForm = ({
 												{chosenLanguage === "Arabic"
 													? "المبلغ الإجمالي ليوم واحد:"
 													: "Total Amount Per Day:"}{" "}
-												{calculateTotalAmountPerDay() &&
-												searchedReservation &&
-												searchedReservation.reservation_id
-													? (
-															calculateTotalAmountPerDay() / days_of_residence
-													  ).toLocaleString()
-													: (
-															searchedReservation.total_amount /
-															days_of_residence
-													  ).toLocaleString()}{" "}
+												{searchedReservation &&
+													searchedReservation.confirmation_number &&
+													days_of_residence &&
+													(
+														searchedReservation.total_amount / days_of_residence
+													).toLocaleString()}{" "}
 												{chosenLanguage === "Arabic"
 													? "ريال سعودي/ يوم"
 													: "SAR/ Day"}
@@ -707,6 +692,7 @@ const ZReservationForm = ({
 											{chosenLanguage === "Arabic" ? (
 												<div className='room-list my-3'>
 													{searchedReservation &&
+														searchedReservation.pickedRoomsType &&
 														searchedReservation.pickedRoomsType.map(
 															(room, index) => (
 																<div
@@ -717,7 +703,11 @@ const ZReservationForm = ({
 																		textTransform: "capitalize",
 																	}}
 																>
-																	{`نوع الغرفة: ${room.room_type}، السعر: ${room.chosenPrice} ريال سعودي، العدد: ${room.count} غرف`}
+																	{`نوع الغرفة: ${
+																		room.room_type
+																	}، السعر: ${room.chosenPrice.toLocaleString()} ريال سعودي، العدد: ${
+																		room.count
+																	} غرف`}
 																</div>
 															)
 														)}
@@ -769,6 +759,7 @@ const ZReservationForm = ({
 											}}
 										>
 											{searchedReservation &&
+												searchedReservation.pickedRoomsType &&
 												searchedReservation.pickedRoomsType.map(
 													(room, index) => (
 														<div key={index} className='inner-grid'>
@@ -847,18 +838,7 @@ const ZReservationForm = ({
 																		padding: "5px",
 																	}}
 																>
-																	{calculateTotalAmountPerDay() &&
-																	searchedReservation.reservation_id
-																		? calculateTotalAmountPerDay() /
-																				days_of_residence &&
-																		  (
-																				calculateTotalAmountPerDay() /
-																				days_of_residence
-																		  ).toLocaleString()
-																		: (
-																				searchedReservation.total_amount /
-																				days_of_residence
-																		  ).toLocaleString()}
+																	{room.chosenPrice.toLocaleString()}
 																</div>
 															</div>
 														</div>
@@ -987,9 +967,11 @@ const ZReservationForm = ({
 										style={{
 											fontWeight: "bold",
 											color:
-												calculateTotalAmountPerDay() *
-													Number(days_of_residence) !==
-												Number(total_amount * days_of_residence)
+												(
+													searchedReservation &&
+													total_amount * days_of_residence
+												).toFixed(2) !==
+												searchedReservation.total_amount.toFixed(2)
 													? "red"
 													: "#3d7bb8",
 										}}

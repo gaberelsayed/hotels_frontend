@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useCartContext } from "../../cart_context";
 import { isAuthenticated } from "../../auth";
-import { singlePreReservationHotelRunner } from "../apiAdmin";
 import { Spin } from "antd";
 import moment from "moment";
 
@@ -70,35 +69,13 @@ const ContentSection = styled.div`
 // ... other styled components
 
 const ReservationDetail = ({ reservation }) => {
-	const [loading, setLoading] = useState(true);
-	const [singleReservationHotelRunner, setSingleReservationHotelRunner] =
-		useState("");
+	// eslint-disable-next-line
+	const [loading, setLoading] = useState(false);
+
 	const { languageToggle, chosenLanguage } = useCartContext();
 
 	// eslint-disable-next-line
 	const { user, token } = isAuthenticated();
-
-	const renderingBookingData = () => {
-		setLoading(true);
-
-		singlePreReservationHotelRunner(reservation.confirmation_number).then(
-			(data4) => {
-				if (data4 && data4.error) {
-					console.log(data4.error);
-				} else {
-					setSingleReservationHotelRunner(
-						data4.reservations && data4.reservations[0]
-					);
-					setLoading(false);
-				}
-			}
-		);
-	};
-
-	useEffect(() => {
-		renderingBookingData();
-		// eslint-disable-next-line
-	}, [reservation]);
 
 	const getTotalAmountPerDay = (pickedRoomsType) => {
 		return pickedRoomsType.reduce((total, room) => {
@@ -122,31 +99,6 @@ const ReservationDetail = ({ reservation }) => {
 		reservation.checkin_date,
 		reservation.checkout_date
 	);
-
-	// Calculate the total amount
-	const total_amount_hotel_runner =
-		singleReservationHotelRunner &&
-		singleReservationHotelRunner.rooms &&
-		singleReservationHotelRunner.rooms.length > 0
-			? singleReservationHotelRunner.rooms
-					.reduce((acc, room) => {
-						const roomTotal = room.daily_prices.reduce((sum, price) => {
-							return sum + (typeof price.price === "number" ? price.price : 0);
-						}, 0);
-						return acc + roomTotal;
-					}, 0)
-					.toFixed(2)
-			: reservation.pickedRoomsType
-					.reduce((acc, room) => {
-						const chosenPrice = parseFloat(room.chosenPrice);
-						if (!isNaN(chosenPrice) && typeof room.count === "number") {
-							return acc + chosenPrice * room.count * daysOfResidence;
-						} else {
-							console.error("Invalid chosenPrice or count:", room);
-							return acc;
-						}
-					}, 0)
-					.toFixed(2);
 
 	// Revised calculateReservationPeriod function
 	function calculateReservationPeriod(checkin, checkout, language) {
@@ -209,7 +161,9 @@ const ReservationDetail = ({ reservation }) => {
 												: "Total Amount"}
 										</div>
 										<h4 className='mx-2'>
-											{reservation ? total_amount_hotel_runner : 0}{" "}
+											{reservation
+												? reservation.total_amount.toLocaleString()
+												: 0}{" "}
 											{chosenLanguage === "Arabic" ? "ريال" : "SAR"}
 										</h4>
 									</div>
@@ -267,40 +221,18 @@ const ReservationDetail = ({ reservation }) => {
 									className='row'
 									style={{ maxHeight: "350px", overflow: "auto" }}
 								>
-									{singleReservationHotelRunner &&
-									singleReservationHotelRunner.rooms &&
-									singleReservationHotelRunner.rooms.length > 0
-										? singleReservationHotelRunner.rooms.map(
-												(room, roomIndex) =>
-													room.daily_prices.map((dayPrice, priceIndex) => (
-														<React.Fragment key={`${roomIndex}-${priceIndex}`}>
-															<div className='col-md-4 mt-2'>
-																{dayPrice.date}
-															</div>
-															<div
-																className='col-md-4 mt-2'
-																style={{ textTransform: "uppercase" }}
-															>
-																{room.name || "Room Type"}
-															</div>
-															<div className='col-md-4 mt-2'>
-																{dayPrice.price}{" "}
-																{chosenLanguage === "Arabic" ? "ريال" : "SAR"}
-															</div>
-														</React.Fragment>
-													))
-										  )
-										: reservation.pickedRoomsType.map((room, index) => (
-												<React.Fragment key={index}>
-													{/* You can add a date here if available */}
-													<div className='col-md-4 mt-2'>{/* Date */}</div>
-													<div className='col-md-4 mt-2'>{room.room_type}</div>
-													<div className='col-md-4 mt-2'>
-														{room.chosenPrice * room.count}{" "}
-														{chosenLanguage === "Arabic" ? "ريال" : "SAR"}
-													</div>
-												</React.Fragment>
-										  ))}
+									{reservation &&
+										reservation.pickedRoomsType.map((room, index) => (
+											<React.Fragment key={index}>
+												{/* You can add a date here if available */}
+												<div className='col-md-4 mt-2'>{/* Date */}</div>
+												<div className='col-md-4 mt-2'>{room.room_type}</div>
+												<div className='col-md-4 mt-2'>
+													{room.chosenPrice * room.count}{" "}
+													{chosenLanguage === "Arabic" ? "ريال" : "SAR"}
+												</div>
+											</React.Fragment>
+										))}
 									<div className='col-md-4 mt-2'></div>
 									<div className='col-md-4 mt-2'></div>
 									<div className='col-md-4 mt-2 text-center pb-3'>
@@ -311,7 +243,8 @@ const ReservationDetail = ({ reservation }) => {
 										</div>
 										<div style={{ fontWeight: "bold" }}>
 											{/* Calculation of total amount */}
-											{total_amount_hotel_runner}{" "}
+											{reservation &&
+												reservation.total_amount.toLocaleString()}{" "}
 											{chosenLanguage === "Arabic" ? "ريال" : "SAR"}
 										</div>
 									</div>
@@ -324,22 +257,14 @@ const ReservationDetail = ({ reservation }) => {
 												: "Taxes & Extra Fees"}
 										</div>
 										<div className='col-md-5 mx-auto text-center my-2'>
-											{singleReservationHotelRunner &&
-											singleReservationHotelRunner.tax_total
-												? singleReservationHotelRunner.tax_total
-												: 0}{" "}
-											{chosenLanguage === "Arabic" ? "ريال" : "SAR"}
+											{0} {chosenLanguage === "Arabic" ? "ريال" : "SAR"}
 										</div>
 
 										<div className='col-md-5 mx-auto text-center my-2'>
 											{chosenLanguage === "Arabic" ? "عمولة" : "Commision"}
 										</div>
 										<div className='col-md-5 mx-auto text-center my-2'>
-											{singleReservationHotelRunner &&
-											singleReservationHotelRunner.total
-												? singleReservationHotelRunner.total -
-												  singleReservationHotelRunner.sub_total
-												: reservation.total_amount}{" "}
+											{reservation && reservation.total_amount.toLocaleString()}{" "}
 											{chosenLanguage === "Arabic" ? "ريال" : "SAR"}
 										</div>
 									</div>
@@ -356,10 +281,8 @@ const ReservationDetail = ({ reservation }) => {
 										</div>
 										<div className='col-md-5 mx-auto'>
 											<h2>
-												{singleReservationHotelRunner &&
-												singleReservationHotelRunner.total
-													? singleReservationHotelRunner.total
-													: total_amount_hotel_runner}{" "}
+												{reservation &&
+													reservation.total_amount.toLocaleString()}{" "}
 												{chosenLanguage === "Arabic" ? "ريال" : "SAR"}
 											</h2>
 										</div>
@@ -376,7 +299,10 @@ const ReservationDetail = ({ reservation }) => {
 
 											<div className='col-md-5 mx-auto'>
 												<h5>
-													{getTotalAmountPerDay(reservation.pickedRoomsType)}{" "}
+													{getTotalAmountPerDay(reservation.pickedRoomsType) &&
+														getTotalAmountPerDay(
+															reservation.pickedRoomsType
+														).toLocaleString()}{" "}
 													{chosenLanguage === "Arabic" ? "ريال" : "SAR"}
 												</h5>
 											</div>
@@ -394,10 +320,7 @@ const ReservationDetail = ({ reservation }) => {
 											className='mx-1'
 											style={{ textTransform: "capitalize" }}
 										>
-											{singleReservationHotelRunner &&
-											singleReservationHotelRunner.channel_display
-												? singleReservationHotelRunner.channel_display
-												: reservation.booking_source}
+											{reservation && reservation.booking_source}
 										</div>
 									</div>
 
@@ -406,32 +329,16 @@ const ReservationDetail = ({ reservation }) => {
 											? "تاريخ الحجز"
 											: "Booking Date"}
 										<div className='mx-1'>
-											{
-												singleReservationHotelRunner &&
-												singleReservationHotelRunner.completed_at
-													? new Intl.DateTimeFormat(
-															chosenLanguage === "Arabic" ? "ar-EG" : "en-GB",
-															{
-																year: "numeric",
-																month: "2-digit",
-																day: "2-digit",
-															}
-													  ).format(
-															new Date(
-																singleReservationHotelRunner.completed_at
-															)
-													  )
-													: reservation && reservation.booked_at
-													  ? new Intl.DateTimeFormat(
-																chosenLanguage === "Arabic" ? "ar-EG" : "en-GB",
-																{
-																	year: "numeric",
-																	month: "2-digit",
-																	day: "2-digit",
-																}
-													    ).format(new Date(reservation.booked_at))
-													  : "N/A" // Fallback text or handling if date is not available
-											}
+											{reservation && reservation.booked_at
+												? new Intl.DateTimeFormat(
+														chosenLanguage === "Arabic" ? "ar-EG" : "en-GB",
+														{
+															year: "numeric",
+															month: "2-digit",
+															day: "2-digit",
+														}
+												  ).format(new Date(reservation.booked_at))
+												: "N/A"}
 										</div>
 									</div>
 
@@ -465,15 +372,9 @@ const ReservationDetail = ({ reservation }) => {
 											? "نوع الغرفة"
 											: "Reserved Room Types"}
 										<div className='mx-1'>
-											{singleReservationHotelRunner &&
-											singleReservationHotelRunner.rooms &&
-											singleReservationHotelRunner.rooms.length > 0
-												? singleReservationHotelRunner.rooms.map(
-														(room, index) => <div key={index}>{room.name}</div>
-												  )
-												: reservation.pickedRoomsType.map((room, index) => (
-														<div key={index}>{room.room_type}</div>
-												  ))}
+											{reservation.pickedRoomsType.map((room, index) => (
+												<div key={index}>{room.room_type}</div>
+											))}
 										</div>
 									</div>
 
@@ -482,25 +383,13 @@ const ReservationDetail = ({ reservation }) => {
 											? "عدد الزوار"
 											: "Count Of Visitors"}
 										<div className='mx-1'>
-											{singleReservationHotelRunner &&
-											singleReservationHotelRunner.rooms &&
-											singleReservationHotelRunner.rooms.length > 0
-												? singleReservationHotelRunner.rooms.reduce(
-														(total, room) => total + room.total_guest,
-														0
-												  )
-												: reservation.pickedRoomsType.length}
+											{reservation && reservation.pickedRoomsType.length}
 										</div>
 									</div>
 
 									<div className='col-md-8 my-4 mx-auto'>
 										{chosenLanguage === "Arabic" ? "ملحوظة" : "Comment"}
-										<div>
-											{singleReservationHotelRunner &&
-											singleReservationHotelRunner.note
-												? singleReservationHotelRunner.note
-												: reservation.booking_comment}
-										</div>
+										<div>{reservation && reservation.booking_comment}</div>
 									</div>
 								</div>
 							</ContentSection>
@@ -550,9 +439,9 @@ const ReservationDetail = ({ reservation }) => {
 									<div className='col-md-5 mx-auto my-2'>
 										{chosenLanguage === "Arabic" ? "الجنسية" : "Nationality"}
 										<div className='mx-2'>
-											{singleReservationHotelRunner &&
-												singleReservationHotelRunner.address &&
-												singleReservationHotelRunner.address.country}
+											{reservation &&
+												reservation.customer_details &&
+												reservation.customer_details.nationality}
 										</div>
 									</div>
 									<div className='col-md-5 mx-auto my-2'>
@@ -579,14 +468,9 @@ const ReservationDetail = ({ reservation }) => {
 									<div className='col-md-5 mx-auto my-2'>
 										{chosenLanguage === "Arabic" ? "العنوان" : "Address"}
 										<div className='mx-2'>
-											{singleReservationHotelRunner &&
-												singleReservationHotelRunner.address.street}
-											{singleReservationHotelRunner &&
-												singleReservationHotelRunner.address.street_2 &&
-												`, ${
-													singleReservationHotelRunner &&
-													singleReservationHotelRunner.address.street_2
-												}`}
+											{reservation &&
+												reservation.customer_details &&
+												reservation.customer_details.nationality}
 										</div>
 									</div>
 								</div>

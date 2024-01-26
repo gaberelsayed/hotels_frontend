@@ -41,7 +41,6 @@ const PreReservationTable = ({
 					console.log("Search error:", data.error);
 				} else {
 					setAllPreReservations(Array.isArray(data) ? data : [data]);
-					console.log(data, "Hello");
 				}
 			})
 			.catch((error) => {
@@ -84,6 +83,11 @@ const PreReservationTable = ({
 			key: "confirmation_number",
 		},
 		{
+			title: chosenLanguage === "Arabic" ? "مصدر الحجز" : "Source",
+			dataIndex: "booking_source",
+			key: "booking_source",
+		},
+		{
 			title: chosenLanguage === "Arabic" ? "تاريخ الحجز" : "Booked On",
 			dataIndex: "booked_at",
 			key: "booked_at",
@@ -113,7 +117,9 @@ const PreReservationTable = ({
 			render: (reservation_status) => {
 				let style = {};
 				switch (reservation_status.toLowerCase()) {
+					case "cancelled_by_guest":
 					case "canceled":
+					case "cancelled":
 						style = {
 							background: "red",
 							color: "white",
@@ -206,7 +212,6 @@ const PreReservationTable = ({
 		setSelectedReservation(null); // Reset the selected reservation
 	};
 
-	console.log(allPreReservations, "allPreReservations from table");
 	return (
 		<>
 			<PreReservationTableWrapper isArabic={chosenLanguage === "Arabic"}>
