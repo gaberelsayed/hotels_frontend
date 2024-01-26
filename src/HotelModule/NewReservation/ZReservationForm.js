@@ -4,7 +4,7 @@ import { DatePicker, Spin } from "antd";
 import HotelOverviewReservation from "./HotelOverviewReservation";
 import moment from "moment";
 import { toast } from "react-toastify";
-import { getPaginatedListHotelRunner, prerservationAuto } from "../apiAdmin";
+import { agodaData, bookingData, expediaData } from "../apiAdmin";
 
 const ZReservationForm = ({
 	customer_details,
@@ -44,7 +44,7 @@ const ZReservationForm = ({
 	pickedRoomsType,
 	setPickedRoomsType,
 }) => {
-	const [decrement, setDecrement] = useState(0);
+	// eslint-disable-next-line
 	const [loading, setLoading] = useState(false);
 	const [taskeenClicked, setTaskeenClicked] = useState(false);
 
@@ -102,31 +102,6 @@ const ZReservationForm = ({
 		}
 	};
 
-	const addPreReservations = () => {
-		const isConfirmed = window.confirm(
-			chosenLanguage === "Arabic"
-				? "قد تستغرق هذه العملية بضع دقائق، هل تريد المتابعة؟"
-				: "This may take a few minutes, Do you want to proceed?"
-		);
-		if (!isConfirmed) return;
-
-		setLoading(true);
-		getPaginatedListHotelRunner(1, 15).then((data0) => {
-			if (data0 && data0.error) {
-				console.log(data0.error);
-			} else {
-				prerservationAuto(
-					data0.pages - decrement,
-					hotelDetails._id,
-					hotelDetails.belongsTo._id
-				).then((data) => {
-					setDecrement(decrement + 1);
-					setLoading(false);
-				});
-			}
-		});
-	};
-
 	const handleTaskeenClicked = () => {
 		if (!customer_details.name) {
 			return toast.error(
@@ -177,6 +152,28 @@ const ZReservationForm = ({
 		}, 1000);
 	};
 
+	const handleFileUpload = (uploadFunction) => {
+		const accountId = hotelDetails._id; // Get the account ID
+		const fileInput = document.createElement("input");
+		fileInput.type = "file";
+		fileInput.accept =
+			".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"; // Accept Excel and CSV files
+		fileInput.onchange = (e) => {
+			setLoading(true);
+			const file = e.target.files[0];
+			uploadFunction(accountId, file).then((data) => {
+				setLoading(false);
+				if (data.error) {
+					console.log(data.error);
+					toast.error("Error uploading data");
+				} else {
+					toast.success("Data uploaded successfully!");
+				}
+			});
+		};
+		fileInput.click(); // Simulate a click on the file input
+	};
+
 	return (
 		<ZReservationFormWrapper
 			arabic={chosenLanguage === "Arabic"}
@@ -194,16 +191,33 @@ const ZReservationForm = ({
 				</>
 			) : (
 				<>
-					<div
-						className='mx-auto mb-5 mt-4 text-center'
-						onClick={() => {
-							addPreReservations();
-						}}
-					>
-						<button className='btn btn-success' style={{ fontWeight: "bold" }}>
+					<div className='mx-auto mb-5 mt-4 text-center'>
+						<button
+							className='btn btn-primary mx-2'
+							style={{ fontWeight: "bold" }}
+							onClick={() => handleFileUpload(agodaData)}
+						>
 							{chosenLanguage === "Arabic"
-								? "تنزيل جميع الحجوزات من Booking.com وExpedia وTrivago؟"
-								: "Get All Reservations from Booking.com, Expedia & Trivago?"}
+								? "رفع بيانات أجودا"
+								: "Agoda Upload"}
+						</button>
+						<button
+							className='btn btn-primary mx-2'
+							style={{ fontWeight: "bold" }}
+							onClick={() => handleFileUpload(expediaData)}
+						>
+							{chosenLanguage === "Arabic"
+								? "رفع بيانات إكسبيديا"
+								: "Expedia Upload"}
+						</button>
+						<button
+							className='btn btn-primary mx-2'
+							style={{ fontWeight: "bold" }}
+							onClick={() => handleFileUpload(bookingData)}
+						>
+							{chosenLanguage === "Arabic"
+								? "رفع بيانات بوكينج"
+								: "Booking Upload"}
 						</button>
 					</div>
 

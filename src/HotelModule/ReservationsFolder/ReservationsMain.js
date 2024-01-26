@@ -5,9 +5,9 @@ import {
 	getHotelDetails,
 	getPaginatedListHotelRunner,
 	hotelAccount,
-	prereservationList,
-	prereservationTotalRecords,
 	prerservationAuto,
+	reservationsList,
+	reservationsTotalRecords,
 } from "../apiAdmin";
 import styled from "styled-components";
 import { isAuthenticated } from "../../auth";
@@ -61,7 +61,7 @@ const ReservationsMain = () => {
 							setHotelDetails(data2[0]);
 							const today = formatDate(new Date()); // Format today's date
 
-							prereservationList(
+							reservationsList(
 								currentPage,
 								recordsPerPage,
 								JSON.stringify({ selectedFilter }),
@@ -73,7 +73,7 @@ const ReservationsMain = () => {
 										console.log(data.error);
 									} else {
 										setAllPreReservations(data && data.length > 0 ? data : []);
-										prereservationTotalRecords(data2[0]._id).then((data) => {
+										reservationsTotalRecords(data2[0]._id).then((data) => {
 											if (data && data.error) {
 												console.log(data.error);
 											} else {

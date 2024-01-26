@@ -123,9 +123,6 @@ const ReservationDetail = ({ reservation }) => {
 		reservation.checkout_date
 	);
 
-	console.log(reservation.checkin_date, "daysOfResidence");
-	console.log(reservation.checkout_date, "daysOfResidence");
-
 	// Calculate the total amount
 	const total_amount_hotel_runner =
 		singleReservationHotelRunner &&

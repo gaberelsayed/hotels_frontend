@@ -120,16 +120,6 @@ export const getHotelReservations = (hotelId, startdate, enddate) => {
 		.catch((err) => console.log(err));
 };
 
-export const getHotelReservations2 = (hotelId) => {
-	return fetch(`${process.env.REACT_APP_API_URL}/reservations2/${hotelId}`, {
-		method: "GET",
-	})
-		.then((response) => {
-			return response.json();
-		})
-		.catch((err) => console.log(err));
-};
-
 export const getListOfRoomSummary = (checkinDate, checkoutDate) => {
 	return fetch(
 		`${process.env.REACT_APP_API_URL}/room/${checkinDate}/${checkoutDate}`,
@@ -169,7 +159,7 @@ export const getReservationSearchAllMatches = (searchQuery) => {
 		.catch((err) => console.log(err));
 };
 
-export const prereservationList = (page, records, filters, hotelId, date) => {
+export const reservationsList = (page, records, filters, hotelId, date) => {
 	return fetch(
 		`${process.env.REACT_APP_API_URL}/reservations/list/${page}/${records}/${filters}/${hotelId}/${date}`,
 		{
@@ -182,7 +172,7 @@ export const prereservationList = (page, records, filters, hotelId, date) => {
 		.catch((err) => console.log(err));
 };
 
-export const prereservationTotalRecords = (hotelId) => {
+export const reservationsTotalRecords = (hotelId) => {
 	return fetch(
 		`${process.env.REACT_APP_API_URL}/reservations/get-total-records/${hotelId}`,
 		{
@@ -294,5 +284,52 @@ export const gettingRoomInventory = (startdate, enddate) => {
 		.then((response) => {
 			return response.json();
 		})
+		.catch((err) => console.log(err));
+};
+
+export const agodaData = (accountId, file) => {
+	let formData = new FormData();
+	formData.append("file", file);
+
+	console.log(file);
+
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/reservations/agoda-data-dump/${accountId}`,
+		{
+			method: "POST",
+			body: formData, // send the file as FormData
+		}
+	)
+		.then((response) => response.json())
+		.catch((err) => console.log(err));
+};
+
+export const expediaData = (accountId, file) => {
+	let formData = new FormData();
+	formData.append("file", file);
+
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/reservations/expedia-data-dump/${accountId}`,
+		{
+			method: "POST",
+			body: formData, // send the file as FormData
+		}
+	)
+		.then((response) => response.json())
+		.catch((err) => console.log(err));
+};
+
+export const bookingData = (accountId, file) => {
+	let formData = new FormData();
+	formData.append("file", file);
+
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/reservations/booking-data-dump/${accountId}`,
+		{
+			method: "POST",
+			body: formData, // send the file as FormData
+		}
+	)
+		.then((response) => response.json())
 		.catch((err) => console.log(err));
 };

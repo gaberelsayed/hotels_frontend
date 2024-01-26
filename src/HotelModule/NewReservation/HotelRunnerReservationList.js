@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import {
 	getPaginatedListHotelRunner,
-	prereservationList,
-	prereservationTotalRecords,
 	prerservationAuto,
+	reservationsList,
+	reservationsTotalRecords,
 } from "../apiAdmin";
 import styled from "styled-components";
 import { isAuthenticated } from "../../auth";
@@ -41,7 +41,7 @@ const HotelRunnerReservationList = ({ chosenLanguage, hotelDetails }) => {
 		setLoading(true); // Set loading to true when fetching data
 		const today = formatDate(new Date()); // Format today's date
 
-		prereservationList(
+		reservationsList(
 			currentPage,
 			recordsPerPage,
 			JSON.stringify({ selectedFilter }),
@@ -61,7 +61,7 @@ const HotelRunnerReservationList = ({ chosenLanguage, hotelDetails }) => {
 
 	useEffect(() => {
 		// Fetch total records
-		prereservationTotalRecords(hotelDetails._id).then((data) => {
+		reservationsTotalRecords(hotelDetails._id).then((data) => {
 			if (data && data.error) {
 				console.log(data.error);
 			} else {
