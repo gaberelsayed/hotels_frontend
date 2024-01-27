@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { useCartContext } from "../../cart_context";
 import { isAuthenticated } from "../../auth";
@@ -95,6 +95,7 @@ const ReservationDetail = ({ reservation }) => {
 	};
 
 	// Calculate the number of days of residency
+	// eslint-disable-next-line
 	const daysOfResidence = calculateDaysBetweenDates(
 		reservation.checkin_date,
 		reservation.checkout_date

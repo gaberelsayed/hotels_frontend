@@ -166,9 +166,9 @@ const PreReservationTable = ({
 			key: "pickedRoomsType",
 			render: (pickedRoomsType) =>
 				pickedRoomsType.map((room, index) => (
-					<div
-						key={index}
-					>{`${room.room_type}: ${room.chosenPrice} x ${room.count}`}</div>
+					<div key={index}>{`${room.room_type}: ${Number(
+						room.chosenPrice
+					).toFixed(2)} x ${room.count}`}</div>
 				)),
 		},
 		{
