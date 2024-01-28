@@ -66,10 +66,13 @@ export const createRooms = (userId, token, room) => {
 		});
 };
 
-export const getHotelRooms = (userId) => {
-	return fetch(`${process.env.REACT_APP_API_URL}/room/${userId}`, {
-		method: "GET",
-	})
+export const getHotelRooms = (userId, mainUserId) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/room/${userId}/${mainUserId}`,
+		{
+			method: "GET",
+		}
+	)
 		.then((response) => {
 			return response.json();
 		})
@@ -120,9 +123,9 @@ export const getHotelReservations = (hotelId, startdate, enddate) => {
 		.catch((err) => console.log(err));
 };
 
-export const getListOfRoomSummary = (checkinDate, checkoutDate) => {
+export const getListOfRoomSummary = (checkinDate, checkoutDate, hotelId) => {
 	return fetch(
-		`${process.env.REACT_APP_API_URL}/room/${checkinDate}/${checkoutDate}`,
+		`${process.env.REACT_APP_API_URL}/room/${checkinDate}/${checkoutDate}/${hotelId}`,
 		{
 			method: "GET",
 		}
@@ -274,9 +277,9 @@ export const updateRoomInventoryInHotelRunner = (room) => {
 		.catch((err) => console.log(err));
 };
 
-export const gettingRoomInventory = (startdate, enddate) => {
+export const gettingRoomInventory = (startdate, enddate, userId) => {
 	return fetch(
-		`${process.env.REACT_APP_API_URL}/room-inventory-reserved/${startdate}/${enddate}`,
+		`${process.env.REACT_APP_API_URL}/room-inventory-reserved/${startdate}/${enddate}/${userId}`,
 		{
 			method: "GET",
 		}

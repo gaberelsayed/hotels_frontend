@@ -15,7 +15,6 @@ import {
 	getHotelReservations,
 	getListOfRoomSummary,
 	getReservationSearch,
-	singlePreReservation,
 	updateSingleReservation,
 	updateRoomInventoryInHotelRunner,
 	gettingRoomInventory,
@@ -134,12 +133,15 @@ const NewReservationMain = () => {
 		return [year, month, day].join("-");
 	};
 
+	//4264981432
 	const gettingHotelData = () => {
 		hotelAccount(user._id, token, user._id).then((data) => {
 			if (data && data.error) {
+				console.log("This is erroring");
 				console.log(data.error, "Error rendering");
 			} else {
 				setValues(data);
+				console.log(data, "data1");
 				const formattedStartDate = formatDate(start_date);
 				const formattedEndDate = formatDate(end_date);
 				getHotelDetails(data._id).then((data2) => {
@@ -147,6 +149,8 @@ const NewReservationMain = () => {
 						console.log(data2.error, "Error rendering");
 					} else {
 						if (data && data.name && data._id && data2 && data2.length > 0) {
+							console.log(data2, "data2");
+
 							if (start_date && end_date) {
 								getHotelReservations(
 									data2[0]._id,
@@ -156,6 +160,8 @@ const NewReservationMain = () => {
 									if (data3 && data3.error) {
 										console.log(data3.error);
 									} else {
+										console.log(data3, "data3");
+
 										setAllReservations(data3 && data3.length > 0 ? data3 : []);
 									}
 								});
@@ -166,7 +172,7 @@ const NewReservationMain = () => {
 							}
 
 							if (!hotelRooms || hotelRooms.length === 0) {
-								getHotelRooms(data2[0]._id).then((data3) => {
+								getHotelRooms(data2[0]._id, user._id).then((data3) => {
 									if (data3 && data3.error) {
 										console.log(data3.error);
 									} else {
@@ -186,60 +192,35 @@ const NewReservationMain = () => {
 			const formattedStartDate = formatDate(start_date);
 			const formattedEndDate = formatDate(end_date);
 
-			getListOfRoomSummary(formattedStartDate, formattedEndDate).then(
-				(data) => {
-					if (data && data.error) {
-						console.log(data.error, "Error rendering");
-					} else {
-						setRoomsSummary(data);
-					}
+			getListOfRoomSummary(
+				formattedStartDate,
+				formattedEndDate,
+				hotelDetails._id
+			).then((data) => {
+				if (data && data.error) {
+					console.log(data.error, "Error rendering");
+				} else {
+					setRoomsSummary(data);
 				}
-			);
+			});
 		} else {
 			setRoomsSummary("");
 		}
 	};
 
 	const gettingSearchQuery = () => {
+		// Make sure to have searchQuery and searchClicked defined in your state
 		if (searchQuery && searchClicked) {
+			console.log("here ahowan search");
+			setLoading(true); // Assuming you have setLoading defined to control loading state
 			getReservationSearch(searchQuery).then((data) => {
 				if (data && data.error) {
 					console.log(data.error, "Error rendering");
-					if (hotelDetails && hotelDetails._id) {
-						setLoading(true);
-						singlePreReservation(
-							searchQuery,
-							hotelDetails._id,
-							hotelDetails.belongsTo._id
-						).then((data2) => {
-							if (data2 && data2.error) {
-								toast.error("No available value, please try again...");
-							} else {
-								if (
-									data2 &&
-									data2.reservations &&
-									data2.reservations.length === 0
-								) {
-									toast.error("Incorrect Confirmation #, Please try again...");
-									setLoading(false);
-								} else {
-									setCustomer_details(data2.customer_details);
-									setStart_date(data2.checkin_date);
-									setEnd_date(data2.checkout_date);
-									setDays_of_residence(data2.days_of_residence);
-									setPaymentStatus(data2.payment_status);
-									setBookingComment(data2.booking_comment);
-									setBookingSource(data2.booking_source);
-									setConfirmationNumber(data2.confirmation_number);
-									setPaymentStatus(data2.payment_status);
-									setSearchedReservation(data2);
+					toast.error("No available value, please try again...");
+					setLoading(false);
+				} else if (data) {
+					console.log(data, "dataaaaaaaaaaaaaaaaaaaaaaaaa");
 
-									setLoading(false);
-								}
-							}
-						});
-					}
-				} else {
 					setCustomer_details(data.customer_details);
 					setStart_date(data.checkin_date);
 					setEnd_date(data.checkout_date);
@@ -250,6 +231,10 @@ const NewReservationMain = () => {
 					setConfirmationNumber(data.confirmation_number);
 					setPaymentStatus(data.payment_status);
 					setSearchedReservation(data);
+					setLoading(false);
+				} else {
+					toast.error("Incorrect Confirmation #, Please try again...");
+					setLoading(false);
 				}
 			});
 		} else {
@@ -257,6 +242,11 @@ const NewReservationMain = () => {
 			setSearchClicked(false);
 		}
 	};
+
+	useEffect(() => {
+		gettingSearchQuery();
+		// eslint-disable-next-line
+	}, [searchClicked]);
 
 	const calculatePickedRoomsType = () => {
 		const roomTypeCounts = new Map();
@@ -432,18 +422,20 @@ const NewReservationMain = () => {
 		gettingHotelData();
 
 		// eslint-disable-next-line
-	}, [start_date, end_date]);
+	}, []);
 
 	const getRoomInventory = () => {
 		const formattedStartDate = formatDate(start_date);
 		const formattedEndDate = formatDate(end_date);
-		gettingRoomInventory(formattedStartDate, formattedEndDate).then((data) => {
-			if (data && data.error) {
-				console.log(data.error, "Error rendering");
-			} else {
-				setRoomInventory(data);
+		gettingRoomInventory(formattedStartDate, formattedEndDate, user._id).then(
+			(data) => {
+				if (data && data.error) {
+					console.log(data.error, "Error rendering");
+				} else {
+					setRoomInventory(data);
+				}
 			}
-		});
+		);
 	};
 
 	useEffect(() => {
@@ -454,11 +446,6 @@ const NewReservationMain = () => {
 		}
 		// eslint-disable-next-line
 	}, [start_date, end_date]);
-
-	useEffect(() => {
-		gettingSearchQuery();
-		// eslint-disable-next-line
-	}, [searchClicked]);
 
 	return (
 		<NewReservationMainWrapper

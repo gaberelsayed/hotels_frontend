@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { gettingRoomInventory } from "../apiAdmin";
+import { isAuthenticated } from "../../auth";
 
 const GeneralOverview = ({ chosenLanguage }) => {
 	const [roomsSummary, setRoomsSummary] = useState("");
+
+	const { user } = isAuthenticated();
 
 	const currentDate = new Date();
 	const oneDayMilliseconds = 24 * 60 * 60 * 1000; // Milliseconds in a day
@@ -28,13 +31,15 @@ const GeneralOverview = ({ chosenLanguage }) => {
 	const getRoomInventory = () => {
 		const formattedStartDate = formatDate(start_date);
 		const formattedEndDate = formatDate(end_date);
-		gettingRoomInventory(formattedStartDate, formattedEndDate).then((data) => {
-			if (data && data.error) {
-				console.log(data.error, "Error rendering");
-			} else {
-				setRoomsSummary(data);
+		gettingRoomInventory(formattedStartDate, formattedEndDate, user._id).then(
+			(data) => {
+				if (data && data.error) {
+					console.log(data.error, "Error rendering");
+				} else {
+					setRoomsSummary(data);
+				}
 			}
-		});
+		);
 	};
 
 	useEffect(() => {

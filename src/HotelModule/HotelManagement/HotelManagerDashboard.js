@@ -129,11 +129,12 @@ const HotelManagerDashboard = () => {
 
 							setHotelDetails(data2[0]);
 
-							getHotelRooms(data2[0]._id).then((data3) => {
+							getHotelRooms(data2[0]._id, user._id).then((data3) => {
 								if (data3 && data3.error) {
 									console.log(data3.error);
 								} else {
 									setHotelRooms(data3);
+									console.log(data3, "data3");
 								}
 							});
 						}
