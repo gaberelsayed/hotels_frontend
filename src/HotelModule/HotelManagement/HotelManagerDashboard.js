@@ -159,7 +159,7 @@ const HotelManagerDashboard = () => {
 			new Map(hotelRooms.map((room) => [room["room_number"], room])).values()
 		);
 
-		getHotelRooms(user._id).then((existingRoomsData) => {
+		getHotelRooms(user._id, hotelDetails._id).then((existingRoomsData) => {
 			if (existingRoomsData && existingRoomsData.error) {
 				console.error(existingRoomsData.error, "Error rendering");
 			} else {
