@@ -16,7 +16,6 @@ import {
 	getListOfRoomSummary,
 	getReservationSearch,
 	updateSingleReservation,
-	updateRoomInventoryInHotelRunner,
 	gettingRoomInventory,
 } from "../apiAdmin";
 import { isAuthenticated } from "../../auth";
@@ -222,7 +221,7 @@ const NewReservationMain = () => {
 					setEnd_date(data.checkout_date);
 					setDays_of_residence(data.days_of_residence);
 					setPaymentStatus(data.payment_status);
-					setBookingComment(data.booking_comment);
+					setBookingComment(data.comment);
 					setBookingSource(data.booking_source);
 					setConfirmationNumber(data.confirmation_number);
 					setPaymentStatus(data.payment_status);
@@ -269,42 +268,17 @@ const NewReservationMain = () => {
 		return Array.from(roomTypeCounts.values());
 	};
 
-	const calculateMinStay = (startDate, endDate) => {
-		const start = new Date(startDate);
-		const end = new Date(endDate);
-		return (end - start) / (1000 * 60 * 60 * 24); // Convert milliseconds to days
-	};
-
-	const constructReqBodyForHotelRunner = () => {
-		const calculatedPickedRoomsType = calculatePickedRoomsType();
-
-		const roomTypes = calculatedPickedRoomsType.map((item) => item.room_type);
-		const startDate = formatDate(start_date);
-		const endDate = formatDate(end_date);
-
-		// Calculate availability based on the inventory summary
-		const availability = calculatedPickedRoomsType.map((item) => {
-			const inventoryItem = roomInventory.find(
-				(invItem) => invItem.room_type === item.room_type
-			);
-			const availableRooms = inventoryItem
-				? inventoryItem.available - item.count
-				: 0;
-			return availableRooms > 0 ? availableRooms : 0; // Ensure availability is not negative
+	const calculateTotalAmountNoRooms = () => {
+		let total = 0;
+		pickedRoomsType.forEach((room) => {
+			const price = parseFloat(room.chosenPrice); // Convert string to float
+			const count = parseInt(room.count, 10) || 1; // Convert string to int, default to 1
+			total += price * count; // Multiply by count if available
 		});
-
-		const minStay = calculateMinStay(startDate, endDate);
-
-		const reqBody = {
-			roomTypes,
-			startDate,
-			endDate,
-			availability,
-			minStay,
-		};
-
-		return reqBody;
+		return total * days_of_residence; // Multiply by days of residence
 	};
+
+	// Then, in your code where you are setting the `new_reservation` object:
 
 	const clickSubmit = () => {
 		if (!customer_details.name) {
@@ -326,7 +300,11 @@ const NewReservationMain = () => {
 		if (!end_date) {
 			return toast.error("Check out Date is required");
 		}
-		if (pickedHotelRooms && pickedHotelRooms.length <= 0) {
+		if (
+			pickedHotelRooms &&
+			pickedHotelRooms.length <= 0 &&
+			activeTab === "reserveARoom"
+		) {
 			return toast.error("Please Pick Up Rooms To Reserve");
 		}
 
@@ -335,6 +313,7 @@ const NewReservationMain = () => {
 		}
 
 		const calculatedPickedRoomsType = calculatePickedRoomsType();
+		const total_amount_calculated = calculateTotalAmountNoRooms();
 
 		const new_reservation = {
 			customer_details: customer_details,
@@ -342,24 +321,31 @@ const NewReservationMain = () => {
 			checkout_date: end_date,
 			days_of_residence: days_of_residence,
 			payment_status: payment_status,
-			total_amount: total_amount * days_of_residence,
+			total_amount:
+				total_amount !== 0
+					? total_amount * days_of_residence
+					: total_amount_calculated,
 			booking_source: booking_source,
 			belongsTo: hotelDetails.belongsTo._id,
 			hotelId: hotelDetails._id,
 			roomId: pickedHotelRooms,
 			booked_at: new Date(),
-			sub_total: total_amount,
+			sub_total:
+				total_amount !== 0
+					? total_amount * days_of_residence
+					: total_amount_calculated,
 			pickedRoomsPricing: pickedRoomPricing,
-			pickedRoomsType: calculatedPickedRoomsType,
+			pickedRoomsType:
+				calculatedPickedRoomsType && calculatedPickedRoomsType.length > 0
+					? calculatedPickedRoomsType
+					: pickedRoomsType,
 			payment: payment_status,
 			reservation_status: pickedHotelRooms.length > 0 ? "InHouse" : "Confirmed",
 			total_rooms: pickedHotelRooms.length,
 			total_guests: pickedHotelRooms.length,
 			booking_comment: booking_comment,
+			comment: booking_comment,
 		};
-
-		//Req.body to update hotel runner
-		const reqBody = constructReqBodyForHotelRunner();
 
 		if (
 			searchQuery &&
@@ -373,15 +359,6 @@ const NewReservationMain = () => {
 				if (data && data.error) {
 					console.log(data.error);
 				} else {
-					updateRoomInventoryInHotelRunner(reqBody).then((data) => {
-						if (data && data.error) {
-							console.log("Error updating hotel runner");
-						} else {
-							toast.success("Inventory Was successfully adjusted");
-							console.log("Room Successfully adjusted");
-						}
-					});
-
 					console.log("successful check in");
 					toast.success("Checkin Was Successfully Processed!");
 					setTimeout(() => {
@@ -399,15 +376,6 @@ const NewReservationMain = () => {
 				if (data && data.error) {
 					console.log(data.error, "error create new reservation");
 				} else {
-					updateRoomInventoryInHotelRunner(reqBody).then((data) => {
-						if (data && data.error) {
-							console.log("Error updating hotel runner");
-						} else {
-							toast.success("Inventory Was successfully adjusted");
-							console.log("Room Successfully adjusted");
-						}
-					});
-
 					console.log("successful reservation");
 					toast.success("Reservation Was Successfully Booked!");
 
@@ -741,6 +709,7 @@ const NewReservationMain = () => {
 									confirmation_number={confirmation_number}
 									clickedMenu={clickedMenu}
 									roomsSummary={roomsSummary}
+									roomInventory={roomInventory}
 									pickedRoomsType={pickedRoomsType}
 									setPickedRoomsType={setPickedRoomsType}
 									hotelDetails={hotelDetails}

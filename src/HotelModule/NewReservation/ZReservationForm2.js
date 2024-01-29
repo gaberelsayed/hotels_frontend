@@ -34,6 +34,7 @@ const ZReservationForm2 = ({
 	clickedMenu,
 	pickedRoomsType,
 	setPickedRoomsType,
+	roomInventory,
 }) => {
 	const [selectedRoomType, setSelectedRoomType] = useState("");
 	const [selectedPriceOption, setSelectedPriceOption] = useState("");
@@ -88,7 +89,15 @@ const ZReservationForm2 = ({
 	};
 
 	const handlePriceOptionChange = (e) => {
-		setSelectedPriceOption(e.target.value);
+		const value = e.target.value;
+		console.log("Selected Price Option:", value); // Debugging line
+		setSelectedPriceOption(value);
+		if (value !== "custom") {
+			setUpdatedRoomPrice(value);
+		} else {
+			// Reset or set a default value for custom price
+			setUpdatedRoomPrice(0);
+		}
 	};
 
 	const handleRoomCountChange = (e) => {
@@ -101,12 +110,18 @@ const ZReservationForm2 = ({
 			return;
 		}
 
+		// Determine the chosen price - use the custom price if 'custom' is selected
+		const chosenPrice =
+			selectedPriceOption === "custom"
+				? parseFloat(updatedRoomPrice)
+				: parseFloat(selectedPriceOption);
+
 		setPickedRoomsType((prev) => {
 			// Check if room type with the same price already exists
 			const existingRoomIndex = prev.findIndex(
 				(item) =>
 					item.room_type === selectedRoomType &&
-					item.chosenPrice === selectedPriceOption
+					parseFloat(item.chosenPrice) === chosenPrice
 			);
 
 			if (existingRoomIndex !== -1) {
@@ -124,7 +139,7 @@ const ZReservationForm2 = ({
 					...prev,
 					{
 						room_type: selectedRoomType,
-						chosenPrice: selectedPriceOption,
+						chosenPrice: chosenPrice,
 						count: parseInt(selectedCount, 10),
 					},
 				];
@@ -136,6 +151,8 @@ const ZReservationForm2 = ({
 		setSelectedPriceOption("");
 		setSelectedCount("");
 	};
+
+	console.log(pickedRoomsType, "pickedRoomsType");
 
 	const calculateTotalAmountPerDay = () => {
 		return pickedRoomsType.reduce((total, room) => {
@@ -661,176 +678,217 @@ const ZReservationForm2 = ({
 							</div>
 						</div>
 					</div>
-
-					<div className='row'>
-						{roomsSummary && roomsSummary.length > 0 && (
-							<div
-								className='col-md-4'
-								style={{ marginTop: "20px", marginBottom: "20px" }}
-							>
-								{chosenLanguage === "Arabic" ? (
-									<>
-										<label style={{ fontWeight: "bold" }}>نوع الغرفة</label>
-										<select
-											onChange={handleRoomTypeChange}
-											value={selectedRoomType}
-											style={{
-												height: "auto",
-												width: "100%",
-												padding: "10px",
-												boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
-												borderRadius: "10px",
-												textTransform: "capitalize",
-											}}
-										>
-											<option value=''>اختر نوع الغرفة</option>
-											{roomsSummary.map((room) => (
-												<option key={room.room_type} value={room.room_type}>
-													{room.room_type} | المتاح: {room.available} غرف
-												</option>
-											))}
-										</select>
-									</>
-								) : (
-									<>
-										<label style={{ fontWeight: "bold" }}>Room Type</label>
-										<select
-											onChange={handleRoomTypeChange}
-											value={selectedRoomType}
-											style={{
-												height: "auto",
-												width: "100%",
-												padding: "10px",
-												boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
-												borderRadius: "10px",
-												textTransform: "capitalize",
-											}}
-										>
-											<option value=''>Select Room Type</option>
-											{roomsSummary.map((room) => (
-												<option key={room.room_type} value={room.room_type}>
-													{room.room_type} | Available: {room.available} Rooms
-												</option>
-											))}
-										</select>
-									</>
-								)}
-							</div>
-						)}
-
-						{selectedRoomType && (
-							<div
-								className='col-md-4'
-								style={{ marginTop: "20px", marginBottom: "20px" }}
-							>
-								<label style={{ fontWeight: "bold" }}>Room Price</label>
-								<select
-									onChange={handlePriceOptionChange}
-									value={selectedPriceOption}
-									style={{
-										height: "auto",
-										width: "100%",
-										padding: "10px",
-										boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
-										borderRadius: "10px",
-									}}
-								>
-									<option value=''>Select Price Option</option>
-									{roomsSummary
-										.filter((room) => room.room_type === selectedRoomType)
-										.map((room) => {
-											const { room_price } = room;
-											return Object.entries(room_price).map(([key, value]) => (
-												<option key={key} value={value}>
-													{`${key}: ${value} SAR`}
-												</option>
-											));
-										})}
-								</select>
-							</div>
-						)}
-
-						{selectedRoomType && selectedPriceOption && (
-							<div className='col-md-4'>
+					<div className='container'>
+						<div className='row'>
+							{roomsSummary && roomsSummary.length > 0 && (
 								<div
-									className='form-group'
+									className='col-md-4'
 									style={{ marginTop: "20px", marginBottom: "20px" }}
 								>
-									<label style={{ fontWeight: "bold" }}>How Many Rooms?</label>
-									<input
-										background='red'
-										type='number'
-										value={selectedCount}
-										onChange={handleRoomCountChange}
-									/>
+									{chosenLanguage === "Arabic" ? (
+										<>
+											<label style={{ fontWeight: "bold" }}>نوع الغرفة</label>
+											<select
+												onChange={handleRoomTypeChange}
+												value={selectedRoomType}
+												style={{
+													height: "auto",
+													width: "100%",
+													padding: "10px",
+													boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
+													borderRadius: "10px",
+													textTransform: "capitalize",
+												}}
+											>
+												<option value=''>اختر نوع الغرفة</option>
+												{roomInventory &&
+													roomInventory.map((room) => (
+														<option key={room.room_type} value={room.room_type}>
+															{room.room_type} | المتاح: {room.available} غرف
+														</option>
+													))}
+											</select>
+										</>
+									) : (
+										<>
+											<label style={{ fontWeight: "bold" }}>Room Type</label>
+											<select
+												onChange={handleRoomTypeChange}
+												value={selectedRoomType}
+												style={{
+													height: "auto",
+													width: "100%",
+													padding: "10px",
+													boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
+													borderRadius: "10px",
+													textTransform: "capitalize",
+												}}
+											>
+												<option value=''>Select Room Type</option>
+												{roomsSummary.map((room) => (
+													<option key={room.room_type} value={room.room_type}>
+														{room.room_type} | Available: {room.available} Rooms
+													</option>
+												))}
+											</select>
+										</>
+									)}
 								</div>
-							</div>
-						)}
+							)}
 
-						{selectedRoomType && selectedPriceOption && selectedCount && (
-							<div className='col-md-4'>
-								<button
-									onClick={addRoomToReservation}
-									className='btn btn-primary'
+							{selectedRoomType && (
+								<div
+									className='col-md-4'
+									style={{ marginTop: "20px", marginBottom: "20px" }}
 								>
-									Add Room
-								</button>
-							</div>
-						)}
+									<label style={{ fontWeight: "bold" }}>Room Price</label>
+									<select
+										onChange={handlePriceOptionChange}
+										value={selectedPriceOption}
+										style={{
+											height: "auto",
+											width: "100%",
+											padding: "10px",
+											boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
+											borderRadius: "10px",
+										}}
+									>
+										<option value=''>Select Price Option</option>
+										{roomsSummary &&
+											roomsSummary
+												.filter((room) => room.room_type === selectedRoomType)
+												.map((room) => {
+													const { room_price } = room;
+													return Object.entries(room_price).map(
+														([key, value]) => (
+															<option key={key} value={value}>
+																{`${key}: ${value} SAR`}
+															</option>
+														)
+													);
+												})}
+										<option value='custom'>Custom Price</option>
+									</select>
+									{selectedPriceOption === "custom" && (
+										<div
+											className='form-group'
+											style={{ marginTop: "20px", marginBottom: "20px" }}
+										>
+											<label style={{ fontWeight: "bold" }}>
+												Enter Custom Price
+											</label>
+											<input
+												type='number'
+												value={updatedRoomPrice}
+												onChange={(e) => setUpdatedRoomPrice(e.target.value)}
+												style={{
+													height: "auto",
+													width: "100%",
+													padding: "10px",
+													boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
+													borderRadius: "10px",
+												}}
+											/>
+										</div>
+									)}
+								</div>
+							)}
+
+							{selectedRoomType && selectedPriceOption && (
+								<div
+									className={
+										selectedPriceOption === "custom"
+											? "col-md-3 mt-5 mx-auto"
+											: "col-md-4"
+									}
+								>
+									<div
+										className='form-group'
+										style={{ marginTop: "20px", marginBottom: "20px" }}
+									>
+										<label style={{ fontWeight: "bold" }}>
+											How Many Rooms?
+										</label>
+										<input
+											background='red'
+											type='number'
+											value={selectedCount}
+											onChange={handleRoomCountChange}
+										/>
+									</div>
+								</div>
+							)}
+
+							{selectedRoomType && selectedPriceOption && selectedCount && (
+								<div className='col-md-4 mx-auto text-center'>
+									<button
+										onClick={addRoomToReservation}
+										className='btn btn-primary'
+									>
+										Add Room
+									</button>
+								</div>
+							)}
+						</div>
 					</div>
 
-					{customer_details.name &&
-					start_date &&
-					end_date &&
-					pickedRoomsType.length > 0 ? (
-						<>
-							<div className='total-amount my-3'>
-								<h5 style={{ fontWeight: "bold" }}>
-									Days Of Residence: {days_of_residence} Days /{" "}
-									{days_of_residence <= 1 ? 1 : days_of_residence - 1} Nights
-								</h5>
+					<div className='container mt-3'>
+						{customer_details.name &&
+						start_date &&
+						end_date &&
+						pickedRoomsType.length > 0 ? (
+							<>
+								<div className='total-amount my-3'>
+									<h5 style={{ fontWeight: "bold" }}>
+										Days Of Residence: {days_of_residence} Days /{" "}
+										{days_of_residence <= 1 ? 1 : days_of_residence - 1} Nights
+									</h5>
 
-								<h4>
-									Total Amount Per Day: {calculateTotalAmountPerDay()} SAR/ Day
-								</h4>
-								<div className='room-list my-3'>
-									{pickedRoomsType.map((room, index) => (
-										<div
-											key={index}
-											className='room-item my-2'
-											style={{
-												fontWeight: "bold",
-												textTransform: "capitalize",
-												cursor: "pointer",
-											}}
-											onClick={() => openModal(room, index)}
-										>
-											{`Room Type: ${room.room_type}, Price: ${room.chosenPrice} SAR, Count: ${room.count} Rooms (Click To Update)`}
-										</div>
-									))}
+									<h4>
+										Total Amount Per Day: {calculateTotalAmountPerDay()} SAR/
+										Day
+									</h4>
+									<div className='room-list my-3'>
+										{pickedRoomsType.map((room, index) => (
+											<div
+												key={index}
+												className='room-item my-2'
+												style={{
+													fontWeight: "bold",
+													textTransform: "capitalize",
+													cursor: "pointer",
+													fontSize: "1.1rem",
+													color: "darkgoldenrod",
+												}}
+												onClick={() => openModal(room, index)}
+											>
+												{`Room Type: ${room.room_type}, Price: ${room.chosenPrice} SAR, Count: ${room.count} Rooms (Click To Update)`}
+											</div>
+										))}
+									</div>
+
+									<h3>
+										Total Amount:{" "}
+										{(
+											calculateTotalAmountPerDay() * Number(days_of_residence)
+										).toLocaleString()}{" "}
+										SAR
+									</h3>
 								</div>
-
-								<h3>
-									Total Amount:{" "}
-									{(
-										calculateTotalAmountPerDay() * Number(days_of_residence)
-									).toLocaleString()}{" "}
-									SAR
-								</h3>
-							</div>
-							<div className='mt-5 mx-auto text-center col-md-6'>
-								<button
-									className='btn btn-success w-50'
-									onClick={() => {
-										clickSubmit2();
-									}}
-									style={{ fontWeight: "bold", fontSize: "1.2rem" }}
-								>
-									Make A Reservation...
-								</button>
-							</div>
-						</>
-					) : null}
+								<div className='mt-5 mx-auto text-center col-md-6'>
+									<button
+										className='btn btn-success w-50'
+										onClick={() => {
+											clickSubmit2();
+										}}
+										style={{ fontWeight: "bold", fontSize: "1.2rem" }}
+									>
+										Make A Reservation...
+									</button>
+								</div>
+							</>
+						) : null}
+					</div>
 				</ZReservationFormWrapper>
 			)}
 		</>

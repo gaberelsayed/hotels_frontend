@@ -177,9 +177,15 @@ export const reservationsList = (page, records, filters, hotelId, date) => {
 		.catch((err) => console.log(err));
 };
 
-export const reservationsTotalRecords = (hotelId) => {
+export const reservationsTotalRecords = (
+	page,
+	records,
+	filters,
+	hotelId,
+	date
+) => {
 	return fetch(
-		`${process.env.REACT_APP_API_URL}/reservations/get-total-records/${hotelId}`,
+		`${process.env.REACT_APP_API_URL}/reservations/get-total-records/${page}/${records}/${filters}/${hotelId}/${date}`,
 		{
 			method: "GET",
 		}

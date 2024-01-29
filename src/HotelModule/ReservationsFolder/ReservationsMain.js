@@ -73,7 +73,13 @@ const ReservationsMain = () => {
 										console.log(data.error);
 									} else {
 										setAllPreReservations(data && data.length > 0 ? data : []);
-										reservationsTotalRecords(data2[0]._id).then((data) => {
+										reservationsTotalRecords(
+											currentPage,
+											recordsPerPage,
+											JSON.stringify({ selectedFilter }),
+											data2[0]._id,
+											today // Pass the formatted date
+										).then((data) => {
 											if (data && data.error) {
 												console.log(data.error);
 											} else {

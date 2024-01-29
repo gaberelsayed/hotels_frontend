@@ -69,9 +69,9 @@ const GeneralOverview = ({ chosenLanguage, hotelDetails }) => {
 							<tr>
 								<th>نوع الغرفة</th>
 								<th>إجمالي الغرف</th>
-								<th>متاح</th>
 								<th>مشغول</th>
 								<th>محجوز</th>
+								<th>متاح</th>
 							</tr>
 						</thead>
 					) : (

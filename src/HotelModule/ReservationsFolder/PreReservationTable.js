@@ -244,21 +244,19 @@ const PreReservationTable = ({
 						</button>
 					</form>
 				</div>
-				{allPreReservations && allPreReservations.length <= 49 ? null : (
-					<div
-						className='my-3'
-						onClick={() => window.scrollTo({ top: 20, behavior: "smooth" })}
-					>
-						<Pagination
-							current={currentPage}
-							pageSize={recordsPerPage}
-							total={totalRecords}
-							onChange={handlePageChange}
+				<div
+					className='my-3'
+					onClick={() => window.scrollTo({ top: 20, behavior: "smooth" })}
+				>
+					<Pagination
+						current={currentPage}
+						pageSize={recordsPerPage}
+						total={totalRecords}
+						onChange={handlePageChange}
 
-							// Add any additional props you need
-						/>
-					</div>
-				)}
+						// Add any additional props you need
+					/>
+				</div>
 
 				<FilterComponent
 					setSelectedFilter={setSelectedFilter}
@@ -274,21 +272,19 @@ const PreReservationTable = ({
 					scroll={{ y: 1000 }}
 				/>
 
-				{allPreReservations && allPreReservations.length <= 49 ? null : (
-					<div
-						className='my-3'
-						onClick={() => window.scrollTo({ top: 20, behavior: "smooth" })}
-					>
-						<Pagination
-							current={currentPage}
-							pageSize={recordsPerPage}
-							total={totalRecords}
-							onChange={handlePageChange}
+				<div
+					className='my-3'
+					onClick={() => window.scrollTo({ top: 20, behavior: "smooth" })}
+				>
+					<Pagination
+						current={currentPage}
+						pageSize={recordsPerPage}
+						total={totalRecords}
+						onChange={handlePageChange}
 
-							// Add any additional props you need
-						/>
-					</div>
-				)}
+						// Add any additional props you need
+					/>
+				</div>
 			</PreReservationTableWrapper>
 
 			<Modal
@@ -308,7 +304,10 @@ const PreReservationTable = ({
 				}}
 			>
 				{selectedReservation && (
-					<ReservationDetail reservation={selectedReservation} />
+					<ReservationDetail
+						reservation={selectedReservation}
+						setReservation={setSelectedReservation}
+					/>
 				)}
 			</Modal>
 		</>

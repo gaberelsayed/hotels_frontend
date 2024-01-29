@@ -61,8 +61,16 @@ const HotelRunnerReservationList = ({ chosenLanguage, hotelDetails }) => {
 	};
 
 	useEffect(() => {
+		const today = formatDate(new Date()); // Format today's date
+
 		// Fetch total records
-		reservationsTotalRecords(hotelDetails._id).then((data) => {
+		reservationsTotalRecords(
+			currentPage,
+			recordsPerPage,
+			JSON.stringify({ selectedFilter }),
+			hotelDetails._id,
+			today // Pass the formatted date
+		).then((data) => {
 			if (data && data.error) {
 				console.log(data.error);
 			} else {

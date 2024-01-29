@@ -2,8 +2,11 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { useCartContext } from "../../cart_context";
 import { isAuthenticated } from "../../auth";
-import { Spin } from "antd";
+import { Spin, Modal, Select } from "antd";
 import moment from "moment";
+import { EditOutlined } from "@ant-design/icons";
+import { updateSingleReservation } from "../apiAdmin";
+import { toast } from "react-toastify";
 
 const Wrapper = styled.div`
 	min-height: 750px;
@@ -68,9 +71,13 @@ const ContentSection = styled.div`
 
 // ... other styled components
 
-const ReservationDetail = ({ reservation }) => {
+const ReservationDetail = ({ reservation, setReservation }) => {
 	// eslint-disable-next-line
 	const [loading, setLoading] = useState(false);
+	const [isModalVisible, setIsModalVisible] = useState(false);
+
+	// eslint-disable-next-line
+	const [selectedStatus, setSelectedStatus] = useState("");
 
 	const { languageToggle, chosenLanguage } = useCartContext();
 
@@ -120,6 +127,51 @@ const ReservationDetail = ({ reservation }) => {
 		return `${days} ${daysText} / ${days - 1} ${nightsText}`;
 	}
 
+	const handleUpdateReservationStatus = () => {
+		if (!selectedStatus) {
+			return toast.error("Please Select A Status...");
+		}
+
+		const confirmationMessage = `Are you sure you want to change the status of the reservation to ${selectedStatus}?`;
+		if (window.confirm(confirmationMessage)) {
+			const updateData = { reservation_status: selectedStatus };
+
+			// If the selected status is 'early_checked_out', also update the checkout_date and related fields
+			if (selectedStatus === "early_checked_out") {
+				const newCheckoutDate = new Date();
+				const startDate = new Date(reservation.checkin_date);
+				const diffTime = Math.abs(newCheckoutDate - startDate);
+				const daysOfResidence = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+				updateData.checkout_date = newCheckoutDate.toISOString();
+				updateData.days_of_residence = daysOfResidence;
+
+				// Calculate the new total amount
+				const totalAmountPerDay = reservation.pickedRoomsType.reduce(
+					(total, room) => {
+						return total + room.count * parseFloat(room.chosenPrice);
+					},
+					0
+				);
+
+				updateData.total_amount = totalAmountPerDay * daysOfResidence;
+			}
+
+			updateSingleReservation(reservation._id, updateData).then((response) => {
+				if (response.error) {
+					console.error(response.error);
+					toast.error("An error occurred while updating the status");
+				} else {
+					toast.success("Status was successfully updated");
+					setIsModalVisible(false);
+
+					// Update local state or re-fetch reservation data if necessary
+					setReservation(response);
+				}
+			});
+		}
+	};
+
 	return (
 		<Wrapper
 			dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}
@@ -132,6 +184,37 @@ const ReservationDetail = ({ reservation }) => {
 				</div>
 			) : (
 				<div className='otherContentWrapper'>
+					<Modal
+						title={
+							chosenLanguage === "Arabic"
+								? "تعدين الحجز"
+								: "Update Reservation Status"
+						}
+						open={isModalVisible}
+						onCancel={() => setIsModalVisible(false)}
+						onOk={handleUpdateReservationStatus}
+						style={{
+							textAlign: chosenLanguage === "Arabic" ? "center" : "",
+						}}
+					>
+						<Select
+							defaultValue={reservation && reservation.reservation_status}
+							style={{
+								width: "100%",
+							}}
+							onChange={(value) => setSelectedStatus(value)}
+						>
+							<Select.Option value=''>Please Select</Select.Option>
+							<Select.Option value='cancelled'>Cancelled</Select.Option>
+							<Select.Option value='no_show'>No Show</Select.Option>
+							<Select.Option value='confirmed'>Confirmed</Select.Option>
+							<Select.Option value='inhouse'>InHouse</Select.Option>
+							<Select.Option value='checked_out'>Checked Out</Select.Option>
+							<Select.Option value='early_checked_out'>
+								Early Check Out
+							</Select.Option>
+						</Select>
+					</Modal>
 					<div
 						style={{
 							textAlign: chosenLanguage === "Arabic" ? "left" : "right",
@@ -265,7 +348,9 @@ const ReservationDetail = ({ reservation }) => {
 											{chosenLanguage === "Arabic" ? "عمولة" : "Commision"}
 										</div>
 										<div className='col-md-5 mx-auto text-center my-2'>
-											{reservation && reservation.total_amount.toLocaleString()}{" "}
+											{reservation &&
+												reservation.commission &&
+												reservation.commission.toLocaleString()}{" "}
 											{chosenLanguage === "Arabic" ? "ريال" : "SAR"}
 										</div>
 									</div>
@@ -283,7 +368,10 @@ const ReservationDetail = ({ reservation }) => {
 										<div className='col-md-5 mx-auto'>
 											<h2>
 												{reservation &&
-													reservation.total_amount.toLocaleString()}{" "}
+													reservation.commission &&
+													(
+														reservation.total_amount - reservation.commission
+													).toLocaleString()}{" "}
 												{chosenLanguage === "Arabic" ? "ريال" : "SAR"}
 											</h2>
 										</div>
@@ -347,19 +435,37 @@ const ReservationDetail = ({ reservation }) => {
 										{chosenLanguage === "Arabic"
 											? "حالة الحجز"
 											: "Reservation Status"}
+										<EditOutlined
+											onClick={() => setIsModalVisible(true)}
+											style={{
+												marginLeft: "5px",
+												marginRight: "5px",
+												cursor: "pointer",
+											}}
+										/>
 										<div
 											className='mx-1'
 											style={{
 												background:
 													reservation &&
-													reservation.overallBookingStatus === "canceled"
+													reservation.reservation_status.includes("cancelled")
 														? "red"
-														: "",
+														: reservation.reservation_status.includes(
+																	"checked_out"
+														    )
+														  ? "darkgreen"
+														  : reservation.reservation_status === "inhouse"
+														    ? "#c4d3e2"
+														    : "yellow",
 												color:
 													reservation &&
-													reservation.overallBookingStatus === "canceled"
+													reservation.reservation_status.includes("cancelled")
 														? "white"
-														: "",
+														: reservation.reservation_status.includes(
+																	"checked_out"
+														    )
+														  ? "white"
+														  : "black",
 												textAlign: "center",
 												textTransform: "uppercase",
 											}}
@@ -390,7 +496,7 @@ const ReservationDetail = ({ reservation }) => {
 
 									<div className='col-md-8 my-4 mx-auto'>
 										{chosenLanguage === "Arabic" ? "ملحوظة" : "Comment"}
-										<div>{reservation && reservation.booking_comment}</div>
+										<div>{reservation && reservation.comment}</div>
 									</div>
 								</div>
 							</ContentSection>
