@@ -213,14 +213,12 @@ const NewReservationMain = () => {
 		if (searchQuery && searchClicked) {
 			console.log("here ahowan search");
 			setLoading(true); // Assuming you have setLoading defined to control loading state
-			getReservationSearch(searchQuery).then((data) => {
+			getReservationSearch(searchQuery, hotelDetails._id).then((data) => {
 				if (data && data.error) {
 					console.log(data.error, "Error rendering");
 					toast.error("No available value, please try again...");
 					setLoading(false);
 				} else if (data) {
-					console.log(data, "dataaaaaaaaaaaaaaaaaaaaaaaaa");
-
 					setCustomer_details(data.customer_details);
 					setStart_date(data.checkin_date);
 					setEnd_date(data.checkout_date);
@@ -427,15 +425,18 @@ const NewReservationMain = () => {
 	const getRoomInventory = () => {
 		const formattedStartDate = formatDate(start_date);
 		const formattedEndDate = formatDate(end_date);
-		gettingRoomInventory(formattedStartDate, formattedEndDate, user._id).then(
-			(data) => {
-				if (data && data.error) {
-					console.log(data.error, "Error rendering");
-				} else {
-					setRoomInventory(data);
-				}
+		gettingRoomInventory(
+			formattedStartDate,
+			formattedEndDate,
+			user._id,
+			hotelDetails._id
+		).then((data) => {
+			if (data && data.error) {
+				console.log(data.error, "Error rendering");
+			} else {
+				setRoomInventory(data);
 			}
-		);
+		});
 	};
 
 	useEffect(() => {

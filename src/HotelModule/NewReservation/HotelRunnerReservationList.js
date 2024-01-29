@@ -86,6 +86,7 @@ const HotelRunnerReservationList = ({ chosenLanguage, hotelDetails }) => {
 
 	const handleFileUpload = (uploadFunction) => {
 		const accountId = hotelDetails._id; // Get the account ID
+		const belongsTo = user._id;
 		const fileInput = document.createElement("input");
 		fileInput.type = "file";
 		fileInput.accept =
@@ -93,7 +94,7 @@ const HotelRunnerReservationList = ({ chosenLanguage, hotelDetails }) => {
 		fileInput.onchange = (e) => {
 			setLoading(true);
 			const file = e.target.files[0];
-			uploadFunction(accountId, file).then((data) => {
+			uploadFunction(accountId, belongsTo, file).then((data) => {
 				setLoading(false);
 				if (data.error) {
 					console.log(data.error);
@@ -166,6 +167,7 @@ const HotelRunnerReservationList = ({ chosenLanguage, hotelDetails }) => {
 							setSearchClicked={setSearchClicked}
 							searchClicked={searchClicked}
 							getAllPreReservation={getAllPreReservation}
+							hotelDetails={hotelDetails}
 						/>
 					</div>
 				</>

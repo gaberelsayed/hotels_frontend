@@ -5,6 +5,7 @@ import HotelOverviewReservation from "./HotelOverviewReservation";
 import moment from "moment";
 import { toast } from "react-toastify";
 import { agodaData, bookingData, expediaData } from "../apiAdmin";
+import { isAuthenticated } from "../../auth";
 
 const ZReservationForm = ({
 	customer_details,
@@ -49,6 +50,8 @@ const ZReservationForm = ({
 	const [taskeenClicked, setTaskeenClicked] = useState(false);
 
 	const [isFixed, setIsFixed] = useState(false);
+
+	const { user } = isAuthenticated();
 
 	useEffect(() => {
 		const handleScroll = () => {
@@ -146,6 +149,7 @@ const ZReservationForm = ({
 
 	const handleFileUpload = (uploadFunction) => {
 		const accountId = hotelDetails._id; // Get the account ID
+		const belongsTo = user._id;
 		const fileInput = document.createElement("input");
 		fileInput.type = "file";
 		fileInput.accept =
@@ -153,7 +157,7 @@ const ZReservationForm = ({
 		fileInput.onchange = (e) => {
 			setLoading(true);
 			const file = e.target.files[0];
-			uploadFunction(accountId, file).then((data) => {
+			uploadFunction(accountId, belongsTo, file).then((data) => {
 				setLoading(false);
 				if (data.error) {
 					console.log(data.error);
@@ -614,9 +618,11 @@ const ZReservationForm = ({
 										textTransform: "uppercase",
 									}}
 								>
-									{searchedReservation.payment_status === payment_status
-										? searchedReservation && searchedReservation.payment
-										: payment_status}
+									{searchedReservation.payment === payment_status
+										? payment_status
+										: searchedReservation.payment
+										  ? searchedReservation.payment
+										  : payment_status}
 								</div>
 								<div className='col-md-6 my-2'>
 									{chosenLanguage === "Arabic" ? "حالة الحجز" : "Status"}
@@ -626,7 +632,7 @@ const ZReservationForm = ({
 									style={{ background: "darkgreen", color: "white" }}
 								>
 									{searchedReservation &&
-										searchedReservation.overallBookingStatus}
+										searchedReservation.reservation_status}
 								</div>
 							</div>
 							<h4 className='my-4 text-center' style={{ color: "#006ad1" }}>

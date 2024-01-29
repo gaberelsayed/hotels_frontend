@@ -229,7 +229,7 @@ const ReservationDetail = ({ reservation }) => {
 												<div className='col-md-4 mt-2'>{/* Date */}</div>
 												<div className='col-md-4 mt-2'>{room.room_type}</div>
 												<div className='col-md-4 mt-2'>
-													{room.chosenPrice * room.count}{" "}
+													{room.chosenPrice.toLocaleString() * room.count}{" "}
 													{chosenLanguage === "Arabic" ? "ريال" : "SAR"}
 												</div>
 											</React.Fragment>

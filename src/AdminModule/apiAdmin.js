@@ -66,8 +66,8 @@ export const createRooms = (userId, token, room) => {
 		});
 };
 
-export const getHotelRooms = (userId) => {
-	return fetch(`${process.env.REACT_APP_API_URL}/room/${userId}`, {
+export const getHotelRooms = (userId, hotelId) => {
+	return fetch(`${process.env.REACT_APP_API_URL}/room/${userId}/${hotelId}`, {
 		method: "GET",
 	})
 		.then((response) => {

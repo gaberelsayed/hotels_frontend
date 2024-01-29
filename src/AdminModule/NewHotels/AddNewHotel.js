@@ -84,15 +84,16 @@ const AddNewHotel = ({ chosenLanguage }) => {
 								setFirstStep(true);
 								setSecondStep(true);
 
-								getHotelRooms(window.location.search.substring(1)).then(
-									(data3) => {
-										if (data3 && data3.error) {
-											console.log(data3.error);
-										} else {
-											setRooms(data3);
-										}
+								getHotelRooms(
+									window.location.search.substring(1),
+									data2[0]._id
+								).then((data3) => {
+									if (data3 && data3.error) {
+										console.log(data3.error);
+									} else {
+										setRooms(data3);
 									}
-								);
+								});
 							}
 						}
 					});

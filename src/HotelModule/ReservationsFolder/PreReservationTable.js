@@ -35,7 +35,7 @@ const PreReservationTable = ({
 			return;
 		}
 
-		getReservationSearchAllMatches(q)
+		getReservationSearchAllMatches(q, hotelDetails._id)
 			.then((data) => {
 				if (data && data.error) {
 					console.log("Search error:", data.error);

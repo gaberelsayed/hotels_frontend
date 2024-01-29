@@ -5,6 +5,7 @@ import moment from "moment";
 import { Modal, InputNumber } from "antd";
 import { agodaData, bookingData, expediaData } from "../apiAdmin";
 import { toast } from "react-toastify";
+import { isAuthenticated } from "../../auth";
 
 const ZReservationForm2 = ({
 	customer_details,
@@ -43,6 +44,8 @@ const ZReservationForm2 = ({
 	const [selectedRoomIndex, setSelectedRoomIndex] = useState(null);
 	const [updatedRoomCount, setUpdatedRoomCount] = useState(0);
 	const [updatedRoomPrice, setUpdatedRoomPrice] = useState(0);
+
+	const { user } = isAuthenticated();
 
 	const openModal = (room, index) => {
 		setIsModalVisible(true);
@@ -170,6 +173,7 @@ const ZReservationForm2 = ({
 
 	const handleFileUpload = (uploadFunction) => {
 		const accountId = hotelDetails._id; // Get the account ID
+		const belongsTo = user._id;
 		const fileInput = document.createElement("input");
 		fileInput.type = "file";
 		fileInput.accept =
@@ -177,7 +181,7 @@ const ZReservationForm2 = ({
 		fileInput.onchange = (e) => {
 			setLoading(true);
 			const file = e.target.files[0];
-			uploadFunction(accountId, file).then((data) => {
+			uploadFunction(accountId, belongsTo, file).then((data) => {
 				setLoading(false);
 				if (data.error) {
 					console.log(data.error);
