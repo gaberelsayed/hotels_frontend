@@ -107,15 +107,16 @@ const HotelManagerDashboard = () => {
 			} else {
 				setValues(data);
 				const formattedStartDate = moment()
-					.subtract(1, "days")
+					.subtract(2, "days")
 					.format("YYYY-MM-DD");
-				const formattedEndDate = moment().add(20, "days").format("YYYY-MM-DD");
+				const formattedEndDate = moment().add(30, "days").format("YYYY-MM-DD");
 				getHotelDetails(data._id).then((data2) => {
 					if (data2 && data2.error) {
 						console.log(data2.error, "Error rendering");
 					} else {
 						if (data && data.name && data._id && data2 && data2.length > 0) {
 							getHotelReservations(
+								user._id,
 								data2[0]._id,
 								formattedStartDate,
 								formattedEndDate
@@ -129,12 +130,11 @@ const HotelManagerDashboard = () => {
 
 							setHotelDetails(data2[0]);
 
-							getHotelRooms(data2[0]._id, user._id).then((data3) => {
-								if (data3 && data3.error) {
-									console.log(data3.error);
+							getHotelRooms(data2[0]._id, user._id).then((data4) => {
+								if (data4 && data4.error) {
+									console.log(data4.error);
 								} else {
-									setHotelRooms(data3);
-									console.log(data3, "data3");
+									setHotelRooms(data4);
 								}
 							});
 						}
@@ -348,7 +348,10 @@ const HotelManagerDashboard = () => {
 								allReservations={allReservations}
 							/>
 						) : websiteMenu === "general" ? (
-							<GeneralOverview chosenLanguage={chosenLanguage} />
+							<GeneralOverview
+								chosenLanguage={chosenLanguage}
+								hotelDetails={hotelDetails}
+							/>
 						) : null}
 					</div>
 				</div>

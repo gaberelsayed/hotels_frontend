@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { gettingRoomInventory } from "../apiAdmin";
 import { isAuthenticated } from "../../auth";
 
-const GeneralOverview = ({ chosenLanguage }) => {
+const GeneralOverview = ({ chosenLanguage, hotelDetails }) => {
 	const [roomsSummary, setRoomsSummary] = useState("");
 
 	const { user } = isAuthenticated();
@@ -31,15 +31,18 @@ const GeneralOverview = ({ chosenLanguage }) => {
 	const getRoomInventory = () => {
 		const formattedStartDate = formatDate(start_date);
 		const formattedEndDate = formatDate(end_date);
-		gettingRoomInventory(formattedStartDate, formattedEndDate, user._id).then(
-			(data) => {
-				if (data && data.error) {
-					console.log(data.error, "Error rendering");
-				} else {
-					setRoomsSummary(data);
-				}
+		gettingRoomInventory(
+			formattedStartDate,
+			formattedEndDate,
+			user._id,
+			hotelDetails._id
+		).then((data) => {
+			if (data && data.error) {
+				console.log(data.error, "Error rendering");
+			} else {
+				setRoomsSummary(data);
 			}
-		);
+		});
 	};
 
 	useEffect(() => {
@@ -88,10 +91,10 @@ const GeneralOverview = ({ chosenLanguage }) => {
 							roomsSummary.map((room, index) => (
 								<tr key={index}>
 									<td>{room.room_type}</td>
-									<td>{room.available}</td>
+									<td>{room.total_available}</td>
 									<td>{room.reserved}</td>
 									<td>{room.occupied}</td>
-									<td>{room.total_available}</td>
+									<td>{room.available}</td>
 								</tr>
 							))}
 					</tbody>

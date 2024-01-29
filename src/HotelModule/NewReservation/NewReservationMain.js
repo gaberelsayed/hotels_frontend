@@ -141,7 +141,6 @@ const NewReservationMain = () => {
 				console.log(data.error, "Error rendering");
 			} else {
 				setValues(data);
-				console.log(data, "data1");
 				const formattedStartDate = formatDate(start_date);
 				const formattedEndDate = formatDate(end_date);
 				getHotelDetails(data._id).then((data2) => {
@@ -149,10 +148,9 @@ const NewReservationMain = () => {
 						console.log(data2.error, "Error rendering");
 					} else {
 						if (data && data.name && data._id && data2 && data2.length > 0) {
-							console.log(data2, "data2");
-
 							if (start_date && end_date) {
 								getHotelReservations(
+									user._id,
 									data2[0]._id,
 									formattedStartDate,
 									formattedEndDate
@@ -392,7 +390,12 @@ const NewReservationMain = () => {
 				}
 			});
 		} else {
-			createNewReservation(user._id, token, new_reservation).then((data) => {
+			createNewReservation(
+				user._id,
+				hotelDetails._id,
+				token,
+				new_reservation
+			).then((data) => {
 				if (data && data.error) {
 					console.log(data.error, "error create new reservation");
 				} else {
@@ -420,7 +423,7 @@ const NewReservationMain = () => {
 		gettingHotelData();
 
 		// eslint-disable-next-line
-	}, []);
+	}, [start_date, end_date]);
 
 	const getRoomInventory = () => {
 		const formattedStartDate = formatDate(start_date);

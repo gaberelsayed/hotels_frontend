@@ -17,9 +17,14 @@ export const hotelAccount = (userId, token, accountId) => {
 		.catch((err) => console.log(err));
 };
 
-export const createNewReservation = (userId, token, new_reservation) => {
+export const createNewReservation = (
+	userId,
+	hotelId,
+	token,
+	new_reservation
+) => {
 	return fetch(
-		`${process.env.REACT_APP_API_URL}/reservations/create/${userId}`,
+		`${process.env.REACT_APP_API_URL}/reservations/create/${userId}/${hotelId}`,
 		{
 			method: "POST",
 			headers: {
@@ -66,13 +71,10 @@ export const createRooms = (userId, token, room) => {
 		});
 };
 
-export const getHotelRooms = (userId, mainUserId) => {
-	return fetch(
-		`${process.env.REACT_APP_API_URL}/room/${userId}/${mainUserId}`,
-		{
-			method: "GET",
-		}
-	)
+export const getHotelRooms = (userId, hotelId) => {
+	return fetch(`${process.env.REACT_APP_API_URL}/room/${userId}/${hotelId}`, {
+		method: "GET",
+	})
 		.then((response) => {
 			return response.json();
 		})
@@ -110,9 +112,9 @@ export const gettingHotelDetailsForAdmin = (userId, token) => {
 		.catch((err) => console.log(err));
 };
 
-export const getHotelReservations = (hotelId, startdate, enddate) => {
+export const getHotelReservations = (hotelId, userId, startdate, enddate) => {
 	return fetch(
-		`${process.env.REACT_APP_API_URL}/reservations/${startdate}/${enddate}/${hotelId}`,
+		`${process.env.REACT_APP_API_URL}/reservations/${startdate}/${enddate}/${hotelId}/${userId}`,
 		{
 			method: "GET",
 		}

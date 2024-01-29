@@ -12,8 +12,6 @@ const HotelHeatMap = ({
 }) => {
 	const [selectedRoomType, setSelectedRoomType] = useState(null);
 
-	console.log(allReservations, "allreservations");
-
 	const { hotelFloors, parkingLot } = hotelDetails;
 	const floors = Array.from(
 		{ length: hotelFloors },
