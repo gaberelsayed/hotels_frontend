@@ -71,8 +71,8 @@ export const createRooms = (userId, token, room) => {
 		});
 };
 
-export const getHotelRooms = (userId, hotelId) => {
-	return fetch(`${process.env.REACT_APP_API_URL}/room/${userId}/${hotelId}`, {
+export const getHotelRooms = (accountId, userId) => {
+	return fetch(`${process.env.REACT_APP_API_URL}/room/${accountId}/${userId}`, {
 		method: "GET",
 	})
 		.then((response) => {
@@ -315,12 +315,12 @@ export const agodaData = (accountId, belongsTo, file) => {
 		.catch((err) => console.log(err));
 };
 
-export const expediaData = (accountId, belongsTo, file) => {
+export const expediaData = (accountId, belongsTo, file, country) => {
 	let formData = new FormData();
 	formData.append("file", file);
 
 	return fetch(
-		`${process.env.REACT_APP_API_URL}/reservations/expedia-data-dump/${accountId}/${belongsTo}`,
+		`${process.env.REACT_APP_API_URL}/reservations/expedia-data-dump/${accountId}/${belongsTo}/${country}`,
 		{
 			method: "POST",
 			body: formData, // send the file as FormData

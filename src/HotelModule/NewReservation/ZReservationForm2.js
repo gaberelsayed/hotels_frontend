@@ -189,6 +189,14 @@ const ZReservationForm2 = ({
 	};
 
 	const handleFileUpload = (uploadFunction) => {
+		// Ask the user if the upload is from the US
+		const isFromUS = window.confirm(
+			"Is this upload from the US? Click OK for Yes, Cancel for No."
+		);
+
+		// Determine the country parameter based on user response
+		const country = isFromUS ? "US" : "NotUS";
+
 		const accountId = hotelDetails._id; // Get the account ID
 		const belongsTo = user._id;
 		const fileInput = document.createElement("input");
@@ -198,7 +206,7 @@ const ZReservationForm2 = ({
 		fileInput.onchange = (e) => {
 			setLoading(true);
 			const file = e.target.files[0];
-			uploadFunction(accountId, belongsTo, file).then((data) => {
+			uploadFunction(accountId, belongsTo, file, country).then((data) => {
 				setLoading(false);
 				if (data.error) {
 					console.log(data.error);

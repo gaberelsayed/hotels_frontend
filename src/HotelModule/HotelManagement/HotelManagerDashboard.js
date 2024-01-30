@@ -343,8 +343,8 @@ const HotelManagerDashboard = () => {
 							<HotelHeatMap
 								hotelRooms={hotelRooms}
 								hotelDetails={hotelDetails}
-								start_date={moment().subtract(1, "days").format("YYYY-MM-DD")}
-								end_date={moment().add(15, "days").format("YYYY-MM-DD")}
+								start_date={moment().subtract(3, "days").format("YYYY-MM-DD")}
+								end_date={moment().add(20, "days").format("YYYY-MM-DD")}
 								allReservations={allReservations}
 							/>
 						) : websiteMenu === "general" ? (
