@@ -44,6 +44,7 @@ const ZReservationForm = ({
 	searchedReservation,
 	pickedRoomsType,
 	setPickedRoomsType,
+	finalTotalByRoom,
 }) => {
 	// eslint-disable-next-line
 	const [loading, setLoading] = useState(false);
@@ -577,7 +578,6 @@ const ZReservationForm = ({
 									? "حجز غرفة للضيف"
 									: "Reserve A Room For The Guest"}
 							</h4>
-
 							<div
 								className='row'
 								style={{
@@ -639,9 +639,11 @@ const ZReservationForm = ({
 								{chosenLanguage === "Arabic"
 									? "المبلغ الإجمالي"
 									: "Total Amount:"}{" "}
-								{searchedReservation &&
-									searchedReservation.confirmation_number &&
-									searchedReservation.total_amount.toLocaleString()}{" "}
+								{searchedReservation && searchedReservation.confirmation_number
+									? searchedReservation.total_amount.toLocaleString()
+									: finalTotalByRoom()
+									  ? finalTotalByRoom()
+									  : 0}{" "}
 								{chosenLanguage === "Arabic" ? "ريال سعودي" : "SAR"}
 							</h4>
 							<div className='text-center mx-auto'>
@@ -657,7 +659,6 @@ const ZReservationForm = ({
 										: "Check The Guest In..."}
 								</button>
 							</div>
-
 							<>
 								{customer_details.name &&
 								start_date &&
@@ -685,11 +686,17 @@ const ZReservationForm = ({
 													? "المبلغ الإجمالي ليوم واحد:"
 													: "Total Amount Per Day:"}{" "}
 												{searchedReservation &&
-													searchedReservation.confirmation_number &&
-													days_of_residence &&
-													(
-														searchedReservation.total_amount / days_of_residence
-													).toLocaleString()}{" "}
+												searchedReservation.confirmation_number &&
+												days_of_residence
+													? (
+															searchedReservation.total_amount /
+															days_of_residence
+													  ).toLocaleString()
+													: finalTotalByRoom()
+													  ? Number(
+																finalTotalByRoom() / days_of_residence
+													    ).toFixed(2)
+													  : 0}{" "}
 												{chosenLanguage === "Arabic"
 													? "ريال سعودي/ يوم"
 													: "SAR/ Day"}
@@ -968,26 +975,51 @@ const ZReservationForm = ({
 											? "احجز الان..."
 											: "Reserve Now..."}
 									</button>
-									<h4
-										className='mt-3'
-										style={{
-											fontWeight: "bold",
-											color:
-												(
-													searchedReservation &&
-													total_amount * days_of_residence
-												).toFixed(2) !==
-												searchedReservation.total_amount.toFixed(2)
-													? "red"
-													: "#3d7bb8",
-										}}
-									>
-										{chosenLanguage === "Arabic"
-											? "المبلغ الإجمالي"
-											: "Total Amount:"}{" "}
-										{Number(total_amount * days_of_residence)}{" "}
-										{chosenLanguage === "Arabic" ? "ريال سعودي" : "SAR"}
-									</h4>{" "}
+									{total_amount && days_of_residence && searchedReservation ? (
+										<h4
+											className='mt-3'
+											style={{
+												fontWeight: "bold",
+												color:
+													(
+														searchedReservation &&
+														total_amount * days_of_residence
+													).toFixed(2) !==
+													searchedReservation.total_amount.toFixed(2)
+														? "red"
+														: "#3d7bb8",
+											}}
+										>
+											{chosenLanguage === "Arabic"
+												? "المبلغ الإجمالي"
+												: "Total Amount:"}{" "}
+											{Number(total_amount * days_of_residence)}{" "}
+											{chosenLanguage === "Arabic" ? "ريال سعودي" : "SAR"}
+										</h4>
+									) : null}
+
+									{!searchedReservation &&
+									!searchedReservation.confirmation_number &&
+									finalTotalByRoom() ? (
+										<h4
+											className='mt-3'
+											style={{
+												fontWeight: "bold",
+												color: "#3d7bb8",
+											}}
+										>
+											{chosenLanguage === "Arabic"
+												? "المبلغ الإجمالي"
+												: "Total Amount:"}{" "}
+											{searchedReservation &&
+											searchedReservation.confirmation_number
+												? searchedReservation.total_amount.toLocaleString()
+												: finalTotalByRoom()
+												  ? finalTotalByRoom()
+												  : 0}
+											{chosenLanguage === "Arabic" ? "ريال سعودي" : "SAR"}
+										</h4>
+									) : null}
 								</div>
 							</div>
 

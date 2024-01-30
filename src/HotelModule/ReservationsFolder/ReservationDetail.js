@@ -367,11 +367,7 @@ const ReservationDetail = ({ reservation, setReservation }) => {
 										</div>
 										<div className='col-md-5 mx-auto'>
 											<h2>
-												{reservation &&
-													reservation.commission &&
-													(
-														reservation.total_amount - reservation.commission
-													).toLocaleString()}{" "}
+												{reservation.total_amount.toLocaleString()}{" "}
 												{chosenLanguage === "Arabic" ? "ريال" : "SAR"}
 											</h2>
 										</div>

@@ -278,7 +278,22 @@ const NewReservationMain = () => {
 		return total * days_of_residence; // Multiply by days of residence
 	};
 
+	const calculateTotalAmountWithRooms = () => {
+		let total = 0;
+		pickedRoomPricing.forEach((room) => {
+			const price = parseFloat(room.chosenPrice); // Convert string to float
+			total += price; // Add the price to the total
+		});
+		return total * days_of_residence; // Multiply by days of residence
+	};
+
 	// Then, in your code where you are setting the `new_reservation` object:
+
+	console.log(calculateTotalAmountNoRooms(), "calculateTotalAmountNoRooms()");
+	console.log(
+		calculateTotalAmountWithRooms(),
+		"calculateTotalAmountWithRooms()"
+	);
 
 	const clickSubmit = () => {
 		if (!customer_details.name) {
@@ -314,6 +329,7 @@ const NewReservationMain = () => {
 
 		const calculatedPickedRoomsType = calculatePickedRoomsType();
 		const total_amount_calculated = calculateTotalAmountNoRooms();
+		const total_amount_calculated_WithRooms = calculateTotalAmountNoRooms();
 
 		const new_reservation = {
 			customer_details: customer_details,
@@ -333,7 +349,9 @@ const NewReservationMain = () => {
 			sub_total:
 				total_amount !== 0
 					? total_amount * days_of_residence
-					: total_amount_calculated,
+					: total_amount_calculated
+					  ? total_amount_calculated
+					  : total_amount_calculated_WithRooms,
 			pickedRoomsPricing: pickedRoomPricing,
 			pickedRoomsType:
 				calculatedPickedRoomsType && calculatedPickedRoomsType.length > 0
@@ -587,6 +605,7 @@ const NewReservationMain = () => {
 											searchedReservation={searchedReservation}
 											pickedRoomsType={pickedRoomsType}
 											setPickedRoomsType={setPickedRoomsType}
+											finalTotalByRoom={calculateTotalAmountWithRooms}
 										/>
 									</>
 								)}
