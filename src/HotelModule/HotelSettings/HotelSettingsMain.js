@@ -69,6 +69,9 @@ const HotelSettingsMain = () => {
 						if (data && data.name && data._id && data2 && data2.length > 0) {
 							setHotelDetails(data2[0]);
 							// other state updates...
+							setHotelPhotos(
+								data2[0] && data2[0].hotelPhotos ? data2[0].hotelPhotos : []
+							);
 
 							getHotelRooms(data2[0]._id, user._id).then((data4) => {
 								if (data4 && data4.error) {
