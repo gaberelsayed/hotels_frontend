@@ -399,3 +399,55 @@ export const gettingDateReport = (date, hotelId, userMainId) => {
 		})
 		.catch((err) => console.log(err));
 };
+
+export const gettingDayOverDay = (hotelId, userMainId) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/dayoverday/${hotelId}/${userMainId}`,
+		{
+			method: "GET",
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
+export const gettingMonthOverMonth = (hotelId, userMainId) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/monthovermonth/${hotelId}/${userMainId}`,
+		{
+			method: "GET",
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
+export const gettingBookingSource = (hotelId, userMainId) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/bookingsource/${hotelId}/${userMainId}`,
+		{
+			method: "GET",
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
+export const gettingReservationStatus = (hotelId, userMainId) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/reservationstatus/${hotelId}/${userMainId}`,
+		{
+			method: "GET",
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
