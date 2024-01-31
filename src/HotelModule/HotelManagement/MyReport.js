@@ -158,7 +158,9 @@ const MyReport = ({ reservations, chosenLanguage, fromTab }) => {
 										fontSize: "1.2rem",
 									}}
 								>
-									Reservation Count (Today)
+									{fromTab === "Today"
+										? "Reservation Count (Today)"
+										: "Reservation Count (Yesterday)"}
 								</h5>
 								<CountUp
 									style={{
@@ -188,7 +190,9 @@ const MyReport = ({ reservations, chosenLanguage, fromTab }) => {
 										fontWeight: "bolder",
 									}}
 								>
-									Total Amount (Today)
+									{fromTab === "Today"
+										? "Total Amount (Today)"
+										: "Total Amount (Yesterday)"}
 								</h5>
 								<CountUp
 									style={{
