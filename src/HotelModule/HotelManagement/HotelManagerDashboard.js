@@ -4,137 +4,92 @@ import AdminNavbarArabic from "../AdminNavbar/AdminNavbarArabic";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
 import { useCartContext } from "../../cart_context";
-import {
-	createRooms,
-	getHotelDetails,
-	getHotelReservations,
-	getHotelRooms,
-	hotelAccount,
-} from "../apiAdmin";
 import { isAuthenticated } from "../../auth";
-import HotelOverview from "./HotelOverview";
-import { toast } from "react-toastify";
-import { defaultHotelDetails } from "../../AdminModule/NewHotels/Assets";
-import HotelHeatMap from "./HotelHeatMap";
-import moment from "moment";
-import GeneralOverview from "./GeneralOverview";
-
-const isActive = (history, path) => {
-	if (history === path) {
-		return {
-			background: "#0f377e",
-			fontWeight: "bold",
-			borderRadius: "5px",
-			fontSize: "1rem",
-			padding: "10px",
-			color: "white",
-			transition: "var(--mainTransition)",
-		};
-	} else {
-		return {
-			backgroundColor: "lightgrey",
-			padding: "10px",
-			borderRadius: "5px",
-			fontSize: "1.2rem",
-			fontWeight: "bold",
-			cursor: "pointer",
-			transition: "var(--mainTransition)",
-			color: "black",
-		};
-	}
-};
+import { getHotelDetails, gettingDateReport, hotelAccount } from "../apiAdmin";
+import { Table } from "antd";
 
 const HotelManagerDashboard = () => {
 	const [AdminMenuStatus, setAdminMenuStatus] = useState(false);
 	const [collapsed, setCollapsed] = useState(false);
-	const [websiteMenu, setWebsiteMenu] = useState("Operations");
-	const [hotelRooms, setHotelRooms] = useState("");
-	// eslint-disable-next-line
-	const [alreadyAddedRooms, setAlreadyAddedRooms] = useState("");
 	const [hotelDetails, setHotelDetails] = useState("");
-	const [currentAddingRoom, setCurrentAddingRoom] = useState("");
-	const [values, setValues] = useState("");
-	const [floorDetails, setFloorDetails] = useState(defaultHotelDetails);
-	const [modalVisible, setModalVisible] = useState(false);
-	const [modalVisible2, setModalVisible2] = useState(false);
-	const [clickedFloor, setClickedFloor] = useState("");
-	const [clickedRoom, setClickedRoom] = useState("");
-	const [allReservations, setAllReservations] = useState([]);
+	const [reservationsToday, setReservationsToday] = useState("");
+	// eslint-disable-next-line
+	const [reservationsYesterday, setReservationsYesterday] = useState("");
+	const [activeTab, setActiveTab] = useState("Today");
 	const { languageToggle, chosenLanguage } = useCartContext();
+
+	// eslint-disable-next-line
 	const { user, token } = isAuthenticated();
 
 	useEffect(() => {
 		if (window.innerWidth <= 1000) {
 			setCollapsed(true);
 		}
+
+		if (window.location.search.includes("today")) {
+			setActiveTab("Today");
+		} else if (window.location.search.includes("yesterday")) {
+			setActiveTab("Yesterday");
+		} else if (window.location.search.includes("overview")) {
+			setActiveTab("Overview");
+		} else {
+			setActiveTab("Today");
+		}
 		// eslint-disable-next-line
-	}, []);
+	}, [activeTab]);
 
-	const processRoomsData = (rooms, selectedFloor) => {
-		const roomCountDetails = {
-			standardRooms: 0,
-			singleRooms: 0,
-			doubleRooms: 0,
-			twinRooms: 0,
-			queenRooms: 0,
-			kingRooms: 0,
-			tripleRooms: 0,
-			quadRooms: 0,
-			studioRooms: 0,
-			suite: 0,
-			masterSuite: 0,
-			familyRooms: 0,
-			// Initialize other room types here...
-		};
+	// Helper function to format a date object into yyyy-mm-dd
+	function formatDate(date) {
+		const d = new Date(date),
+			month = "" + (d.getMonth() + 1),
+			day = "" + d.getDate(),
+			year = d.getFullYear();
 
-		rooms.forEach((room) => {
-			if (
-				room.floor === selectedFloor &&
-				room.room_type &&
-				roomCountDetails.hasOwnProperty(room.room_type)
-			) {
-				roomCountDetails[room.room_type]++;
-			}
-		});
-
-		return roomCountDetails;
-	};
+		return [year, month.padStart(2, "0"), day.padStart(2, "0")].join("-");
+	}
 
 	const gettingHotelData = () => {
 		hotelAccount(user._id, token, user._id).then((data) => {
 			if (data && data.error) {
 				console.log(data.error, "Error rendering");
 			} else {
-				setValues(data);
-				const formattedStartDate = moment()
-					.subtract(2, "days")
-					.format("YYYY-MM-DD");
-				const formattedEndDate = moment().add(30, "days").format("YYYY-MM-DD");
 				getHotelDetails(data._id).then((data2) => {
 					if (data2 && data2.error) {
 						console.log(data2.error, "Error rendering");
 					} else {
 						if (data && data.name && data._id && data2 && data2.length > 0) {
-							getHotelReservations(
-								user._id,
-								data2[0]._id,
-								formattedStartDate,
-								formattedEndDate
-							).then((data3) => {
-								if (data3 && data3.error) {
-									console.log(data3.error);
-								} else {
-									setAllReservations(data3 && data3.length > 0 ? data3 : []);
-								}
-							});
-
 							setHotelDetails(data2[0]);
 
-							getHotelRooms(data2[0]._id, user._id).then((data4) => {
+							// Format today's date
+							const today = new Date();
+							const formattedToday = formatDate(today);
+
+							// Get yesterday's date
+							const yesterday = new Date(today);
+							yesterday.setDate(yesterday.getDate() - 1);
+							const formattedYesterday = formatDate(yesterday);
+
+							// Get today's report
+							gettingDateReport(formattedToday, data2[0]._id, data._id).then(
+								(data3) => {
+									if (data3 && data3.error) {
+										console.log(data3.error);
+									} else {
+										setReservationsToday(data3);
+									}
+								}
+							);
+
+							// Get yesterday's report
+							gettingDateReport(
+								formattedYesterday,
+								data2[0]._id,
+								data._id
+							).then((data4) => {
 								if (data4 && data4.error) {
 									console.log(data4.error);
 								} else {
-									setHotelRooms(data4);
+									setReservationsYesterday(data4);
 								}
 							});
 						}
@@ -149,64 +104,146 @@ const HotelManagerDashboard = () => {
 		// eslint-disable-next-line
 	}, []);
 
-	const addRooms = () => {
-		if (!hotelRooms || hotelRooms.length === 0) {
-			return toast.error("Please Add Rooms");
-		}
+	const aggregateData = (reservations) => {
+		const aggregation =
+			reservations &&
+			reservations.reduce((acc, reservation) => {
+				const source = reservation.booking_source || "Unknown";
+				if (!acc[source]) {
+					acc[source] = { count: 0, total_amount: 0 };
+				}
+				acc[source].count += 1;
+				acc[source].total_amount += reservation.total_amount;
+				return acc;
+			}, {});
 
-		// Remove duplicate rooms based on room_number
-		const uniqueRooms = Array.from(
-			new Map(hotelRooms.map((room) => [room["room_number"], room])).values()
-		);
-
-		getHotelRooms(user._id, hotelDetails._id).then((existingRoomsData) => {
-			if (existingRoomsData && existingRoomsData.error) {
-				console.error(existingRoomsData.error, "Error rendering");
-			} else {
-				// Filter out rooms that have already been added
-				const roomsToAdd = uniqueRooms.filter(
-					(newRoom) =>
-						!existingRoomsData.some(
-							(existingRoom) => existingRoom.room_number === newRoom.room_number
-						)
-				);
-
-				roomsToAdd.forEach((room, index) => {
-					setTimeout(() => {
-						setCurrentAddingRoom(room.room_number);
-						createRooms(user._id, token, room).then((data) => {
-							if (data && data.error) {
-								console.error(data.error);
-							} else {
-								if (index === roomsToAdd.length - 1) {
-									// Reset after the last room addition
-									setCurrentAddingRoom(null);
-									window.location.reload(false);
-								}
-							}
-						});
-					}, 2500 * index); // Delay each creation by 2.5 seconds
-				});
-			}
-		});
+		return Object.entries(aggregation).map(([source, data]) => ({
+			source,
+			...data,
+		}));
 	};
 
-	useEffect(() => {
-		if (modalVisible && clickedFloor) {
-			const updatedRoomCountDetails = processRoomsData(
-				hotelRooms,
-				clickedFloor
-			);
+	const getMaxAmount = (data) => {
+		return Math.max(...data.map((item) => item.total_amount));
+	};
 
-			setFloorDetails((prevDetails) => ({
-				...prevDetails,
-				roomCountDetails: {
-					...prevDetails.roomCountDetails,
-					...updatedRoomCountDetails,
-				},
-			}));
-		}
-	}, [modalVisible, hotelRooms, clickedFloor]);
+	const sourceToColorMap = (source) => {
+		const baseColors = {
+			"BOOKING.COM": "#edb67f", // A shade of orange-brown
+			EXPEDIA: "#edaf6f", // A shade of dark peach
+			AGODA: "#eda46f", // A shade of muted orange
+			MANUAL: "#ed917f", // A shade of salmon
+			// ...add more sources and shades as needed
+		};
+		return baseColors[source.toUpperCase()] || "#edb67f"; // Default color if not matched
+	};
+
+	const columns = [
+		{
+			title: chosenLanguage === "Arabic" ? "مصدر الحجز" : "Booking Source",
+			dataIndex: "source",
+			key: "source",
+			render: (text) => (
+				<span style={{ color: sourceToColorMap(text), fontWeight: "bold" }}>
+					{text.toUpperCase()}
+				</span>
+			),
+		},
+		{
+			title:
+				chosenLanguage === "Arabic" ? "عدد الحجوزات" : "Reservations Count",
+			dataIndex: "count",
+			key: "count",
+		},
+		{
+			title: chosenLanguage === "Arabic" ? "المبلغ الإجمالي" : "Total Amount",
+			dataIndex: "total_amount",
+			key: "total_amount",
+			render: (amount, record, index) => {
+				const maxAmount = getMaxAmount(aggregatedData); // Make sure you have this function implemented to get the max amount
+				const barWidth = (amount / maxAmount) * 100;
+				const barColor = sourceToColorMap(record.source);
+				return (
+					<div
+						style={{ position: "relative", width: "100%", textAlign: "left" }}
+					>
+						<div
+							style={{
+								display: "inline-block",
+								width: `${barWidth}%`,
+								backgroundColor: barColor,
+								height: "10px",
+							}}
+						/>
+						<span style={{ marginRight: "10px", fontWeight: "bold" }}>
+							{`${amount.toLocaleString(undefined, {
+								minimumFractionDigits: 2,
+								maximumFractionDigits: 2,
+							})} SAR`}
+						</span>
+					</div>
+				);
+			},
+		},
+	];
+
+	const aggregatedData = aggregateData(reservationsToday);
+
+	const AggregatedTable = ({ data, title }) => {
+		const dataSource = data.map((item, index) => ({
+			key: index,
+			...item,
+		}));
+
+		return (
+			<div>
+				<h3>{title}</h3>
+				<Table columns={columns} dataSource={dataSource} pagination={false} />
+			</div>
+		);
+	};
+
+	// After fetching the data...
+	const today = new Date();
+
+	const aggregatedToday = aggregateData(
+		reservationsToday &&
+			reservationsToday.filter(
+				(reservation) =>
+					new Date(reservation.checkin_date).toDateString() ===
+					today.toDateString()
+			)
+	);
+
+	const aggregatedBookedToday = aggregateData(
+		reservationsToday &&
+			reservationsToday.filter(
+				(reservation) =>
+					new Date(reservation.booked_at).toDateString() ===
+					today.toDateString()
+			)
+	);
+
+	const summaryObject = {
+		checkedInToday: {
+			total_amount:
+				aggregatedToday &&
+				aggregatedToday.reduce((sum, item) => sum + item.total_amount, 0),
+			total_reservations_count:
+				aggregatedToday &&
+				aggregatedToday.reduce((sum, item) => sum + item.count, 0),
+		},
+		booked_at_today: {
+			total_amount:
+				aggregatedBookedToday &&
+				aggregatedBookedToday.reduce((sum, item) => sum + item.total_amount, 0),
+			total_reservations_count:
+				aggregatedBookedToday &&
+				aggregatedBookedToday.reduce((sum, item) => sum + item.count, 0),
+		},
+	};
+
+	console.log(summaryObject, "summaryObject");
 
 	return (
 		<HotelManagerDashboardWrapper
@@ -256,102 +293,84 @@ const HotelManagerDashboard = () => {
 						{chosenLanguage === "English" ? "ARABIC" : "English"}
 					</div>
 
-					<div
-						className='row text-center'
-						style={{
-							justifyContent: "center",
-						}}
-					>
-						<div
-							style={isActive(websiteMenu, "Overview")}
-							className='menuItems col-md-4 col-5 my-3'
-							onClick={() => setWebsiteMenu("Overview")}
-						>
-							<Link
-								onClick={() => setWebsiteMenu("Overview")}
-								style={{
-									color: websiteMenu === "Overview" ? "white" : "",
+					<div style={{ background: "#8a8a8a", padding: "1px" }}>
+						<div className='my-2 tab-grid col-md-8'>
+							<Tab
+								isActive={activeTab === "Today"}
+								onClick={() => {
+									setActiveTab("Today");
 								}}
-								to='#'
 							>
-								<i className='fa fa-plus mx-1'></i>
-								{chosenLanguage === "Arabic" ? "ملخص" : "HOTEL OVERVIEW"}
-							</Link>
-						</div>
-
-						<div
-							style={isActive(websiteMenu, "Operations")}
-							className='menuItems col-md-4 col-5 my-3'
-							onClick={() => setWebsiteMenu("Operations")}
-						>
-							<Link
-								style={{
-									color: websiteMenu === "Operations" ? "white" : "",
+								<Link to='/hotel-management/dashboard?today'>
+									{chosenLanguage === "Arabic"
+										? "تقرير حجوزات اليوم"
+										: "Today's Overview"}
+								</Link>
+							</Tab>
+							<Tab
+								isActive={activeTab === "Yesterday"}
+								onClick={() => {
+									setActiveTab("Yesterday");
 								}}
-								onClick={() => setWebsiteMenu("Operations")}
-								to='#'
 							>
-								<i className='fa fa-edit mx-1'></i>
-								{chosenLanguage === "Arabic"
-									? "HOTEL HEAT MAP"
-									: "HOTEL HEAT MAP"}
-							</Link>
-						</div>
-
-						<div
-							style={isActive(websiteMenu, "general")}
-							className='menuItems col-md-4 col-5 my-3'
-							onClick={() => setWebsiteMenu("general")}
-						>
-							<Link
-								style={{
-									color: websiteMenu === "general" ? "white" : "",
+								<Link to='/hotel-management/dashboard?yesterday'>
+									{chosenLanguage === "Arabic"
+										? "تقرير حجوزات الأمس"
+										: "Yestery Overview"}
+								</Link>
+							</Tab>
+							<Tab
+								isActive={activeTab === "Overview"}
+								onClick={() => {
+									setActiveTab("Overview");
 								}}
-								onClick={() => setWebsiteMenu("general")}
-								to='#'
 							>
-								<i className='fa-solid fa-house-medical mx-1'></i>
-								{chosenLanguage === "Arabic"
-									? "GENERAL OVERVIEW"
-									: "GENERAL OVERVIEW"}
-							</Link>
+								<Link to='/hotel-management/dashboard?overview'>
+									{chosenLanguage === "Arabic"
+										? "لمحة عامة"
+										: "Reservations Overview"}
+								</Link>
+							</Tab>
 						</div>
 					</div>
 
 					<div className='container-wrapper'>
-						{websiteMenu === "Overview" ? (
-							<HotelOverview
-								hotelRooms={hotelRooms}
-								setHotelRooms={setHotelRooms}
-								hotelDetails={hotelDetails}
-								values={values}
-								addRooms={addRooms}
-								currentAddingRoom={currentAddingRoom}
-								alreadyAddedRooms={alreadyAddedRooms}
-								floorDetails={floorDetails}
-								setFloorDetails={setFloorDetails}
-								modalVisible={modalVisible}
-								setModalVisible={setModalVisible}
-								modalVisible2={modalVisible2}
-								setModalVisible2={setModalVisible2}
-								clickedFloor={clickedFloor}
-								setClickedFloor={setClickedFloor}
-								clickedRoom={clickedRoom}
-								setClickedRoom={setClickedRoom}
-							/>
-						) : websiteMenu === "Operations" && hotelRooms.length > 0 ? (
-							<HotelHeatMap
-								hotelRooms={hotelRooms}
-								hotelDetails={hotelDetails}
-								start_date={moment().subtract(3, "days").format("YYYY-MM-DD")}
-								end_date={moment().add(20, "days").format("YYYY-MM-DD")}
-								allReservations={allReservations}
-							/>
-						) : websiteMenu === "general" ? (
-							<GeneralOverview
-								chosenLanguage={chosenLanguage}
-								hotelDetails={hotelDetails}
-							/>
+						<div>
+							<h4
+								style={{
+									fontWeight: "bold",
+									textTransform: "capitalize",
+									textAlign: "center",
+								}}
+							>
+								Hotel ({hotelDetails && hotelDetails.hotelName})
+							</h4>
+						</div>
+						{activeTab === "Today" &&
+						reservationsToday &&
+						reservationsToday.length > 0 ? (
+							<>
+								<div className='container'>
+									<AggregatedTable
+										data={aggregatedToday}
+										title={
+											chosenLanguage === "Arabic"
+												? "ملخص تسجيلات الدخول اليوم"
+												: "Today's Check-ins Summary"
+										}
+									/>
+									<div className='my-4'>
+										<AggregatedTable
+											data={aggregatedBookedToday}
+											title={
+												chosenLanguage === "Arabic"
+													? "العملاء الذين حجزوا اليوم"
+													: "Today's Bookings Summary"
+											}
+										/>
+									</div>
+								</div>
+							</>
 						) : null}
 					</div>
 				</div>
@@ -367,10 +386,11 @@ const HotelManagerDashboardWrapper = styled.div`
 	/* background: #ededed; */
 	margin-top: 20px;
 	min-height: 715px;
+	text-align: ${(props) => (props.isArabic ? "right" : "")};
 
 	.grid-container-main {
 		display: grid;
-		grid-template-columns: ${(props) => (props.show ? "5% 75%" : "17% 75%")};
+		grid-template-columns: ${(props) => (props.show ? "5% 90%" : "15% 84%")};
 	}
 
 	.container-wrapper {
@@ -381,11 +401,36 @@ const HotelManagerDashboardWrapper = styled.div`
 		margin: 0px 10px;
 	}
 
-	tr {
-		text-align: ${(props) => (props.isArabic ? "right" : "")};
+	.tab-grid {
+		display: flex;
+		/* Additional styling for grid layout */
 	}
 
 	@media (max-width: 1400px) {
 		background: white;
+	}
+`;
+
+const Tab = styled.div`
+	cursor: pointer;
+	margin: 0 3px; /* 3px margin between tabs */
+	padding: 15px 5px; /* Adjust padding as needed */
+	font-weight: ${(props) => (props.isActive ? "bold" : "bold")};
+	background-color: ${(props) =>
+		props.isActive
+			? "transparent"
+			: "#bbbbbb"}; /* Light grey for unselected tabs */
+	box-shadow: ${(props) =>
+		props.isActive ? "inset 5px 5px 5px rgba(0, 0, 0, 0.3)" : "none"};
+	transition: all 0.3s ease; /* Smooth transition for changes */
+	min-width: 25px; /* Minimum width of the tab */
+	width: 100%; /* Full width within the container */
+	text-align: center; /* Center the text inside the tab */
+	/* Additional styling for tabs */
+	z-index: 100;
+	font-size: 1.2rem;
+
+	a {
+		color: ${(props) => (props.isActive ? "white" : "black")};
 	}
 `;

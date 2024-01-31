@@ -550,6 +550,7 @@ const ZReservationForm2 = ({
 											<option value=''>
 												{booking_source ? booking_source : "Please Select"}
 											</option>
+											<option value='janat'>Janat</option>
 											<option value='manual'>Manual Reservation</option>
 											<option value='booking.com'>Booking.com</option>
 											<option value='trivago'>Trivago</option>

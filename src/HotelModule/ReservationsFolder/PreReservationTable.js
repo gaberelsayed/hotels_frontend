@@ -136,6 +136,8 @@ const PreReservationTable = ({
 						}; // Light yellow background
 						break;
 					case "closed":
+					case "checked_out":
+					case "early_checked_out":
 						style = {
 							background: "#90EE90",
 							color: "green",

@@ -344,3 +344,58 @@ export const bookingData = (accountId, belongsTo, file) => {
 		.then((response) => response.json())
 		.catch((err) => console.log(err));
 };
+
+export const cloudinaryUpload1 = (userId, token, image) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/admin/uploadimages/${userId}`,
+		{
+			method: "POST",
+			headers: {
+				Accept: "application/json",
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${token}`,
+			},
+			body: JSON.stringify(image),
+			// body: image,
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => {
+			console.log(err);
+		});
+};
+
+export const updateHotelDetails = (hotelId, userId, token, details) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/hotel-details-update/${hotelId}/${userId}`,
+		{
+			method: "PUT",
+			headers: {
+				// content type?
+				"Content-Type": "application/json",
+				Accept: "application/json",
+				Authorization: `Bearer ${token}`,
+			},
+			body: JSON.stringify(details),
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
+export const gettingDateReport = (date, hotelId, userMainId) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/reservations/todate/ahowan/yaba/${date}/${hotelId}/${userMainId}`,
+		{
+			method: "GET",
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};

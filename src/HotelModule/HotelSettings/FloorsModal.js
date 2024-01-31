@@ -16,7 +16,6 @@ const FloorsModal = ({
 	rooms,
 	setRooms,
 	values,
-	alreadyAddedRooms,
 }) => {
 	const getRoomCountTotal = (roomCountDetails) => {
 		return Object.values(roomCountDetails).reduce((total, count) => {
