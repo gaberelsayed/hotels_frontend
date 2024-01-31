@@ -70,7 +70,19 @@ const HotelSettingsMain = () => {
 							setHotelDetails(data2[0]);
 							// other state updates...
 							setHotelPhotos(
-								data2[0] && data2[0].hotelPhotos ? data2[0].hotelPhotos : []
+								data2[0] &&
+									data2[0].hotelPhotos &&
+									data2[0].hotelPhotos.length > 0
+									? data2[0].hotelPhotos
+									: []
+							);
+
+							setPricingData(
+								data2[0] &&
+									data2[0].pricingCalendar &&
+									data2[0].pricingCalendar.length > 0
+									? data2[0].pricingCalendar
+									: []
 							);
 
 							getHotelRooms(data2[0]._id, user._id).then((data4) => {

@@ -59,7 +59,11 @@ const ZHotelDetailsForm = ({
 								}
 								className='form-control'
 							>
-								<option>يرجى الاختيار / مطلوب*</option>
+								{hotelDetails && hotelDetails.parkingLot ? (
+									<option value=''>نعم</option>
+								) : (
+									<option value=''>يرجى الاختيار / مطلوب*</option>
+								)}
 								<option value='0'>لا</option>
 								<option value='1'>نعم</option>
 							</select>
