@@ -35,6 +35,10 @@ const ZReservationForm2 = ({
 	pickedRoomsType,
 	setPickedRoomsType,
 	roomInventory,
+	total_guests,
+	setTotalGuests,
+	setSendEmail,
+	sendEmail,
 }) => {
 	const [selectedRoomType, setSelectedRoomType] = useState("");
 	const [selectedPriceOption, setSelectedPriceOption] = useState("");
@@ -612,14 +616,69 @@ const ZReservationForm2 = ({
 										style={{ marginTop: "10px", marginBottom: "10px" }}
 									>
 										<label style={{ fontWeight: "bold" }}>
+											{chosenLanguage === "Arabic"
+												? "عدد الضيوف"
+												: "Total Guests"}
+										</label>
+										<input
+											type='number'
+											min={1} // Assuming at least 1 guest must be selected
+											value={total_guests}
+											onChange={(e) => setTotalGuests(e.target.value)}
+											style={{
+												height: "auto",
+												width: "100%",
+												padding: "10px",
+												boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
+												borderRadius: "10px",
+											}}
+										/>
+									</div>
+								</div>
+
+								<div className='col-md-6 mx-auto my-2'>
+									<div
+										className='form-group'
+										style={{ marginTop: "10px", marginBottom: "10px" }}
+									>
+										<label style={{ fontWeight: "bold" }}>
+											{chosenLanguage === "Arabic"
+												? "إرسال بريد إلكتروني"
+												: "Send Email"}
+										</label>
+										<br />
+										<input
+											type='checkbox'
+											checked={sendEmail}
+											onChange={(e) => setSendEmail(e.target.checked)}
+											style={{
+												width: "20px",
+												height: "20px",
+											}}
+										/>
+									</div>
+								</div>
+
+								<div className='col-md-8 mx-auto my-2'>
+									<div
+										className='form-group'
+										style={{ marginTop: "10px", marginBottom: "10px" }}
+									>
+										<label style={{ fontWeight: "bold" }}>
 											{chosenLanguage === "Arabic" ? "تعليق الضيف" : "Comment"}
 										</label>
 										<textarea
 											background='red'
-											cols={6}
+											cols={8}
 											type='text'
 											value={booking_comment}
 											onChange={(e) => setBookingComment(e.target.value)}
+											style={{
+												width: "100%",
+												padding: "10px",
+												boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
+												borderRadius: "10px",
+											}}
 										/>
 									</div>
 								</div>

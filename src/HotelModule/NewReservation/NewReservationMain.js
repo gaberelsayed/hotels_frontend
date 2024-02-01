@@ -78,7 +78,8 @@ const NewReservationMain = () => {
 	const [searchedReservation, setSearchedReservation] = useState("");
 	const [roomInventory, setRoomInventory] = useState("");
 	const [activeTab, setActiveTab] = useState("reserveARoom");
-
+	const [sendEmail, setSendEmail] = useState(false);
+	const [total_guests, setTotalGuests] = useState("");
 	const [customer_details, setCustomer_details] = useState({
 		name: "",
 		phone: "",
@@ -345,6 +346,7 @@ const NewReservationMain = () => {
 			belongsTo: hotelDetails.belongsTo._id,
 			hotelId: hotelDetails._id,
 			roomId: pickedHotelRooms,
+			sendEmail: sendEmail,
 			booked_at: new Date(),
 			sub_total:
 				total_amount !== 0
@@ -360,9 +362,10 @@ const NewReservationMain = () => {
 			payment: payment_status,
 			reservation_status: pickedHotelRooms.length > 0 ? "InHouse" : "Confirmed",
 			total_rooms: pickedHotelRooms.length,
-			total_guests: pickedHotelRooms.length,
+			total_guests: total_guests ? total_guests : pickedHotelRooms.length,
 			booking_comment: booking_comment,
 			comment: booking_comment,
+			hotelName: hotelDetails.hotelName,
 		};
 
 		if (
@@ -732,6 +735,10 @@ const NewReservationMain = () => {
 									pickedRoomsType={pickedRoomsType}
 									setPickedRoomsType={setPickedRoomsType}
 									hotelDetails={hotelDetails}
+									total_guests={total_guests}
+									setTotalGuests={setTotalGuests}
+									setSendEmail={setSendEmail}
+									sendEmail={sendEmail}
 								/>
 							</>
 						)}
