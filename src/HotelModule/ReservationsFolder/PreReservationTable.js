@@ -50,10 +50,11 @@ const PreReservationTable = ({
 	};
 
 	function getTotalAmount(reservation) {
-		const dailyTotal = reservation.pickedRoomsType.reduce(
-			(acc, room) => acc + Number(room.chosenPrice) * room.count,
-			0
-		);
+		const dailyTotal =
+			reservation.pickedRoomsType.reduce(
+				(acc, room) => acc + Number(room.chosenPrice) * room.count,
+				0
+			) + Number(0);
 		return dailyTotal * reservation.days_of_residence;
 	}
 
