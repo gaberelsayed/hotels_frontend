@@ -71,6 +71,29 @@ export const createRooms = (userId, token, room) => {
 		});
 };
 
+export const sendReservationConfirmationEmail = (
+	reservationData,
+	userId,
+	hotelId,
+	token
+) => {
+	return fetch(`${process.env.REACT_APP_API_URL}/send-reservation-email`, {
+		method: "POST",
+		headers: {
+			Accept: "application/json",
+			"Content-Type": "application/json",
+			Authorization: `Bearer ${token}`,
+		},
+		body: JSON.stringify(reservationData),
+	})
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => {
+			console.log(err);
+		});
+};
+
 export const getHotelRooms = (accountId, userId) => {
 	return fetch(`${process.env.REACT_APP_API_URL}/room/${accountId}/${userId}`, {
 		method: "GET",

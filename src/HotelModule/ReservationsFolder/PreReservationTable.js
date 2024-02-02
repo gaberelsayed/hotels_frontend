@@ -309,6 +309,7 @@ const PreReservationTable = ({
 					<ReservationDetail
 						reservation={selectedReservation}
 						setReservation={setSelectedReservation}
+						hotelDetails={hotelDetails}
 					/>
 				)}
 			</Modal>

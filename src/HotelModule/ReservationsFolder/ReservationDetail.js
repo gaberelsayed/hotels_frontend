@@ -5,8 +5,12 @@ import { isAuthenticated } from "../../auth";
 import { Spin, Modal, Select } from "antd";
 import moment from "moment";
 import { EditOutlined } from "@ant-design/icons";
-import { updateSingleReservation } from "../apiAdmin";
+import {
+	sendReservationConfirmationEmail,
+	updateSingleReservation,
+} from "../apiAdmin";
 import { toast } from "react-toastify";
+import { EditReservationMain } from "./EditWholeReservation/EditReservationMain";
 
 const Wrapper = styled.div`
 	min-height: 750px;
@@ -71,10 +75,11 @@ const ContentSection = styled.div`
 
 // ... other styled components
 
-const ReservationDetail = ({ reservation, setReservation }) => {
+const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 	// eslint-disable-next-line
 	const [loading, setLoading] = useState(false);
 	const [isModalVisible, setIsModalVisible] = useState(false);
+	const [isModalVisible2, setIsModalVisible2] = useState(false);
 
 	// eslint-disable-next-line
 	const [selectedStatus, setSelectedStatus] = useState("");
@@ -134,6 +139,54 @@ const ReservationDetail = ({ reservation, setReservation }) => {
 
 		const confirmationMessage = `Are you sure you want to change the status of the reservation to ${selectedStatus}?`;
 		if (window.confirm(confirmationMessage)) {
+			const updateData = {
+				reservation_status: selectedStatus,
+				hotelName: hotelDetails.hotelName,
+			};
+
+			// If the selected status is 'early_checked_out', also update the checkout_date and related fields
+			if (selectedStatus === "early_checked_out") {
+				const newCheckoutDate = new Date();
+				const startDate = new Date(reservation.checkin_date);
+				const diffTime = Math.abs(newCheckoutDate - startDate);
+				const daysOfResidence = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+				updateData.checkout_date = newCheckoutDate.toISOString();
+				updateData.days_of_residence = daysOfResidence;
+
+				// Calculate the new total amount
+				const totalAmountPerDay = reservation.pickedRoomsType.reduce(
+					(total, room) => {
+						return total + room.count * parseFloat(room.chosenPrice);
+					},
+					0
+				);
+
+				updateData.total_amount = totalAmountPerDay * daysOfResidence;
+			}
+
+			updateSingleReservation(reservation._id, updateData).then((response) => {
+				if (response.error) {
+					console.error(response.error);
+					toast.error("An error occurred while updating the status");
+				} else {
+					toast.success("Status was successfully updated");
+					setIsModalVisible(false);
+
+					// Update local state or re-fetch reservation data if necessary
+					setReservation(response.reservation);
+				}
+			});
+		}
+	};
+
+	const handleUpdateReservationStatus2 = () => {
+		if (!selectedStatus) {
+			return toast.error("Please Select A Status...");
+		}
+
+		const confirmationMessage = `Are you sure you want to change the status of the reservation to ${selectedStatus}?`;
+		if (window.confirm(confirmationMessage)) {
 			const updateData = { reservation_status: selectedStatus };
 
 			// If the selected status is 'early_checked_out', also update the checkout_date and related fields
@@ -186,6 +239,33 @@ const ReservationDetail = ({ reservation, setReservation }) => {
 				<div className='otherContentWrapper'>
 					<Modal
 						title={
+							chosenLanguage === "Arabic" ? "تعديل الحجز" : "Edit Reservation"
+						}
+						open={isModalVisible2}
+						onCancel={() => setIsModalVisible2(false)}
+						onOk={handleUpdateReservationStatus2}
+						footer={null}
+						width='84.5%' // Set the width to 80%
+						style={{
+							// If Arabic, align to the left, else align to the right
+							position: "absolute",
+							left: chosenLanguage === "Arabic" ? "1%" : "auto",
+							right: chosenLanguage === "Arabic" ? "auto" : "5%",
+							top: "1%",
+						}}
+					>
+						{reservation && (
+							<EditReservationMain
+								reservation={reservation}
+								setReservation={setReservation}
+								chosenLanguage={chosenLanguage}
+								hotelDetails={hotelDetails}
+							/>
+						)}
+					</Modal>
+
+					<Modal
+						title={
 							chosenLanguage === "Arabic"
 								? "تعدين الحجز"
 								: "Update Reservation Status"
@@ -234,6 +314,20 @@ const ReservationDetail = ({ reservation, setReservation }) => {
 					</div>
 
 					<div className='container-wrapper'>
+						<h5
+							className='text-center mx-auto'
+							style={{
+								fontWeight: "bold",
+								textDecoration: "underline",
+								cursor: "pointer",
+							}}
+							onClick={() => {
+								setIsModalVisible2(true);
+							}}
+						>
+							<EditOutlined />
+							{chosenLanguage === "Arabic" ? "تعديل الحجز" : "Edit Reservation"}
+						</h5>
 						<Header>
 							<Section>
 								{/* Left side of the header */}
@@ -274,7 +368,25 @@ const ReservationDetail = ({ reservation, setReservation }) => {
 												reservation.customer_details.name}
 										</h3>
 										<div className='row  my-2'>
-											<button className='col-md-5'>Email</button>
+											<button
+												className='col-md-5'
+												onClick={() => {
+													sendReservationConfirmationEmail({
+														...reservation,
+														hotelName: hotelDetails.hotelName,
+													}).then((data) => {
+														if (data && data.error) {
+															toast.error("Failed Sending Email");
+														} else {
+															toast.success(
+																`Email was successfully sent to ${reservation.customer_details.email}`
+															);
+														}
+													});
+												}}
+											>
+												Email
+											</button>
 											<button className='col-md-5'>SMS</button>
 										</div>
 									</div>

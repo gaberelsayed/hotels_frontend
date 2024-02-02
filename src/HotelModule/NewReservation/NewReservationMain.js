@@ -330,7 +330,7 @@ const NewReservationMain = () => {
 
 		const calculatedPickedRoomsType = calculatePickedRoomsType();
 		const total_amount_calculated = calculateTotalAmountNoRooms();
-		const total_amount_calculated_WithRooms = calculateTotalAmountNoRooms();
+		const total_amount_calculated_WithRooms = calculateTotalAmountWithRooms();
 
 		const new_reservation = {
 			customer_details: customer_details,

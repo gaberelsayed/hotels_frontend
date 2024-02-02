@@ -156,8 +156,6 @@ const ZReservationForm2 = ({
 		setSelectedCount("");
 	};
 
-	console.log(pickedRoomsType, "pickedRoomsType");
-
 	const calculateTotalAmountPerDay = () => {
 		return pickedRoomsType.reduce((total, room) => {
 			return total + room.count * room.chosenPrice;
@@ -908,8 +906,8 @@ const ZReservationForm2 = ({
 							<>
 								<div className='total-amount my-3'>
 									<h5 style={{ fontWeight: "bold" }}>
-										Days Of Residence: {days_of_residence} Days /{" "}
-										{days_of_residence <= 1 ? 1 : days_of_residence - 1} Nights
+										Days Of Residence: {days_of_residence + 1} Days /{" "}
+										{days_of_residence <= 1 ? 1 : days_of_residence} Nights
 									</h5>
 
 									<h4>
