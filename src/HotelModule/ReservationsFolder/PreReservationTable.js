@@ -49,6 +49,7 @@ const PreReservationTable = ({
 			});
 	};
 
+	// eslint-disable-next-line
 	function getTotalAmount(reservation) {
 		const dailyTotal =
 			reservation.pickedRoomsType.reduce(
@@ -178,8 +179,7 @@ const PreReservationTable = ({
 			title: chosenLanguage === "Arabic" ? "المبلغ الإجمالي" : "Total Amount",
 			dataIndex: "total_amount",
 			key: "total_amount",
-			render: (text, record) =>
-				`${Number(getTotalAmount(record)).toFixed(2)} SAR`,
+			render: (total_amount) => `${total_amount.toLocaleString()} SAR`,
 		},
 		{
 			title: chosenLanguage === "Arabic" ? "تفاصيل" : "DETAILS...",
