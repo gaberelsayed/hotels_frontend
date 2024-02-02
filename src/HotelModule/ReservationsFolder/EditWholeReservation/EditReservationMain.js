@@ -496,6 +496,40 @@ export const EditReservationMain = ({
 									/>
 								</div>
 							</div>
+							<div className='col-md-6'>
+								<label
+									className='dataPointsReview mt-3'
+									style={{
+										fontWeight: "bold",
+										fontSize: "1.05rem",
+										color: "#32322b",
+									}}
+								>
+									{chosenLanguage === "Arabic"
+										? "موعد انتهاء الأقامة"
+										: "Checkout Date"}{" "}
+									{reservation.checkout_date
+										? `(${new Date(reservation.checkout_date).toDateString()})`
+										: ""}
+								</label>
+								<br />
+								<DatePicker
+									className='inputFields'
+									disabledDate={disabledEndDate}
+									inputReadOnly
+									size='small'
+									showToday={true}
+									placeholder='Please pick the desired schedule checkout date'
+									style={{
+										height: "auto",
+										width: "100%",
+										padding: "10px",
+										boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
+										borderRadius: "10px",
+									}}
+									onChange={onEndDateChange}
+								/>
+							</div>
 
 							<div className='col-md-6'>
 								<label
@@ -529,41 +563,6 @@ export const EditReservationMain = ({
 										borderRadius: "10px",
 									}}
 									onChange={onStartDateChange}
-								/>
-							</div>
-
-							<div className='col-md-6'>
-								<label
-									className='dataPointsReview mt-3'
-									style={{
-										fontWeight: "bold",
-										fontSize: "1.05rem",
-										color: "#32322b",
-									}}
-								>
-									{chosenLanguage === "Arabic"
-										? "موعد انتهاء الأقامة"
-										: "Checkout Date"}{" "}
-									{reservation.checkout_date
-										? `(${new Date(reservation.checkout_date).toDateString()})`
-										: ""}
-								</label>
-								<br />
-								<DatePicker
-									className='inputFields'
-									disabledDate={disabledEndDate}
-									inputReadOnly
-									size='small'
-									showToday={true}
-									placeholder='Please pick the desired schedule checkout date'
-									style={{
-										height: "auto",
-										width: "100%",
-										padding: "10px",
-										boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
-										borderRadius: "10px",
-									}}
-									onChange={onEndDateChange}
 								/>
 							</div>
 						</div>
@@ -1066,6 +1065,7 @@ const EditReservationMainWrapper = styled.div`
 		padding: 0.5rem;
 		font-size: 1rem;
 		border: 1px solid #ccc;
+		text-align: ${(props) => (props.isArabic ? "right" : "")};
 	}
 	input[type="text"]:focus,
 	input[type="email"]:focus,
