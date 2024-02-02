@@ -59,25 +59,46 @@ const ZReservationForm2 = ({
 		setUpdatedRoomPrice(room.chosenPrice); // Set the current price here
 	};
 
-	const onStartDateChange = (date, dateString) => {
-		setStart_date(dateString); // Update the start date
+	const onStartDateChange = (value) => {
+		// Ensure 'value' is a moment object and convert it to a Date object at noon
+		const dateWithNoon = value
+			? value.clone().set({ hour: 12, minute: 0, second: 0 }).toDate()
+			: null;
+
+		setStart_date(dateWithNoon ? dateWithNoon.toISOString() : null);
 	};
 
-	const onEndDateChange = (date, dateString) => {
-		setEnd_date(dateString); // Update the end date
+	// const onStartDateChange = (date, dateString) => {
+	// 	setStart_date(dateString); // Update the start date
+	// };
 
-		if (dateString && start_date) {
-			const start = moment(start_date);
-			const end = moment(dateString);
-			const duration = end.diff(start, "days");
+	const onEndDateChange = (date) => {
+		// Ensure 'date' is a moment object and convert it to a Date object at noon
+		const adjustedEndDate = date
+			? date.clone().set({ hour: 12, minute: 0, second: 0 }).toDate()
+			: null;
 
-			if (duration >= 0) {
-				setDays_of_residence(duration);
-			} else {
-				setDays_of_residence(0); // Reset if the end date is before the start date
-			}
+		// Set the end date state
+		setEnd_date(adjustedEndDate ? adjustedEndDate.toISOString() : null);
+
+		// Now calculate the days of residence based on the adjusted end date
+		if (adjustedEndDate && start_date) {
+			// Make sure to convert start_date to a Date object at noon
+			const adjustedStartDate = moment(start_date)
+				.set({ hour: 12, minute: 0, second: 0 })
+				.toDate();
+
+			// Calculate the difference in days
+			const duration = moment(adjustedEndDate).diff(
+				moment(adjustedStartDate),
+				"days"
+			);
+
+			// The duration in days should be at least 1 if the end date is after the start date
+			setDays_of_residence(duration > 0 ? duration : 1);
 		} else {
-			setDays_of_residence(0); // Reset if end date or start date is not set
+			// Reset the days of residence if the end date is not set
+			setDays_of_residence(0);
 		}
 	};
 

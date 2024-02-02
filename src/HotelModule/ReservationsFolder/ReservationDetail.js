@@ -129,7 +129,9 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 
 		const daysText = language === "Arabic" ? "أيام" : "days";
 		const nightsText = language === "Arabic" ? "ليال" : "nights";
-		return `${days} ${daysText} / ${days - 1} ${nightsText}`;
+		return `${days.toFixed(0)} ${daysText} / ${
+			days.toFixed(0) - 1
+		} ${nightsText}`;
 	}
 
 	const handleUpdateReservationStatus = () => {

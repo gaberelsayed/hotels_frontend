@@ -105,19 +105,43 @@ export const EditReservationMain = ({
 		setUpdatedRoomPrice(room.chosenPrice); // Set the current price here
 	};
 
-	const onStartDateChange = (date, dateString) => {
-		setReservation({ ...reservation, checkin_date: dateString }); // Update the start date
+	const onStartDateChange = (value) => {
+		// Ensure 'value' is a moment object and convert it to a Date object at noon
+		const dateWithNoon = value
+			? value.clone().set({ hour: 12, minute: 0, second: 0 }).toDate()
+			: null;
+
+		setReservation((currentReservation) => {
+			return {
+				...currentReservation,
+				checkin_date: dateWithNoon ? dateWithNoon.toISOString() : null,
+			};
+		});
 	};
 
-	const onEndDateChange = (date, dateString) => {
+	const onEndDateChange = (date) => {
+		// Ensure 'date' is a moment object and convert it to a Date object at noon
+		const adjustedDate = date
+			? date.clone().set({ hour: 12, minute: 0, second: 0 }).toDate()
+			: null;
+
 		setReservation((currentReservation) => {
-			const start = moment(currentReservation.checkin_date);
-			const end = moment(dateString);
-			const duration = end.diff(start, "days");
+			// Convert the start date in the same way to ensure consistency
+			const start = currentReservation.checkin_date
+				? moment(currentReservation.checkin_date)
+						.set({ hour: 12, minute: 0, second: 0 })
+						.toDate()
+				: null;
+
+			// Calculate the difference in days
+			const duration =
+				start && adjustedDate
+					? moment(adjustedDate).diff(moment(start), "days")
+					: 0;
 
 			return {
 				...currentReservation,
-				checkout_date: dateString,
+				checkout_date: adjustedDate ? adjustedDate.toISOString() : null, // Store as ISO string or null if no date
 				days_of_residence: duration >= 0 ? duration : 0,
 			};
 		});
@@ -276,6 +300,7 @@ export const EditReservationMain = ({
 		}
 	};
 
+	console.log(reservation, "reservation");
 	return (
 		<div>
 			<EditReservationMainWrapper isArabic={chosenLanguage === "Arabic"}>
