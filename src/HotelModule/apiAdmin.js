@@ -582,13 +582,18 @@ export const processPayment = (reservationId, paymentData) => {
 };
 
 export const currecyConversion = (saudimoney) => {
-	return fetch(`${process.env.REACT_APP_API_URL}/currencyapi/${saudimoney}`, {
-		method: "GET",
-		headers: {
-			Accept: "application/json",
-			"Content-Type": "application/json",
-		},
-	})
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/currencyapi/${Number(saudimoney).toFixed(
+			2
+		)}`,
+		{
+			method: "GET",
+			headers: {
+				Accept: "application/json",
+				"Content-Type": "application/json",
+			},
+		}
+	)
 		.then((response) => {
 			return response.json();
 		})
