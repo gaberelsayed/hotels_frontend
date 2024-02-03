@@ -353,6 +353,23 @@ export const expediaData = (accountId, belongsTo, file, country) => {
 		.catch((err) => console.log(err));
 };
 
+export const airbnbData = (accountId, belongsTo, file, country) => {
+	let formData = new FormData();
+	formData.append("file", file);
+
+	console.log(file);
+
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/reservations/airbnb-data-dump/${accountId}/${belongsTo}/${country}`,
+		{
+			method: "POST",
+			body: formData, // send the file as FormData
+		}
+	)
+		.then((response) => response.json())
+		.catch((err) => console.log(err));
+};
+
 export const bookingData = (accountId, belongsTo, file) => {
 	let formData = new FormData();
 	formData.append("file", file);

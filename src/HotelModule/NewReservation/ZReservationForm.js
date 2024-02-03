@@ -4,7 +4,7 @@ import { DatePicker, Spin } from "antd";
 import HotelOverviewReservation from "./HotelOverviewReservation";
 import moment from "moment";
 import { toast } from "react-toastify";
-import { agodaData, bookingData, expediaData } from "../apiAdmin";
+import { agodaData, airbnbData, bookingData, expediaData } from "../apiAdmin";
 import { isAuthenticated } from "../../auth";
 
 const ZReservationForm = ({
@@ -244,6 +244,15 @@ const ZReservationForm = ({
 							{chosenLanguage === "Arabic"
 								? "رفع بيانات بوكينج"
 								: "Booking Upload"}
+						</button>
+						<button
+							className='btn btn-primary mx-2'
+							style={{ fontWeight: "bold" }}
+							onClick={() => handleFileUpload(airbnbData)}
+						>
+							{chosenLanguage === "Arabic"
+								? "رفع بيانات Airbnb"
+								: "Airbnb Upload"}
 						</button>
 					</div>
 

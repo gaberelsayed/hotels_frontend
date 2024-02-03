@@ -120,6 +120,7 @@ const PreReservationTable = ({
 				let style = {};
 				switch (reservation_status.toLowerCase()) {
 					case "cancelled_by_guest":
+					case "cancelled by guest":
 					case "canceled":
 					case "cancelled":
 						style = {

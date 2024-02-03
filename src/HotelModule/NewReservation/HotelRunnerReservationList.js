@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
 	agodaData,
+	airbnbData,
 	bookingData,
 	expediaData,
 	reservationsList,
@@ -164,6 +165,15 @@ const HotelRunnerReservationList = ({ chosenLanguage, hotelDetails }) => {
 							{chosenLanguage === "Arabic"
 								? "رفع بيانات بوكينج"
 								: "Booking Upload"}
+						</button>
+						<button
+							className='btn btn-primary mx-2'
+							style={{ fontWeight: "bold" }}
+							onClick={() => handleFileUpload(airbnbData)}
+						>
+							{chosenLanguage === "Arabic"
+								? "رفع بيانات Airbnb"
+								: "Airbnb Upload"}
 						</button>
 					</div>
 					<div>

@@ -261,11 +261,12 @@ export const EditReservationMain = ({
 
 	const removeRoom = () => {
 		if (selectedRoomIndex !== null) {
-			setReservation({
-				...reservation,
-				pickedRoomsType: (prev) =>
-					prev.filter((_, index) => index !== selectedRoomIndex),
-			});
+			setReservation((currentReservation) => ({
+				...currentReservation,
+				pickedRoomsType: currentReservation.pickedRoomsType.filter(
+					(_, index) => index !== selectedRoomIndex
+				),
+			}));
 		}
 		setIsModalVisible(false);
 	};
