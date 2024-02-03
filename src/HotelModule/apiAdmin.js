@@ -94,6 +94,29 @@ export const sendReservationConfirmationEmail = (
 		});
 };
 
+export const sendPaymnetLinkToTheClient = (
+	reservationLink,
+	reservationEmail
+) => {
+	return fetch(`${process.env.REACT_APP_API_URL}/send-payment-link-email`, {
+		method: "POST",
+		headers: {
+			Accept: "application/json",
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({
+			paymentLink: reservationLink,
+			customerEmail: reservationEmail,
+		}),
+	})
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => {
+			console.log(err);
+		});
+};
+
 export const getHotelRooms = (accountId, userId) => {
 	return fetch(`${process.env.REACT_APP_API_URL}/room/${accountId}/${userId}`, {
 		method: "GET",
@@ -235,6 +258,19 @@ export const prerservationAuto = (page, hotelId, belongsTo) => {
 export const singlePreReservation = (reservationNumber, hotelId, belongsTo) => {
 	return fetch(
 		`${process.env.REACT_APP_API_URL}/reservations/single-reservation/${reservationNumber}/${hotelId}/${belongsTo}`,
+		{
+			method: "GET",
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
+export const singlePreReservationById = (reservationId) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/reservations/single-reservation/${reservationId}`,
 		{
 			method: "GET",
 		}
@@ -486,6 +522,73 @@ export const gettingReservationStatus = (hotelId, userMainId) => {
 			method: "GET",
 		}
 	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
+//For Payment
+export const getBraintreeClientToken = (token) => {
+	return fetch(`${process.env.REACT_APP_API_URL}/braintree/getToken`, {
+		method: "GET",
+		headers: {
+			Accept: "application/json",
+			"Content-Type": "application/json",
+			Authorization: `Bearer ${token}`,
+		},
+	})
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
+export const processPayment_Subscription = (userId, token, paymentData) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/braintree/subscription/${userId}`,
+		{
+			method: "POST",
+			headers: {
+				Accept: "application/json",
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${token}`,
+			},
+			body: JSON.stringify(paymentData),
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
+export const processPayment = (reservationId, paymentData) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/braintree/payment/${reservationId}`,
+		{
+			method: "POST",
+			headers: {
+				Accept: "application/json",
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(paymentData),
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
+export const currecyConversion = (saudimoney) => {
+	return fetch(`${process.env.REACT_APP_API_URL}/currencyapi/${saudimoney}`, {
+		method: "GET",
+		headers: {
+			Accept: "application/json",
+			"Content-Type": "application/json",
+		},
+	})
 		.then((response) => {
 			return response.json();
 		})

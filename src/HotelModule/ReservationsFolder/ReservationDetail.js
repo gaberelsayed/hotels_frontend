@@ -6,6 +6,7 @@ import { Spin, Modal, Select } from "antd";
 import moment from "moment";
 import { EditOutlined } from "@ant-design/icons";
 import {
+	sendPaymnetLinkToTheClient,
 	sendReservationConfirmationEmail,
 	updateSingleReservation,
 } from "../apiAdmin";
@@ -80,9 +81,11 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 	const [loading, setLoading] = useState(false);
 	const [isModalVisible, setIsModalVisible] = useState(false);
 	const [isModalVisible2, setIsModalVisible2] = useState(false);
+	const [linkModalVisible, setLinkModalVisible] = useState(false);
 
 	// eslint-disable-next-line
 	const [selectedStatus, setSelectedStatus] = useState("");
+	const [linkGenerate, setLinkGenerated] = useState("");
 
 	const { languageToggle, chosenLanguage } = useCartContext();
 
@@ -227,6 +230,8 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 		}
 	};
 
+	console.log(linkGenerate, "linkGenerated");
+
 	return (
 		<Wrapper
 			dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}
@@ -297,6 +302,36 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 							</Select.Option>
 						</Select>
 					</Modal>
+
+					<Modal
+						open={linkModalVisible}
+						onCancel={() => setLinkModalVisible(false)}
+						onOk={() => setLinkModalVisible(false)}
+						style={{
+							textAlign: chosenLanguage === "Arabic" ? "center" : "",
+						}}
+						width={"70%"}
+					>
+						<h3>Payment Link:</h3>
+						<div
+							style={{
+								marginTop: "50px",
+								marginBottom: "50px",
+								fontSize: "1rem",
+								cursor: "pointer", // Change the cursor to indicate clickable area
+								textAlign: "center", // Center align if desired
+								fontWeight: "bold",
+								textDecoration: "underline",
+								color: "darkblue",
+							}}
+							onClick={() =>
+								window.open(linkGenerate, "_blank", "noopener,noreferrer")
+							}
+						>
+							{linkGenerate}
+						</div>
+					</Modal>
+
 					<div
 						style={{
 							textAlign: chosenLanguage === "Arabic" ? "left" : "right",
@@ -350,12 +385,112 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 									{chosenLanguage === "Arabic" ? (
 										<div className='col-md-6 mx-auto text-center'>
 											<button className='my-2'>فاتورة رسمية</button>
-											<button>كشف حساب</button>
+											<button className='mx-2'>كشف حساب</button>
+											{linkGenerate ? (
+												<>
+													<button
+														onClick={() => {
+															sendPaymnetLinkToTheClient(
+																linkGenerate,
+																reservation.customer_details.email
+															).then((data) => {
+																if (data && data.error) {
+																	console.log(data.error);
+																} else {
+																	toast.success(
+																		"Email Was Successfully Sent to the guest!"
+																	);
+																}
+															});
+														}}
+														style={{
+															background: "darkgreen",
+															border: "1px darkred solid",
+														}}
+													>
+														Email Payment Link To The Client
+													</button>
+													<br />
+													<div
+														className='mx-2 mt-2'
+														style={{ cursor: "pointer" }}
+														onClick={() => {
+															setLinkModalVisible(true);
+														}}
+													>
+														Show Link <i className='fa-solid fa-eye'></i>
+													</div>
+												</>
+											) : (
+												<button
+													style={{
+														background: "darkred",
+														border: "1px darkred solid",
+													}}
+													onClick={() => {
+														setLinkGenerated(
+															`https://xhotelpro.com/client-payment/${reservation._id}/${reservation.customer_details.name}/${reservation.customer_details.phone}/${hotelDetails.hotelName}/roomTypes/${reservation.checkin_date}/${reservation.checkout_date}/${reservation.days_of_residence}/${reservation.total_amount}`
+														);
+													}}
+												>
+													Generate Payment Link
+												</button>
+											)}
 										</div>
 									) : (
 										<div className='col-md-6 mx-auto text-center'>
 											<button className='my-2'>Invoice</button>
-											<button>Account Statement</button>
+											<button className='mx-2'>Account Statement</button>
+											{linkGenerate ? (
+												<>
+													<button
+														onClick={() => {
+															sendPaymnetLinkToTheClient(
+																linkGenerate,
+																reservation.customer_details.email
+															).then((data) => {
+																if (data && data.error) {
+																	console.log(data.error);
+																} else {
+																	toast.success(
+																		"Email Was Successfully Sent to the guest!"
+																	);
+																}
+															});
+														}}
+														style={{
+															background: "darkgreen",
+															border: "1px darkred solid",
+														}}
+													>
+														Email Payment Link To The Client
+													</button>
+													<br />
+													<div
+														className='mx-2 mt-2'
+														style={{ cursor: "pointer" }}
+														onClick={() => {
+															setLinkModalVisible(true);
+														}}
+													>
+														Show Link <i className='fa-solid fa-eye'></i>
+													</div>
+												</>
+											) : (
+												<button
+													style={{
+														background: "darkred",
+														border: "1px darkred solid",
+													}}
+													onClick={() => {
+														setLinkGenerated(
+															`https://xhotelpro.com/client-payment/${reservation._id}/${reservation.customer_details.name}/${reservation.customer_details.phone}/${hotelDetails.hotelName}/roomTypes/${reservation.checkin_date}/${reservation.checkout_date}/${reservation.days_of_residence}/${reservation.total_amount}`
+														);
+													}}
+												>
+													Generate Payment Link
+												</button>
+											)}
 										</div>
 									)}
 								</div>

@@ -22,6 +22,7 @@ import NewReservationMain from "./HotelModule/NewReservation/NewReservationMain"
 import HotelSettingsMain from "./HotelModule/HotelSettings/HotelSettingsMain";
 import SignupNew from "./HotelModule/HotelStaff/SignupNew";
 import ReservationDetail from "./HotelModule/ReservationsFolder/ReservationDetail";
+import ClientPayMain from "./HotelModule/ClientPay/ClientPayMain";
 
 function App() {
 	const { languageToggle, chosenLanguage } = useCartContext();
@@ -48,6 +49,12 @@ function App() {
 				<Switch>
 					<Route path='/signup' exact component={Signup} />
 					<Route path='/' exact component={Signin} />
+					<Route
+						path='/client-payment/:reservationId/:guestname/:guestphone/:hotelname/:roomtype/:checkin/:checkout/:daysofresidence/:totalamount'
+						exact
+						component={ClientPayMain}
+					/>
+
 					<AdminRoute
 						path='/admin/dashboard'
 						exact
