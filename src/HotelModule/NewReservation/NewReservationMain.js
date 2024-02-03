@@ -3,7 +3,7 @@ import AdminNavbar from "../AdminNavbar/AdminNavbar";
 import AdminNavbarArabic from "../AdminNavbar/AdminNavbarArabic";
 import styled from "styled-components";
 // eslint-disable-next-line
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import { useCartContext } from "../../cart_context";
 import moment from "moment";
 import ZReservationForm from "./ZReservationForm";
@@ -96,6 +96,9 @@ const NewReservationMain = () => {
 	const { user, token } = isAuthenticated();
 
 	const { languageToggle, chosenLanguage } = useCartContext();
+
+	// Inside your functional component
+	const history = useHistory(); // Initialize the history object
 
 	useEffect(() => {
 		if (window.innerWidth <= 1000) {
@@ -497,37 +500,40 @@ const NewReservationMain = () => {
 											isActive={activeTab === "reserveARoom"}
 											onClick={() => {
 												setActiveTab("reserveARoom");
+												history.push(
+													"/hotel-management/new-reservation?reserveARoom"
+												); // Programmatically navigate
 											}}
 										>
-											<Link to='/hotel-management/new-reservation?reserveARoom'>
-												{chosenLanguage === "Arabic"
-													? "حجز الغرف"
-													: "Reserve A Room"}
-											</Link>
+											{chosenLanguage === "Arabic"
+												? "حجز الغرف"
+												: "Reserve A Room"}
 										</Tab>
+
 										<Tab
 											isActive={activeTab === "newReservation"}
 											onClick={() => {
 												setActiveTab("newReservation");
+												history.push(
+													"/hotel-management/new-reservation?newReservation"
+												); // Programmatically navigate
 											}}
 										>
-											<Link to='/hotel-management/new-reservation?newReservation'>
-												{chosenLanguage === "Arabic"
-													? "حجز جديد (بدون غرف)"
-													: "New Reservation"}
-											</Link>
+											{chosenLanguage === "Arabic"
+												? "حجز جديد (بدون غرف)"
+												: "New Reservation"}
 										</Tab>
+
 										<Tab
 											isActive={activeTab === "list"}
 											onClick={() => {
 												setActiveTab("list");
+												history.push("/hotel-management/new-reservation?list"); // Programmatically navigate
 											}}
 										>
-											<Link to='/hotel-management/new-reservation?list'>
-												{chosenLanguage === "Arabic"
-													? "قائمة الحجوزات"
-													: "Reservation List"}
-											</Link>
+											{chosenLanguage === "Arabic"
+												? "قائمة الحجوزات"
+												: "Reservation List"}
 										</Tab>
 									</div>
 								</div>
@@ -621,37 +627,40 @@ const NewReservationMain = () => {
 											isActive={activeTab === "reserveARoom"}
 											onClick={() => {
 												setActiveTab("reserveARoom");
+												history.push(
+													"/hotel-management/new-reservation?reserveARoom"
+												); // Programmatically navigate
 											}}
 										>
-											<Link to='/hotel-management/new-reservation?reserveARoom'>
-												{chosenLanguage === "Arabic"
-													? "حجز الغرف"
-													: "Reserve A Room"}
-											</Link>
+											{chosenLanguage === "Arabic"
+												? "حجز الغرف"
+												: "Reserve A Room"}
 										</Tab>
+
 										<Tab
 											isActive={activeTab === "newReservation"}
 											onClick={() => {
 												setActiveTab("newReservation");
+												history.push(
+													"/hotel-management/new-reservation?newReservation"
+												); // Programmatically navigate
 											}}
 										>
-											<Link to='/hotel-management/new-reservation?newReservation'>
-												{chosenLanguage === "Arabic"
-													? "حجز جديد (بدون غرف)"
-													: "New Reservation"}
-											</Link>
+											{chosenLanguage === "Arabic"
+												? "حجز جديد (بدون غرف)"
+												: "New Reservation"}
 										</Tab>
+
 										<Tab
 											isActive={activeTab === "list"}
 											onClick={() => {
 												setActiveTab("list");
+												history.push("/hotel-management/new-reservation?list"); // Programmatically navigate
 											}}
 										>
-											<Link to='/hotel-management/new-reservation?list'>
-												{chosenLanguage === "Arabic"
-													? "قائمة الحجوزات"
-													: "Reservation List"}
-											</Link>
+											{chosenLanguage === "Arabic"
+												? "قائمة الحجوزات"
+												: "Reservation List"}
 										</Tab>
 									</div>
 								</div>
@@ -670,37 +679,40 @@ const NewReservationMain = () => {
 											isActive={activeTab === "reserveARoom"}
 											onClick={() => {
 												setActiveTab("reserveARoom");
+												history.push(
+													"/hotel-management/new-reservation?reserveARoom"
+												); // Programmatically navigate
 											}}
 										>
-											<Link to='/hotel-management/new-reservation?reserveARoom'>
-												{chosenLanguage === "Arabic"
-													? "حجز الغرف"
-													: "Reserve A Room"}
-											</Link>
+											{chosenLanguage === "Arabic"
+												? "حجز الغرف"
+												: "Reserve A Room"}
 										</Tab>
+
 										<Tab
 											isActive={activeTab === "newReservation"}
 											onClick={() => {
 												setActiveTab("newReservation");
+												history.push(
+													"/hotel-management/new-reservation?newReservation"
+												); // Programmatically navigate
 											}}
 										>
-											<Link to='/hotel-management/new-reservation?newReservation'>
-												{chosenLanguage === "Arabic"
-													? "حجز جديد (بدون غرف)"
-													: "New Reservation"}
-											</Link>
+											{chosenLanguage === "Arabic"
+												? "حجز جديد (بدون غرف)"
+												: "New Reservation"}
 										</Tab>
+
 										<Tab
 											isActive={activeTab === "list"}
 											onClick={() => {
 												setActiveTab("list");
+												history.push("/hotel-management/new-reservation?list"); // Programmatically navigate
 											}}
 										>
-											<Link to='/hotel-management/new-reservation?list'>
-												{chosenLanguage === "Arabic"
-													? "قائمة الحجوزات"
-													: "Reservation List"}
-											</Link>
+											{chosenLanguage === "Arabic"
+												? "قائمة الحجوزات"
+												: "Reservation List"}
 										</Tab>
 									</div>
 								</div>
@@ -807,8 +819,5 @@ const Tab = styled.div`
 	/* Additional styling for tabs */
 	z-index: 100;
 	font-size: 1.2rem;
-
-	a {
-		color: ${(props) => (props.isActive ? "white" : "black")};
-	}
+	color: ${(props) => (props.isActive ? "white" : "black")};
 `;
