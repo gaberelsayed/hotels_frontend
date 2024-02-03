@@ -282,6 +282,7 @@ export const EditReservationMain = ({
 				sub_total:
 					calculateTotalAmountPerDay() * Number(reservation.days_of_residence),
 				hotelName: hotelDetails.hotelName,
+				sendEmail: sendEmail,
 			};
 
 			updateSingleReservation(reservation._id, updateData).then((response) => {
