@@ -17,12 +17,14 @@ import {
 	getReservationSearch,
 	updateSingleReservation,
 	gettingRoomInventory,
+	gettingDayOverDayInventory,
 } from "../apiAdmin";
 import { isAuthenticated } from "../../auth";
 import { toast } from "react-toastify";
 import ZReservationForm2 from "./ZReservationForm2";
 import { Spin } from "antd";
 import HotelRunnerReservationList from "./HotelRunnerReservationList";
+import { RoomStockReport } from "./RoomStockReport";
 
 // eslint-disable-next-line
 const isActive = (history, path) => {
@@ -88,6 +90,7 @@ const NewReservationMain = () => {
 		passportExpiry: "",
 		nationality: "",
 	});
+	const [dayOverDayInventory, setDayOverDayInventory] = useState([]);
 
 	const [start_date, setStart_date] = useState("");
 	const [end_date, setEnd_date] = useState("");
@@ -111,6 +114,8 @@ const NewReservationMain = () => {
 			setActiveTab("newReservation");
 		} else if (window.location.search.includes("list")) {
 			setActiveTab("list");
+		} else if (window.location.search.includes("inventory")) {
+			setActiveTab("inventory");
 		} else {
 			setActiveTab("reserveARoom");
 		}
@@ -171,6 +176,16 @@ const NewReservationMain = () => {
 							if (!hotelDetails) {
 								setHotelDetails(data2[0]);
 							}
+
+							gettingDayOverDayInventory(data._id, data2[0]._id).then(
+								(data4) => {
+									if (data4 && data4.error) {
+										console.log("Data not received");
+									} else {
+										setDayOverDayInventory(data4);
+									}
+								}
+							);
 
 							if (!hotelRooms || hotelRooms.length === 0) {
 								getHotelRooms(data2[0]._id, user._id).then((data3) => {
@@ -491,53 +506,61 @@ const NewReservationMain = () => {
 						{chosenLanguage === "English" ? "ARABIC" : "English"}
 					</div>
 
+					<div style={{ background: "#8a8a8a", padding: "1px" }}>
+						<div className='my-2 tab-grid col-md-8'>
+							<Tab
+								isActive={activeTab === "reserveARoom"}
+								onClick={() => {
+									setActiveTab("reserveARoom");
+									history.push(
+										"/hotel-management/new-reservation?reserveARoom"
+									); // Programmatically navigate
+								}}
+							>
+								{chosenLanguage === "Arabic" ? "حجز الغرف" : "Reserve A Room"}
+							</Tab>
+
+							<Tab
+								isActive={activeTab === "newReservation"}
+								onClick={() => {
+									setActiveTab("newReservation");
+									history.push(
+										"/hotel-management/new-reservation?newReservation"
+									); // Programmatically navigate
+								}}
+							>
+								{chosenLanguage === "Arabic"
+									? "حجز جديد (بدون غرف)"
+									: "New Reservation"}
+							</Tab>
+
+							<Tab
+								isActive={activeTab === "list"}
+								onClick={() => {
+									setActiveTab("list");
+									history.push("/hotel-management/new-reservation?list"); // Programmatically navigate
+								}}
+							>
+								{chosenLanguage === "Arabic"
+									? "قائمة الحجوزات"
+									: "Reservation List"}
+							</Tab>
+
+							<Tab
+								isActive={activeTab === "inventory"}
+								onClick={() => {
+									setActiveTab("inventory");
+									history.push("/hotel-management/new-reservation?inventory"); // Programmatically navigate
+								}}
+							>
+								{chosenLanguage === "Arabic" ? "	تقرير جرد الغرف" : "Inventory"}
+							</Tab>
+						</div>
+					</div>
+
 					<div className='container-wrapper'>
 						{activeTab === "reserveARoom" ? (
 							<>
-								<div style={{ background: "#8a8a8a", padding: "1px" }}>
-									<div className='my-2 tab-grid col-md-8'>
-										<Tab
-											isActive={activeTab === "reserveARoom"}
-											onClick={() => {
-												setActiveTab("reserveARoom");
-												history.push(
-													"/hotel-management/new-reservation?reserveARoom"
-												); // Programmatically navigate
-											}}
-										>
-											{chosenLanguage === "Arabic"
-												? "حجز الغرف"
-												: "Reserve A Room"}
-										</Tab>
-
-										<Tab
-											isActive={activeTab === "newReservation"}
-											onClick={() => {
-												setActiveTab("newReservation");
-												history.push(
-													"/hotel-management/new-reservation?newReservation"
-												); // Programmatically navigate
-											}}
-										>
-											{chosenLanguage === "Arabic"
-												? "حجز جديد (بدون غرف)"
-												: "New Reservation"}
-										</Tab>
-
-										<Tab
-											isActive={activeTab === "list"}
-											onClick={() => {
-												setActiveTab("list");
-												history.push("/hotel-management/new-reservation?list"); // Programmatically navigate
-											}}
-										>
-											{chosenLanguage === "Arabic"
-												? "قائمة الحجوزات"
-												: "Reservation List"}
-										</Tab>
-									</div>
-								</div>
-
 								{/* <div className='row text-center ml-5 my-3'>
 									<div
 										style={isActive(clickedMenu, "reserveARoom")}
@@ -621,49 +644,6 @@ const NewReservationMain = () => {
 							</>
 						) : activeTab === "list" ? (
 							<>
-								<div style={{ background: "#8a8a8a", padding: "1px" }}>
-									<div className='my-2 tab-grid col-md-8'>
-										<Tab
-											isActive={activeTab === "reserveARoom"}
-											onClick={() => {
-												setActiveTab("reserveARoom");
-												history.push(
-													"/hotel-management/new-reservation?reserveARoom"
-												); // Programmatically navigate
-											}}
-										>
-											{chosenLanguage === "Arabic"
-												? "حجز الغرف"
-												: "Reserve A Room"}
-										</Tab>
-
-										<Tab
-											isActive={activeTab === "newReservation"}
-											onClick={() => {
-												setActiveTab("newReservation");
-												history.push(
-													"/hotel-management/new-reservation?newReservation"
-												); // Programmatically navigate
-											}}
-										>
-											{chosenLanguage === "Arabic"
-												? "حجز جديد (بدون غرف)"
-												: "New Reservation"}
-										</Tab>
-
-										<Tab
-											isActive={activeTab === "list"}
-											onClick={() => {
-												setActiveTab("list");
-												history.push("/hotel-management/new-reservation?list"); // Programmatically navigate
-											}}
-										>
-											{chosenLanguage === "Arabic"
-												? "قائمة الحجوزات"
-												: "Reservation List"}
-										</Tab>
-									</div>
-								</div>
 								{hotelDetails && hotelDetails._id ? (
 									<HotelRunnerReservationList
 										hotelDetails={hotelDetails}
@@ -671,51 +651,22 @@ const NewReservationMain = () => {
 									/>
 								) : null}
 							</>
+						) : activeTab === "inventory" ? (
+							<>
+								{dayOverDayInventory && dayOverDayInventory.length > 0 ? (
+									<RoomStockReport
+										dayOverDayInventory={dayOverDayInventory}
+										chosenLanguage={chosenLanguage}
+									/>
+								) : (
+									<div className='text-center my-5'>
+										<Spin size='large' />
+										<p>Loading Inventory...</p>
+									</div>
+								)}
+							</>
 						) : (
 							<>
-								<div style={{ background: "#8a8a8a", padding: "1px" }}>
-									<div className='my-2 tab-grid col-md-8'>
-										<Tab
-											isActive={activeTab === "reserveARoom"}
-											onClick={() => {
-												setActiveTab("reserveARoom");
-												history.push(
-													"/hotel-management/new-reservation?reserveARoom"
-												); // Programmatically navigate
-											}}
-										>
-											{chosenLanguage === "Arabic"
-												? "حجز الغرف"
-												: "Reserve A Room"}
-										</Tab>
-
-										<Tab
-											isActive={activeTab === "newReservation"}
-											onClick={() => {
-												setActiveTab("newReservation");
-												history.push(
-													"/hotel-management/new-reservation?newReservation"
-												); // Programmatically navigate
-											}}
-										>
-											{chosenLanguage === "Arabic"
-												? "حجز جديد (بدون غرف)"
-												: "New Reservation"}
-										</Tab>
-
-										<Tab
-											isActive={activeTab === "list"}
-											onClick={() => {
-												setActiveTab("list");
-												history.push("/hotel-management/new-reservation?list"); // Programmatically navigate
-											}}
-										>
-											{chosenLanguage === "Arabic"
-												? "قائمة الحجوزات"
-												: "Reservation List"}
-										</Tab>
-									</div>
-								</div>
 								<ZReservationForm2
 									customer_details={customer_details}
 									setCustomer_details={setCustomer_details}

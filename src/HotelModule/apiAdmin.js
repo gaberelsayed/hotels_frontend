@@ -357,6 +357,19 @@ export const gettingRoomInventory = (startdate, enddate, userId, accountId) => {
 		.catch((err) => console.log(err));
 };
 
+export const gettingDayOverDayInventory = (userId, accountId) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/inventory-report/${userId}/${accountId}`,
+		{
+			method: "GET",
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
 export const agodaData = (accountId, belongsTo, file) => {
 	let formData = new FormData();
 	formData.append("file", file);
