@@ -42,24 +42,26 @@ const ClientPayMain = () => {
 			} else {
 				setReservation(data);
 
-				currecyConversion(data.total_amount * 0.02 + data.total_amount).then(
-					(data2) => {
-						if (data2 && data2.error) {
-							console.log("Error converting money");
-						} else {
-							setCurrency(data2);
+				currecyConversion(
+					Number(
+						Number(data.total_amount) * 0.02 + Number(data.total_amount)
+					).toFixed(2)
+				).then((data2) => {
+					if (data2 && data2.error) {
+						console.log("Error converting money");
+					} else {
+						setCurrency(data2);
 
-							getBraintreeClientToken(token).then((data3) => {
-								if (data3.error) {
-									setData({ ...data3, error: data3.error });
-								} else {
-									setData({ ...data3, clientToken: data3.clientToken });
-									setData({ ...data3, loading: false });
-								}
-							});
-						}
+						getBraintreeClientToken(token).then((data3) => {
+							if (data3.error) {
+								setData({ ...data3, error: data3.error });
+							} else {
+								setData({ ...data3, clientToken: data3.clientToken });
+								setData({ ...data3, loading: false });
+							}
+						});
 					}
-				);
+				});
 			}
 		});
 	};

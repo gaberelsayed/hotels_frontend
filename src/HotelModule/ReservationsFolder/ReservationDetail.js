@@ -429,7 +429,17 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 													}}
 													onClick={() => {
 														setLinkGenerated(
-															`https://xhotelpro.com/client-payment/${reservation._id}/${reservation.customer_details.name}/${reservation.customer_details.phone}/${hotelDetails.hotelName}/roomTypes/${reservation.checkin_date}/${reservation.checkout_date}/${reservation.days_of_residence}/${reservation.total_amount}`
+															`https://xhotelpro.com/client-payment/${
+																reservation._id
+															}/${reservation.customer_details.name}/${
+																reservation.customer_details.phone
+															}/${hotelDetails.hotelName}/roomTypes/${new Date(
+																reservation.checkin_date
+															).toDateString()}/${new Date(
+																reservation.checkout_date
+															).toDateString()}/${
+																reservation.days_of_residence
+															}/${Number(reservation.total_amount).toFixed(2)}`
 														);
 													}}
 												>
@@ -488,9 +498,11 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 																reservation._id
 															}/${reservation.customer_details.name}/${
 																reservation.customer_details.phone
-															}/${hotelDetails.hotelName}/roomTypes/${
+															}/${hotelDetails.hotelName}/roomTypes/${new Date(
 																reservation.checkin_date
-															}/${reservation.checkout_date}/${
+															).toDateString()}/${new Date(
+																reservation.checkout_date
+															).toDateString()}/${
 																reservation.days_of_residence
 															}/${Number(reservation.total_amount).toFixed(2)}`
 														);
