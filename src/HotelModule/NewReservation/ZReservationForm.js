@@ -209,6 +209,7 @@ const ZReservationForm = ({
 		fileInput.click(); // Simulate a click on the file input
 	};
 
+	console.log(finalTotalByRoom(), "finalTotalByRoom");
 	return (
 		<ZReservationFormWrapper
 			arabic={chosenLanguage === "Arabic"}
@@ -720,12 +721,13 @@ const ZReservationForm = ({
 											{chosenLanguage === "Arabic" ? (
 												<h5 style={{ fontWeight: "bold" }}>
 													أيام الإقامة: {days_of_residence} يوم /
-													{days_of_residence <= 1 ? 1 : days_of_residence} ليالي
+													{days_of_residence <= 1 ? 1 : days_of_residence - 1}{" "}
+													ليالي
 												</h5>
 											) : (
 												<h5 style={{ fontWeight: "bold" }}>
-													Days Of Residence: {days_of_residence} Days /
-													{days_of_residence <= 1 ? 1 : days_of_residence}{" "}
+													Days Of Residence: {days_of_residence} Days /{" "}
+													{days_of_residence <= 1 ? 1 : days_of_residence - 1}{" "}
 													Nights
 												</h5>
 											)}
@@ -739,11 +741,11 @@ const ZReservationForm = ({
 												days_of_residence
 													? (
 															searchedReservation.total_amount /
-															days_of_residence
+															(days_of_residence - 1)
 													  ).toLocaleString()
 													: finalTotalByRoom()
 													  ? Number(
-																finalTotalByRoom() / days_of_residence
+																finalTotalByRoom() / (days_of_residence - 1)
 													    ).toFixed(2)
 													  : 0}{" "}
 												{chosenLanguage === "Arabic"
@@ -1032,7 +1034,7 @@ const ZReservationForm = ({
 												color:
 													(
 														searchedReservation &&
-														total_amount * days_of_residence
+														total_amount * (days_of_residence - 1)
 													).toFixed(2) !==
 													searchedReservation.total_amount.toFixed(2)
 														? "red"
@@ -1042,7 +1044,7 @@ const ZReservationForm = ({
 											{chosenLanguage === "Arabic"
 												? "المبلغ الإجمالي"
 												: "Total Amount:"}{" "}
-											{Number(total_amount * days_of_residence)}{" "}
+											{Number(total_amount * (days_of_residence - 1))}{" "}
 											{chosenLanguage === "Arabic" ? "ريال سعودي" : "SAR"}
 										</h4>
 									) : null}

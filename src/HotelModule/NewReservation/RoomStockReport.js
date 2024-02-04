@@ -1,25 +1,34 @@
 import React, { useState, useMemo } from "react";
 import { Table, Button, Select } from "antd";
 import styled from "styled-components";
+import moment from "moment";
 
 const { Option } = Select;
 
 export const RoomStockReport = ({ dayOverDayInventory, chosenLanguage }) => {
-	const [selectedRoomType, setSelectedRoomType] = useState("");
+	const [selectedRoomTypes, setSelectedRoomTypes] = useState([]);
 	const [showDanger, setShowDanger] = useState(false);
+	const [selectedDates, setSelectedDates] = useState([]);
 
 	const filteredData = useMemo(() => {
 		return dayOverDayInventory.filter((item) => {
-			const matchesType = selectedRoomType
-				? item.room_type === selectedRoomType
-				: true;
+			const matchesType =
+				selectedRoomTypes.length > 0
+					? selectedRoomTypes.includes(item.room_type)
+					: true;
 			const isDanger = showDanger ? item.total_rooms_available <= 3 : true;
-			return matchesType && isDanger;
+			const matchesDate =
+				selectedDates.length > 0 ? selectedDates.includes(item.date) : true;
+			return matchesType && isDanger && matchesDate;
 		});
-	}, [dayOverDayInventory, selectedRoomType, showDanger]);
+	}, [dayOverDayInventory, selectedRoomTypes, showDanger, selectedDates]);
 
 	const roomTypes = useMemo(() => {
 		return [...new Set(dayOverDayInventory.map((item) => item.room_type))];
+	}, [dayOverDayInventory]);
+
+	const dates = useMemo(() => {
+		return [...new Set(dayOverDayInventory.map((item) => item.date))];
 	}, [dayOverDayInventory]);
 
 	const columns = [
@@ -53,12 +62,29 @@ export const RoomStockReport = ({ dayOverDayInventory, chosenLanguage }) => {
 		},
 	];
 
+	const handleRoomTypeChange = (value) => {
+		setSelectedRoomTypes(value);
+		// Reset other filters to avoid confusion
+		setShowDanger(false);
+	};
+
+	const handleDateFilterChange = (value) => {
+		setSelectedDates(value);
+		// Reset other filters to avoid confusion
+		setShowDanger(false);
+	};
+
 	return (
 		<RoomStockReportWrapper>
 			<FiltersWrapper>
 				<Select
-					placeholder='Filter by Room Type'
-					onChange={(value) => setSelectedRoomType(value)}
+					mode='multiple'
+					placeholder={
+						chosenLanguage === "Arabic"
+							? "تصفية حسب نوع الغرفة"
+							: "Filter by Room Type"
+					}
+					onChange={handleRoomTypeChange}
 					style={{ width: 200, marginRight: 16, textTransform: "capitalize" }}
 					allowClear
 				>
@@ -68,17 +94,35 @@ export const RoomStockReport = ({ dayOverDayInventory, chosenLanguage }) => {
 						</Option>
 					))}
 				</Select>
+				<Select
+					mode='multiple'
+					placeholder={
+						chosenLanguage === "Arabic"
+							? "تصفية حسب التاريخ"
+							: "Filter By A Date"
+					}
+					onChange={handleDateFilterChange}
+					style={{ width: 200, marginRight: 16, textTransform: "capitalize" }}
+					allowClear
+				>
+					{dates.map((date) => (
+						<Option key={date} value={date}>
+							{moment(date).format("YYYY-MM-DD")}
+						</Option>
+					))}
+				</Select>
 				<Button
 					danger
-					className='mx-3'
 					onClick={() => setShowDanger(!showDanger)}
 					style={{ fontSize: "1rem", fontWeight: "bold" }}
 				>
-					{chosenLanguage === "Arabic" ? (
-						<>{showDanger ? "عرض الكل" : "في خطر"}</>
-					) : (
-						<>{showDanger ? "Show All" : "Danger"}</>
-					)}
+					{chosenLanguage === "Arabic"
+						? showDanger
+							? "عرض الكل"
+							: "في خطر"
+						: showDanger
+						  ? "Show All"
+						  : "Danger"}
 				</Button>
 			</FiltersWrapper>
 			<Table
@@ -100,4 +144,7 @@ const RoomStockReportWrapper = styled.div`
 
 const FiltersWrapper = styled.div`
 	margin-bottom: 16px;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 16px; // Add some space between filter elements
 `;

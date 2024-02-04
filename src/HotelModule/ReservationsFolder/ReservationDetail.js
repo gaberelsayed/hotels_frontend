@@ -118,23 +118,21 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 
 	// Revised calculateReservationPeriod function
 	function calculateReservationPeriod(checkin, checkout, language) {
-		const checkinDate = moment(checkin).locale(
-			language === "Arabic" ? "ar" : "en"
-		);
-		const checkoutDate = moment(checkout).locale(
-			language === "Arabic" ? "ar" : "en"
-		);
-		console.log(checkinDate.toString(), checkoutDate.toString()); // Debugging
+		// Parse the checkin and checkout dates to ignore the time component
+		const checkinDate = moment(checkin).startOf("day");
+		const checkoutDate = moment(checkout).startOf("day");
 
-		const duration = moment.duration(checkoutDate.diff(checkinDate));
-		const days = duration.asDays();
-		console.log("Duration in days:", days); // Debugging
+		// Calculate the duration in days
+		const days = checkoutDate.diff(checkinDate, "days") + 1;
+		// Calculate the nights as one less than the total days
+		const nights = days - 1;
 
+		// Define the text for "days" and "nights" based on the selected language
 		const daysText = language === "Arabic" ? "أيام" : "days";
 		const nightsText = language === "Arabic" ? "ليال" : "nights";
-		return `${days.toFixed(0)} ${daysText} / ${
-			days.toFixed(0) - 1
-		} ${nightsText}`;
+
+		// Return the formatted string showing both days and nights
+		return `${days} ${daysText} / ${nights} ${nightsText}`;
 	}
 
 	const handleUpdateReservationStatus = () => {

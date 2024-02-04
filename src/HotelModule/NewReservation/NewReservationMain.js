@@ -238,7 +238,11 @@ const NewReservationMain = () => {
 					setCustomer_details(data.customer_details);
 					setStart_date(data.checkin_date);
 					setEnd_date(data.checkout_date);
-					setDays_of_residence(data.days_of_residence);
+					const checkin = moment(data.checkin_date);
+					const checkout = moment(data.checkout_date);
+					const duration = checkout.diff(checkin, "days") + 1;
+
+					setDays_of_residence(duration);
 					setPaymentStatus(data.payment_status);
 					setBookingComment(data.comment);
 					setBookingSource(data.booking_source);
@@ -294,16 +298,17 @@ const NewReservationMain = () => {
 			const count = parseInt(room.count, 10) || 1; // Convert string to int, default to 1
 			total += price * count; // Multiply by count if available
 		});
-		return total * days_of_residence; // Multiply by days of residence
+		return total * (days_of_residence - 1); // Multiply by days of residence
 	};
 
 	const calculateTotalAmountWithRooms = () => {
 		let total = 0;
 		pickedRoomPricing.forEach((room) => {
+			console.log(room.chosenPrice, "room.chosenPrice");
 			const price = parseFloat(room.chosenPrice); // Convert string to float
 			total += price; // Add the price to the total
 		});
-		return total * days_of_residence; // Multiply by days of residence
+		return total * (days_of_residence - 1); // Multiply by days of residence
 	};
 
 	// Then, in your code where you are setting the `new_reservation` object:

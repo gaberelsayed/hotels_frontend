@@ -946,8 +946,8 @@ const ZReservationForm2 = ({
 							<>
 								<div className='total-amount my-3'>
 									<h5 style={{ fontWeight: "bold" }}>
-										Days Of Residence: {days_of_residence + 1} Days /{" "}
-										{days_of_residence <= 1 ? 1 : days_of_residence} Nights
+										Days Of Residence: {days_of_residence} Days /{" "}
+										{days_of_residence <= 1 ? 1 : days_of_residence - 1} Nights
 									</h5>
 
 									<h4>
@@ -976,7 +976,8 @@ const ZReservationForm2 = ({
 									<h3>
 										Total Amount:{" "}
 										{(
-											calculateTotalAmountPerDay() * Number(days_of_residence)
+											calculateTotalAmountPerDay() *
+											Number(days_of_residence - 1)
 										).toLocaleString()}{" "}
 										SAR
 									</h3>
