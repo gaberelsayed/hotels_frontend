@@ -16,7 +16,7 @@ export const RoomStockReport = ({ dayOverDayInventory, chosenLanguage }) => {
 				selectedRoomTypes.length > 0
 					? selectedRoomTypes.includes(item.room_type)
 					: true;
-			const isDanger = showDanger ? item.total_rooms_available <= 3 : true;
+			const isDanger = showDanger ? item.total_rooms_available <= 1 : true;
 			const matchesDate =
 				selectedDates.length > 0 ? selectedDates.includes(item.date) : true;
 			return matchesType && isDanger && matchesDate;
@@ -33,8 +33,22 @@ export const RoomStockReport = ({ dayOverDayInventory, chosenLanguage }) => {
 
 	const columns = [
 		{ title: "Date", dataIndex: "date", key: "date" },
-		{ title: "Room Type", dataIndex: "room_type", key: "room_type" },
-		{ title: "Total Rooms", dataIndex: "total_rooms", key: "total_rooms" },
+		{
+			title: "Room Type",
+			dataIndex: "room_type",
+			key: "room_type",
+			render: (type) => (
+				<span style={{ textTransform: "capitalize", fontWeight: "bold" }}>
+					{type}
+				</span>
+			),
+		},
+
+		{
+			title: "Total Rooms",
+			dataIndex: "total_rooms",
+			key: "total_rooms",
+		},
 		{
 			title: "Total Rooms Available",
 			dataIndex: "total_rooms_available",
@@ -42,8 +56,8 @@ export const RoomStockReport = ({ dayOverDayInventory, chosenLanguage }) => {
 			render: (text) => (
 				<span
 					style={{
-						color: text <= 3 ? "white" : "inherit",
-						backgroundColor: text <= 3 ? "darkred" : "inherit",
+						color: text <= 1 ? "white" : "inherit",
+						backgroundColor: text <= 1 ? "darkred" : "inherit",
 					}}
 				>
 					{text}

@@ -90,6 +90,7 @@ const ClientPayMain = () => {
 					customerId: reservation?._id,
 					planId: "One Time Payment",
 					country: reservation?.customer_details.nationality,
+					hotelName: reservation?.hotelId.hotelName,
 				};
 
 				return processPayment(reservation._id, paymentData);
