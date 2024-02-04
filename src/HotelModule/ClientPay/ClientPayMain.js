@@ -41,7 +41,12 @@ const ClientPayMain = () => {
 				console.log(data.error, "getting single reservation");
 			} else {
 				setReservation(data);
-
+				console.log(
+					Number(
+						Number(data.total_amount) * 0.02 + Number(data.total_amount)
+					).toFixed(2),
+					"The currency"
+				);
 				currecyConversion(
 					Number(
 						Number(data.total_amount) * 0.02 + Number(data.total_amount)
