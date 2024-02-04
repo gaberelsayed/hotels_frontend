@@ -110,9 +110,24 @@ export const EditReservationMain = ({
 		const dateAtMidnight = value ? value.clone().startOf("day").toDate() : null;
 
 		setReservation((currentReservation) => {
+			const end = currentReservation.checkout_date
+				? moment(currentReservation.checkout_date).startOf("day").toDate()
+				: null;
+
+			// Calculate the difference in days only if there's both checkin and checkout dates
+			const duration =
+				dateAtMidnight && end
+					? moment(end).diff(moment(dateAtMidnight), "days")
+					: 0;
+
 			return {
 				...currentReservation,
 				checkin_date: dateAtMidnight ? dateAtMidnight.toISOString() : null,
+				// Update days_of_residence only if both dates are present and the duration is non-negative
+				days_of_residence:
+					end && dateAtMidnight && duration >= 0
+						? duration
+						: currentReservation.days_of_residence,
 			};
 		});
 	};
