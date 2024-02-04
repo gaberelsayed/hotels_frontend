@@ -72,12 +72,27 @@ const ZReservationForm = ({
 	}, []);
 
 	const onStartDateChange = (value) => {
-		// Ensure 'value' is a moment object and convert it to a Date object at noon
-		const dateWithNoon = value
-			? value.clone().set({ hour: 12, minute: 0, second: 0 }).toDate()
-			: null;
+		// Convert 'value' to a Date object at midnight to disregard time
+		const dateAtMidnight = value ? value.clone().startOf("day").toDate() : null;
 
-		setStart_date(dateWithNoon ? dateWithNoon.toISOString() : null);
+		setStart_date(dateAtMidnight ? dateAtMidnight.toISOString() : null);
+
+		// Check if end_date is already set
+		if (dateAtMidnight && end_date) {
+			const adjustedEndDate = moment(end_date).startOf("day").toDate();
+
+			// Calculate the difference in days
+			const duration = moment(adjustedEndDate).diff(
+				moment(dateAtMidnight),
+				"days"
+			);
+
+			// Update days_of_residence accordingly, ensuring it's at least 1 day
+			setDays_of_residence(duration >= 0 ? duration + 1 : 0); // Add 1 to include both start and end dates in the count
+		} else {
+			// Optionally reset days_of_residence if no end_date
+			setDays_of_residence(0);
+		}
 	};
 
 	// const onStartDateChange = (date, dateString) => {
@@ -85,20 +100,14 @@ const ZReservationForm = ({
 	// };
 
 	const onEndDateChange = (date) => {
-		// Ensure 'date' is a moment object and convert it to a Date object at noon
-		const adjustedEndDate = date
-			? date.clone().set({ hour: 12, minute: 0, second: 0 }).toDate()
-			: null;
+		// Convert 'date' to a Date object at midnight to disregard time
+		const adjustedEndDate = date ? date.clone().startOf("day").toDate() : null;
 
-		// Set the end date state
 		setEnd_date(adjustedEndDate ? adjustedEndDate.toISOString() : null);
 
-		// Now calculate the days of residence based on the adjusted end date
+		// Calculate days_of_residence if start_date is set
 		if (adjustedEndDate && start_date) {
-			// Make sure to convert start_date to a Date object at noon
-			const adjustedStartDate = moment(start_date)
-				.set({ hour: 12, minute: 0, second: 0 })
-				.toDate();
+			const adjustedStartDate = moment(start_date).startOf("day").toDate();
 
 			// Calculate the difference in days
 			const duration = moment(adjustedEndDate).diff(
@@ -106,10 +115,10 @@ const ZReservationForm = ({
 				"days"
 			);
 
-			// The duration in days should be at least 1 if the end date is after the start date
-			setDays_of_residence(duration > 0 ? duration : 1);
+			// Update days_of_residence accordingly, ensuring it's at least 1 day
+			setDays_of_residence(duration >= 0 ? duration + 1 : 0); // Add 1 to include both start and end dates in the count
 		} else {
-			// Reset the days of residence if the end date is not set
+			// Optionally reset days_of_residence if no start_date
 			setDays_of_residence(0);
 		}
 	};
