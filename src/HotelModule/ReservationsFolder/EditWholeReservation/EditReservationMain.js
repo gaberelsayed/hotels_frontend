@@ -106,31 +106,24 @@ export const EditReservationMain = ({
 	};
 
 	const onStartDateChange = (value) => {
-		// Ensure 'value' is a moment object and convert it to a Date object at noon
-		const dateWithNoon = value
-			? value.clone().set({ hour: 12, minute: 0, second: 0 }).toDate()
-			: null;
+		// Convert 'value' to a Date object at midnight to disregard time
+		const dateAtMidnight = value ? value.clone().startOf("day").toDate() : null;
 
 		setReservation((currentReservation) => {
 			return {
 				...currentReservation,
-				checkin_date: dateWithNoon ? dateWithNoon.toISOString() : null,
+				checkin_date: dateAtMidnight ? dateAtMidnight.toISOString() : null,
 			};
 		});
 	};
 
 	const onEndDateChange = (date) => {
-		// Ensure 'date' is a moment object and convert it to a Date object at noon
-		const adjustedDate = date
-			? date.clone().set({ hour: 12, minute: 0, second: 0 }).toDate()
-			: null;
+		// Convert 'date' to a Date object at midnight to disregard time
+		const adjustedDate = date ? date.clone().startOf("day").toDate() : null;
 
 		setReservation((currentReservation) => {
-			// Convert the start date in the same way to ensure consistency
 			const start = currentReservation.checkin_date
-				? moment(currentReservation.checkin_date)
-						.set({ hour: 12, minute: 0, second: 0 })
-						.toDate()
+				? moment(currentReservation.checkin_date).startOf("day").toDate()
 				: null;
 
 			// Calculate the difference in days
