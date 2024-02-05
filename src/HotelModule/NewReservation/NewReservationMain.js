@@ -362,26 +362,33 @@ const NewReservationMain = () => {
 			days_of_residence: days_of_residence,
 			payment_status: payment_status,
 			total_amount:
-				total_amount !== 0
-					? total_amount * days_of_residence
-					: total_amount_calculated,
+				Number(total_amount) !== 0 ? total_amount : total_amount_calculated,
 			booking_source: booking_source,
 			belongsTo: hotelDetails.belongsTo._id,
 			hotelId: hotelDetails._id,
 			roomId: pickedHotelRooms,
 			sendEmail: sendEmail,
-			booked_at: new Date(),
+			booked_at:
+				searchedReservation && searchedReservation.booked_at
+					? searchedReservation.booked_at
+					: new Date(),
 			sub_total:
-				total_amount !== 0
-					? total_amount * days_of_residence
-					: total_amount_calculated
-					  ? total_amount_calculated
-					  : total_amount_calculated_WithRooms,
+				searchedReservation && searchedReservation.subtotal
+					? searchedReservation.subtotal
+					: total_amount !== 0
+					  ? total_amount * days_of_residence
+					  : total_amount_calculated
+					    ? total_amount_calculated
+					    : total_amount_calculated_WithRooms,
 			pickedRoomsPricing: pickedRoomPricing,
 			pickedRoomsType:
-				calculatedPickedRoomsType && calculatedPickedRoomsType.length > 0
-					? calculatedPickedRoomsType
-					: pickedRoomsType,
+				searchedReservation &&
+				searchedReservation.pickedRoomsType &&
+				searchedReservation.pickedRoomsType.length > 0
+					? searchedReservation.pickedRoomsType.length
+					: calculatedPickedRoomsType && calculatedPickedRoomsType.length > 0
+					  ? calculatedPickedRoomsType
+					  : pickedRoomsType,
 			payment: payment_status,
 			reservation_status: pickedHotelRooms.length > 0 ? "InHouse" : "Confirmed",
 			total_rooms: pickedHotelRooms.length,
