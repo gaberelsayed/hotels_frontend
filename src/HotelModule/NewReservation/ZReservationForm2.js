@@ -766,7 +766,8 @@ const ZReservationForm2 = ({
 									? "المبلغ الإجمالي"
 									: "Total Amount:"}{" "}
 								{(
-									calculateTotalAmountPerDay() * Number(days_of_residence)
+									calculateTotalAmountPerDay() *
+									(Number(days_of_residence) - 1)
 								).toLocaleString()}{" "}
 								SAR
 							</h4>
