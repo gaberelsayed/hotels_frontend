@@ -319,6 +319,8 @@ const NewReservationMain = () => {
 		"calculateTotalAmountWithRooms()"
 	);
 
+	console.log(searchedReservation, "searched reservations");
+
 	const clickSubmit = () => {
 		if (!customer_details.name) {
 			return toast.error("Name is required");
@@ -357,13 +359,14 @@ const NewReservationMain = () => {
 
 		const new_reservation = {
 			customer_details: customer_details,
+			calculateTotalAmountWithRooms: calculateTotalAmountWithRooms(),
 			checkin_date: start_date,
 			checkout_date: end_date,
 			days_of_residence: days_of_residence,
 			payment_status: payment_status,
 			total_amount:
-				total_amount !== 0
-					? total_amount * (days_of_residence - 1)
+				Number(total_amount) !== 0
+					? Number(total_amount) * (Number(days_of_residence) - 1)
 					: total_amount_calculated,
 			booking_source: booking_source,
 			belongsTo: hotelDetails.belongsTo._id,
@@ -372,11 +375,13 @@ const NewReservationMain = () => {
 			sendEmail: sendEmail,
 			booked_at: new Date(),
 			sub_total:
-				total_amount !== 0
-					? total_amount * (days_of_residence - 1)
-					: total_amount_calculated
-					  ? total_amount_calculated
-					  : total_amount_calculated_WithRooms,
+				searchClicked && searchedReservation && searchedReservation.sub_total
+					? searchedReservation.sub_total
+					: total_amount !== 0
+					  ? total_amount * (days_of_residence - 1)
+					  : total_amount_calculated
+					    ? total_amount_calculated
+					    : total_amount_calculated_WithRooms,
 			pickedRoomsPricing: pickedRoomPricing,
 			pickedRoomsType:
 				calculatedPickedRoomsType && calculatedPickedRoomsType.length > 0
