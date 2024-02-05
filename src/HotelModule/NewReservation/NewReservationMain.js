@@ -361,7 +361,10 @@ const NewReservationMain = () => {
 			checkout_date: end_date,
 			days_of_residence: days_of_residence,
 			payment_status: payment_status,
-			total_amount: total_amount !== 0 ? total_amount : total_amount_calculated,
+			total_amount:
+				total_amount !== 0
+					? total_amount * (days_of_residence - 1)
+					: total_amount_calculated,
 			booking_source: booking_source,
 			belongsTo: hotelDetails.belongsTo._id,
 			hotelId: hotelDetails._id,
@@ -370,7 +373,7 @@ const NewReservationMain = () => {
 			booked_at: new Date(),
 			sub_total:
 				total_amount !== 0
-					? total_amount * days_of_residence
+					? total_amount * (days_of_residence - 1)
 					: total_amount_calculated
 					  ? total_amount_calculated
 					  : total_amount_calculated_WithRooms,
