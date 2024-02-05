@@ -373,7 +373,10 @@ const NewReservationMain = () => {
 			hotelId: hotelDetails._id,
 			roomId: pickedHotelRooms,
 			sendEmail: sendEmail,
-			booked_at: new Date(),
+			booked_at:
+				searchedReservation && searchedReservation.booked_at
+					? searchedReservation.booked_at
+					: new Date(),
 			sub_total:
 				searchClicked && searchedReservation && searchedReservation.sub_total
 					? searchedReservation.sub_total
