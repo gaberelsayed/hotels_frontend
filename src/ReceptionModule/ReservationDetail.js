@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useCartContext } from "../cart_context";
 import { isAuthenticated } from "../auth";
@@ -6,6 +6,7 @@ import { Spin, Modal, Select } from "antd";
 import moment from "moment";
 import { EditOutlined } from "@ant-design/icons";
 import {
+	getHotelRooms,
 	sendPaymnetLinkToTheClient,
 	sendReservationConfirmationEmail,
 	updateSingleReservation,
@@ -82,6 +83,7 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 	const [isModalVisible, setIsModalVisible] = useState(false);
 	const [isModalVisible2, setIsModalVisible2] = useState(false);
 	const [linkModalVisible, setLinkModalVisible] = useState(false);
+	const [chosenRooms, setChosenRooms] = useState([]);
 
 	// eslint-disable-next-line
 	const [selectedStatus, setSelectedStatus] = useState("");
@@ -228,7 +230,26 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 		}
 	};
 
-	console.log(linkGenerate, "linkGenerated");
+	const getHotelRoomsDetails = () => {
+		getHotelRooms(reservation.hotelId, user.belongsToId).then((data3) => {
+			if (data3 && data3.error) {
+				console.log(data3.error);
+			} else {
+				// Filter the rooms to only include those whose _id is in reservation.roomId
+				const filteredRooms = data3.filter((room) =>
+					reservation.roomId.includes(room._id)
+				);
+				setChosenRooms(filteredRooms);
+			}
+		});
+	};
+
+	useEffect(() => {
+		if (reservation && reservation.roomId && reservation.roomId.length > 0) {
+			getHotelRoomsDetails();
+		}
+		// eslint-disable-next-line
+	}, []);
 
 	return (
 		<Wrapper
@@ -761,6 +782,46 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 										{chosenLanguage === "Arabic" ? "ملحوظة" : "Comment"}
 										<div>{reservation && reservation.comment}</div>
 									</div>
+
+									{chosenRooms && chosenRooms.length > 0 ? (
+										<div className='table-responsive'>
+											<table
+												className='table table-bordered table-hover mx-auto'
+												style={{
+													textAlign: "center",
+													marginTop: "10px",
+													width: "90%",
+												}}
+											>
+												<thead className='thead-light'>
+													<tr>
+														<th
+															scope='col'
+															style={{ width: "50%", fontWeight: "bold" }}
+														>
+															Room Type
+														</th>
+														<th
+															scope='col'
+															style={{ width: "50%", fontWeight: "bold" }}
+														>
+															Room Number
+														</th>
+													</tr>
+												</thead>
+												<tbody>
+													{chosenRooms.map((room, index) => (
+														<tr key={index}>
+															<td style={{ textTransform: "capitalize" }}>
+																{room.room_type}
+															</td>
+															<td>{room.room_number}</td>
+														</tr>
+													))}
+												</tbody>
+											</table>
+										</div>
+									) : null}
 								</div>
 							</ContentSection>
 							<ContentSection>
