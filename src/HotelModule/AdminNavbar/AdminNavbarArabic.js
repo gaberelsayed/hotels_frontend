@@ -133,7 +133,14 @@ const items = [
 		null,
 		"divider2"
 	),
-	getItem("المدفوعات", "sub18", <CreditCardOutlined />, null, null, "red-bg"),
+	getItem(
+		<Link to='/hotel-management-payment'>المدفوعات</Link>,
+		"sub18",
+		<CreditCardOutlined />,
+		null,
+		null,
+		"red-bg"
+	),
 	getItem(
 		<div style={{ fontWeight: "bold", textDecoration: "underline" }}>
 			Signout
@@ -204,8 +211,8 @@ const AdminNavbarArabic = ({
 						            ? "sub7"
 						            : fromPage === "HotelStaff"
 						              ? "sub8"
-						              : fromPage === "WebsiteManagement"
-						                ? "sub10"
+						              : fromPage === "Payment"
+						                ? "sub18"
 						                : fromPage === "CouponManagement"
 						                  ? "sub12"
 						                  : "sub1"

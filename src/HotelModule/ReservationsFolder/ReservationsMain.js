@@ -3,9 +3,7 @@ import AdminNavbar from "../AdminNavbar/AdminNavbar";
 import AdminNavbarArabic from "../AdminNavbar/AdminNavbarArabic";
 import {
 	getHotelDetails,
-	getPaginatedListHotelRunner,
 	hotelAccount,
-	prerservationAuto,
 	reservationsList,
 	reservationsTotalRecords,
 } from "../apiAdmin";
@@ -28,7 +26,6 @@ const ReservationsMain = () => {
 
 	const [q, setQ] = useState("");
 	const [searchClicked, setSearchClicked] = useState(false);
-	const [decrement, setDecrement] = useState(0);
 
 	// eslint-disable-next-line
 	const { user, token } = isAuthenticated();
@@ -116,34 +113,6 @@ const ReservationsMain = () => {
 		setCurrentPage(1); // Reset to first page when filter changes
 	};
 
-	const addPreReservations = () => {
-		const isConfirmed = window.confirm(
-			chosenLanguage === "Arabic"
-				? "قد تستغرق هذه العملية بضع دقائق، هل تريد المتابعة؟"
-				: "This may take a few minutes, Do you want to proceed?"
-		);
-		if (!isConfirmed) return;
-
-		setLoading(true);
-		getPaginatedListHotelRunner(1, 15).then((data0) => {
-			if (data0 && data0.error) {
-				console.log(data0.error);
-			} else {
-				prerservationAuto(
-					data0.pages - decrement,
-					hotelDetails._id,
-					hotelDetails.belongsTo._id
-				).then((data) => {
-					if (data) {
-						console.log(data, "data from prereservation");
-					}
-					setDecrement(decrement + 3);
-					setLoading(false);
-				});
-			}
-		});
-	};
-
 	return (
 		<ReservationsMainWrapper
 			dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}
@@ -205,21 +174,6 @@ const ReservationsMain = () => {
 							</div>
 
 							<div className='container-wrapper'>
-								<div
-									className='mx-auto mb-5 mt-4 text-center'
-									onClick={() => {
-										addPreReservations();
-									}}
-								>
-									<button
-										className='btn btn-success'
-										style={{ fontWeight: "bold" }}
-									>
-										{chosenLanguage === "Arabic"
-											? "تنزيل جميع الحجوزات من Booking.com وExpedia وTrivago؟"
-											: "Get All Reservations from Booking.com, Expedia & Trivago?"}
-									</button>
-								</div>
 								<div>
 									<PreReservationTable
 										allPreReservations={allPreReservations}
@@ -237,6 +191,7 @@ const ReservationsMain = () => {
 										setSearchClicked={setSearchClicked}
 										searchClicked={searchClicked}
 										getAllPreReservation={getAllPreReservation}
+										hotelDetails={hotelDetails}
 									/>
 								</div>
 							</div>

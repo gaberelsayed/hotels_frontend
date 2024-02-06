@@ -4,7 +4,7 @@ import React from "react";
 import { Route, Redirect } from "react-router-dom";
 import { isAuthenticated } from "./index";
 
-const EmployeeRoute = ({ component: Component, ...rest }) => (
+const ReceptionRoute = ({ component: Component, ...rest }) => (
 	<Route
 		{...rest}
 		render={(props) =>
@@ -22,4 +22,4 @@ const EmployeeRoute = ({ component: Component, ...rest }) => (
 	/>
 );
 
-export default EmployeeRoute;
+export default ReceptionRoute;

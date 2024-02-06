@@ -23,6 +23,11 @@ import HotelSettingsMain from "./HotelModule/HotelSettings/HotelSettingsMain";
 import SignupNew from "./HotelModule/HotelStaff/SignupNew";
 import ReservationDetail from "./HotelModule/ReservationsFolder/ReservationDetail";
 import ClientPayMain from "./HotelModule/ClientPay/ClientPayMain";
+import PaymentMain from "./HotelModule/Payment/PaymentMain";
+
+//Reception Routes
+import ReceptionRoute from "./auth/ReceptionRoute";
+import NewReservationMainReception from "./ReceptionModule/NewReservationMain";
 
 function App() {
 	const { languageToggle, chosenLanguage } = useCartContext();
@@ -98,6 +103,18 @@ function App() {
 						path='/reservation-details/:confirmationNumber'
 						exact
 						component={ReservationDetail}
+					/>
+
+					<HotelRoute
+						path='/hotel-management-payment'
+						exact
+						component={PaymentMain}
+					/>
+
+					<ReceptionRoute
+						path='/reception-management/new-reservation'
+						exact
+						component={NewReservationMainReception}
 					/>
 				</Switch>
 			</>

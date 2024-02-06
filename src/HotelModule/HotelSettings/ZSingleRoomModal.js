@@ -26,6 +26,9 @@ const ZSingleRoomModal = ({
 }) => {
 	const { user, token } = isAuthenticated();
 
+	console.log(clickedRoom, "clickedRoom");
+	console.log(rooms, "rooms");
+
 	const updatingSingleRoom = () => {
 		updateSingleRoom(clickedRoom._id, user._id, token, clickedRoom)
 			.then((data) => {
@@ -37,13 +40,44 @@ const ZSingleRoomModal = ({
 					);
 					setTimeout(() => {
 						setModalVisible(false);
-						setHelperRender(!helperRender);
+					}, 1000);
+					setTimeout(() => {
+						window.location.reload(false);
 					}, 1500);
 				}
 			})
 			.catch((error) => {
 				console.error("Error occurred:", error);
 			});
+	};
+
+	const updateRoomState = () => {
+		// Close the modal
+		setModalVisible(false);
+
+		// Check if clickedRoom has an _id, if not use the combination of room_number and floor
+		const roomIdentifier = clickedRoom._id
+			? clickedRoom._id
+			: `${clickedRoom.floor}-${clickedRoom.room_number}`;
+
+		// Map over the rooms and update the state for the matching room
+		const updatedRooms = rooms.map((room) => {
+			const currentRoomIdentifier = room._id
+				? room._id
+				: `${room.floor}-${room.room_number}`;
+			if (currentRoomIdentifier === roomIdentifier) {
+				return { ...room, ...clickedRoom }; // Spread the existing room and overwrite with clickedRoom
+			}
+			return room; // Return the room unchanged if it doesn't match
+		});
+
+		// Update the rooms state with the new array
+		setRooms(updatedRooms);
+
+		setClickedRoom("");
+
+		// Optionally, if you need to trigger some re-render or additional effects
+		// after updating the rooms, you can call setHelperRender or other state setters here.
 	};
 
 	// console.log(clickedRoom, "clickedRoom");
@@ -119,12 +153,13 @@ const ZSingleRoomModal = ({
 							onChange={(e) => {
 								setClickedRoom({
 									...clickedRoom,
-									room_features: clickedRoom.room_features.map(
-										(feature, index) =>
-											index === 0
-												? { ...feature, bedSize: e.target.value }
-												: feature
-									),
+									room_features: Array.isArray(clickedRoom.room_features)
+										? clickedRoom.room_features.map((feature, index) =>
+												index === 0
+													? { ...feature, bedSize: e.target.value }
+													: feature
+										  )
+										: [{ bedSize: e.target.value }], // If it's not an array, create a new array with the bedSize
 								});
 							}}
 						>
@@ -381,9 +416,7 @@ const ZSingleRoomModal = ({
 					>{`Edit Room #${clickedRoom.room_number}`}</div>
 				}
 				open={modalVisible}
-				onOk={() => {
-					setModalVisible(false);
-				}}
+				onOk={updateRoomState}
 				// okButtonProps={{ style: { display: "none" } }}
 				cancelButtonProps={{ style: { display: "none" } }}
 				onCancel={() => {

@@ -2,15 +2,26 @@ import React, { useEffect, useState } from "react";
 import AdminNavbar from "../AdminNavbar/AdminNavbar";
 import AdminNavbarArabic from "../AdminNavbar/AdminNavbarArabic";
 import styled from "styled-components";
-import { Link } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { useCartContext } from "../../cart_context";
 import { isAuthenticated } from "../../auth";
-import { getHotelDetails, gettingDateReport, hotelAccount } from "../apiAdmin";
+import {
+	getHotelDetails,
+	gettingDateReport,
+	gettingDayOverDayInventory,
+	hotelAccount,
+} from "../apiAdmin";
 import MyReport from "./MyReport";
 import GeneralOverview from "./GeneralOverview";
+import PasscodeModal from "./PasscodeModal";
+import { RoomStockReport } from "./RoomStockReport";
+import { Spin } from "antd";
 
 const HotelManagerDashboard = () => {
+	const history = useHistory();
+
 	const [AdminMenuStatus, setAdminMenuStatus] = useState(false);
+	const [modalVisiblePasscode, setModalVisiblePasscode] = useState(false);
 	const [collapsed, setCollapsed] = useState(false);
 	const [hotelDetails, setHotelDetails] = useState("");
 	const [reservationsToday, setReservationsToday] = useState("");
@@ -18,6 +29,7 @@ const HotelManagerDashboard = () => {
 	const [reservationsYesterday, setReservationsYesterday] = useState("");
 	const [activeTab, setActiveTab] = useState("Today");
 	const { languageToggle, chosenLanguage } = useCartContext();
+	const [dayOverDayInventory, setDayOverDayInventory] = useState([]);
 
 	// eslint-disable-next-line
 	const { user, token } = isAuthenticated();
@@ -33,6 +45,8 @@ const HotelManagerDashboard = () => {
 			setActiveTab("Yesterday");
 		} else if (window.location.search.includes("overview")) {
 			setActiveTab("Overview");
+		} else if (window.location.search.includes("inventory")) {
+			setActiveTab("inventory");
 		} else {
 			setActiveTab("Today");
 		}
@@ -102,6 +116,14 @@ const HotelManagerDashboard = () => {
 								}
 							});
 						}
+
+						gettingDayOverDayInventory(data._id, data2[0]._id).then((data5) => {
+							if (data5 && data5.error) {
+								console.log("Data not received");
+							} else {
+								setDayOverDayInventory(data5);
+							}
+						});
 					}
 				});
 			}
@@ -121,6 +143,10 @@ const HotelManagerDashboard = () => {
 			show={collapsed}
 			isArabic={chosenLanguage === "Arabic"}
 		>
+			<PasscodeModal
+				setModalVisiblePasscode={setModalVisiblePasscode}
+				modalVisiblePasscode={modalVisiblePasscode}
+			/>
 			<div className='grid-container-main'>
 				<div className='navcontent'>
 					{chosenLanguage === "Arabic" ? (
@@ -162,6 +188,21 @@ const HotelManagerDashboard = () => {
 					>
 						{chosenLanguage === "English" ? "ARABIC" : "English"}
 					</div>
+					<div
+						onClick={() => {
+							setModalVisiblePasscode(true);
+						}}
+						className='mx-2'
+						style={{
+							position: "absolute",
+							top: 4,
+							right: "15%",
+							padding: "2px",
+							color: "#f0f0f0",
+						}}
+					>
+						hello
+					</div>
 
 					<div style={{ background: "#8a8a8a", padding: "1px" }}>
 						<div className='my-2 tab-grid col-md-8'>
@@ -169,41 +210,48 @@ const HotelManagerDashboard = () => {
 								isActive={activeTab === "Today"}
 								onClick={() => {
 									setActiveTab("Today");
+									history.push("/hotel-management/dashboard?today"); // Programmatic navigation
 								}}
 							>
-								<Link to='/hotel-management/dashboard?today'>
-									{chosenLanguage === "Arabic"
-										? "تقرير حجوزات اليوم"
-										: "Today's Overview"}
-								</Link>
+								{chosenLanguage === "Arabic"
+									? "تقرير حجوزات اليوم"
+									: "Today's Overview"}
 							</Tab>
+
 							<Tab
 								isActive={activeTab === "Yesterday"}
 								onClick={() => {
 									setActiveTab("Yesterday");
+									history.push("/hotel-management/dashboard?yesterday"); // Programmatic navigation
 								}}
 							>
-								<Link to='/hotel-management/dashboard?yesterday'>
-									{chosenLanguage === "Arabic"
-										? "تقرير حجوزات الأمس"
-										: "Yestery Overview"}
-								</Link>
+								{chosenLanguage === "Arabic"
+									? "تقرير حجوزات الأمس"
+									: "Yesterday's Overview"}
 							</Tab>
+
 							<Tab
 								isActive={activeTab === "Overview"}
 								onClick={() => {
 									setActiveTab("Overview");
+									history.push("/hotel-management/dashboard?overview"); // Programmatic navigation
 								}}
 							>
-								<Link to='/hotel-management/dashboard?overview'>
-									{chosenLanguage === "Arabic"
-										? "لمحة عامة"
-										: "Reservations Overview"}
-								</Link>
+								{chosenLanguage === "Arabic"
+									? "لمحة عامة"
+									: "Reservations Overview"}
+							</Tab>
+							<Tab
+								isActive={activeTab === "inventory"}
+								onClick={() => {
+									setActiveTab("inventory");
+									history.push("/hotel-management/dashboard?inventory"); // Programmatically navigate
+								}}
+							>
+								{chosenLanguage === "Arabic" ? "	تقرير جرد الغرف" : "Inventory"}
 							</Tab>
 						</div>
 					</div>
-
 					<div className='container-wrapper'>
 						<div>
 							<h4
@@ -247,6 +295,23 @@ const HotelManagerDashboard = () => {
 									hotelDetails={hotelDetails}
 									chosenLanguage={chosenLanguage}
 								/>
+							</>
+						) : null}
+
+						{activeTab === "inventory" ? (
+							<>
+								{dayOverDayInventory && dayOverDayInventory.length > 0 ? (
+									<RoomStockReport
+										dayOverDayInventory={dayOverDayInventory}
+										chosenLanguage={chosenLanguage}
+										// isBoss={isBoss}
+									/>
+								) : (
+									<div className='text-center my-5'>
+										<Spin size='large' />
+										<p>Loading Inventory...</p>
+									</div>
+								)}
 							</>
 						) : null}
 					</div>
@@ -307,7 +372,5 @@ const Tab = styled.div`
 	z-index: 100;
 	font-size: 1.2rem;
 
-	a {
-		color: ${(props) => (props.isActive ? "white" : "black")};
-	}
+	color: ${(props) => (props.isActive ? "white" : "black")};
 `;

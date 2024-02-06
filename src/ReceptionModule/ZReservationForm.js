@@ -4,8 +4,13 @@ import { DatePicker, Spin } from "antd";
 import HotelOverviewReservation from "./HotelOverviewReservation";
 import moment from "moment";
 import { toast } from "react-toastify";
-import { agodaData, airbnbData, bookingData, expediaData } from "../apiAdmin";
-import { isAuthenticated } from "../../auth";
+import {
+	agodaData,
+	airbnbData,
+	bookingData,
+	expediaData,
+} from "../HotelModule/apiAdmin";
+import { isAuthenticated } from "../auth";
 
 const ZReservationForm = ({
 	customer_details,

@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from "react";
-import AdminNavbar from "../AdminNavbar/AdminNavbar";
-import AdminNavbarArabic from "../AdminNavbar/AdminNavbarArabic";
 import styled from "styled-components";
 // eslint-disable-next-line
 import { Link, useHistory } from "react-router-dom";
-import { useCartContext } from "../../cart_context";
+import { useCartContext } from "../cart_context";
 import moment from "moment";
 import ZReservationForm from "./ZReservationForm";
 import {
@@ -17,17 +15,14 @@ import {
 	getReservationSearch,
 	updateSingleReservation,
 	gettingRoomInventory,
-} from "../apiAdmin";
-import { isAuthenticated } from "../../auth";
+} from "../HotelModule/apiAdmin";
+import { isAuthenticated } from "../auth";
 import { toast } from "react-toastify";
 import ZReservationForm2 from "./ZReservationForm2";
 import { Spin } from "antd";
 import HotelRunnerReservationList from "./HotelRunnerReservationList";
-import useBoss from "../useBoss";
 
 const NewReservationMain = () => {
-	const [AdminMenuStatus, setAdminMenuStatus] = useState(false);
-	const [collapsed, setCollapsed] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [hotelRooms, setHotelRooms] = useState("");
 	const [hotelDetails, setHotelDetails] = useState("");
@@ -59,7 +54,6 @@ const NewReservationMain = () => {
 		passportExpiry: "",
 		nationality: "",
 	});
-	const [isBoss] = useBoss();
 
 	const [start_date, setStart_date] = useState("");
 	const [end_date, setEnd_date] = useState("");
@@ -72,13 +66,7 @@ const NewReservationMain = () => {
 	// Inside your functional component
 	const history = useHistory(); // Initialize the history object
 
-	console.log(isBoss, "isBosssss");
-
 	useEffect(() => {
-		if (window.innerWidth <= 1000) {
-			setCollapsed(true);
-		}
-
 		if (window.location.search.includes("reserveARoom")) {
 			setActiveTab("reserveARoom");
 		} else if (window.location.search.includes("newReservation")) {
@@ -122,7 +110,7 @@ const NewReservationMain = () => {
 				setValues(data);
 				const formattedStartDate = formatDate(start_date);
 				const formattedEndDate = formatDate(end_date);
-				getHotelDetails(data._id).then((data2) => {
+				getHotelDetails(data.belongsToId).then((data2) => {
 					if (data2 && data2.error) {
 						console.log(data2.error, "Error rendering");
 					} else {
@@ -149,7 +137,7 @@ const NewReservationMain = () => {
 							}
 
 							if (!hotelRooms || hotelRooms.length === 0) {
-								getHotelRooms(data2[0]._id, user._id).then((data3) => {
+								getHotelRooms(data2[0]._id, data.belongsToId).then((data3) => {
 									if (data3 && data3.error) {
 										console.log(data3.error);
 									} else {
@@ -410,7 +398,7 @@ const NewReservationMain = () => {
 		gettingRoomInventory(
 			formattedStartDate,
 			formattedEndDate,
-			user._id,
+			values.belongsToId,
 			hotelDetails._id
 		).then((data) => {
 			if (data && data.error) {
@@ -433,31 +421,10 @@ const NewReservationMain = () => {
 	return (
 		<NewReservationMainWrapper
 			dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}
-			show={collapsed}
 			showList={window.location.search.includes("list")}
 		>
 			<div className='grid-container-main'>
-				<div className='navcontent'>
-					{chosenLanguage === "Arabic" ? (
-						<AdminNavbarArabic
-							fromPage='NewReservation'
-							AdminMenuStatus={AdminMenuStatus}
-							setAdminMenuStatus={setAdminMenuStatus}
-							collapsed={collapsed}
-							setCollapsed={setCollapsed}
-							chosenLanguage={chosenLanguage}
-						/>
-					) : (
-						<AdminNavbar
-							fromPage='NewReservation'
-							AdminMenuStatus={AdminMenuStatus}
-							setAdminMenuStatus={setAdminMenuStatus}
-							collapsed={collapsed}
-							setCollapsed={setCollapsed}
-							chosenLanguage={chosenLanguage}
-						/>
-					)}
-				</div>
+				<div className='navcontent'></div>
 
 				<div className='otherContentWrapper'>
 					<div
@@ -485,7 +452,7 @@ const NewReservationMain = () => {
 								onClick={() => {
 									setActiveTab("reserveARoom");
 									history.push(
-										"/hotel-management/new-reservation?reserveARoom"
+										"/reception-management/new-reservation?reserveARoom"
 									); // Programmatically navigate
 								}}
 							>
@@ -497,7 +464,7 @@ const NewReservationMain = () => {
 								onClick={() => {
 									setActiveTab("newReservation");
 									history.push(
-										"/hotel-management/new-reservation?newReservation"
+										"/reception-management/new-reservation?newReservation"
 									); // Programmatically navigate
 								}}
 							>
@@ -510,7 +477,7 @@ const NewReservationMain = () => {
 								isActive={activeTab === "list"}
 								onClick={() => {
 									setActiveTab("list");
-									history.push("/hotel-management/new-reservation?list"); // Programmatically navigate
+									history.push("/reception-management/new-reservation?list"); // Programmatically navigate
 								}}
 							>
 								{chosenLanguage === "Arabic"
@@ -523,36 +490,6 @@ const NewReservationMain = () => {
 					<div className='container-wrapper'>
 						{activeTab === "reserveARoom" ? (
 							<>
-								{/* <div className='row text-center ml-5 my-3'>
-									<div
-										style={isActive(clickedMenu, "reserveARoom")}
-										className='col-md-6 col-6  menuItems'
-										onClick={() => setClickedMenu("reserveARoom")}
-									>
-										<Link
-											className='dashboardLinks p-0'
-											style={isActive(clickedMenu, "reserveARoom")}
-											to='/hotel-management/new-reservation?reserveARoom'
-										>
-											<i className='fa-brands fa-servicestack mx-1'></i>
-											Reservation WITH a ROOM
-										</Link>
-									</div>
-									<div
-										style={isActive(clickedMenu, "newReservation")}
-										className='col-md-6 col-6  menuItems'
-										onClick={() => setClickedMenu("newReservation")}
-									>
-										<Link
-											className='dashboardLinks p-0'
-											style={isActive(clickedMenu, "newReservation")}
-											to='/hotel-management/new-reservation?newReservation'
-										>
-											<i className='fa-brands fa-servicestack mx-1'></i>
-											New Reservation WITH NO ROOM
-										</Link>
-									</div>
-								</div> */}
 								{loading ? (
 									<>
 										<div className='text-center my-5'>
@@ -600,7 +537,6 @@ const NewReservationMain = () => {
 											pickedRoomsType={pickedRoomsType}
 											setPickedRoomsType={setPickedRoomsType}
 											finalTotalByRoom={calculateTotalAmountWithRooms}
-											isBoss={isBoss}
 										/>
 									</>
 								)}
@@ -611,7 +547,6 @@ const NewReservationMain = () => {
 									<HotelRunnerReservationList
 										hotelDetails={hotelDetails}
 										chosenLanguage={chosenLanguage}
-										isBoss={isBoss}
 									/>
 								) : null}
 							</>
@@ -652,7 +587,6 @@ const NewReservationMain = () => {
 									setTotalGuests={setTotalGuests}
 									setSendEmail={setSendEmail}
 									sendEmail={sendEmail}
-									isBoss={isBoss}
 								/>
 							</>
 						)}
@@ -668,14 +602,13 @@ export default NewReservationMain;
 const NewReservationMainWrapper = styled.div`
 	overflow-x: hidden;
 	/* background: #ededed; */
-	margin-top: 20px;
+	margin-top: 40px;
 	min-height: 750px;
 	/* background-color: #f0f0f0; */
 
 	.grid-container-main {
 		display: grid;
-		grid-template-columns: ${(props) =>
-			props.show ? "5% 90%" : props.showList ? "13% 87%" : "13.5% 80%"};
+		grid-template-columns: ${(props) => (props.showList ? "5% 92%" : "5% 92%")};
 	}
 
 	.container-wrapper {

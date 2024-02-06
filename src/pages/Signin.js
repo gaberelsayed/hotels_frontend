@@ -76,7 +76,7 @@ const Signin = ({ history }) => {
 			} else if (user && user.role === 2000) {
 				return (window.location.href = "/hotel-management/dashboard");
 			} else if (user && user.role === 3000) {
-				return (window.location.href = "/staff/hotel/dashboard");
+				return (window.location.href = "/reception-management/new-reservation");
 			} else {
 				return (window.location.href = "/");
 			}

@@ -6,10 +6,10 @@ import {
 	expediaData,
 	reservationsList,
 	reservationsTotalRecords,
-} from "../apiAdmin";
+} from "../HotelModule/apiAdmin";
 import styled from "styled-components";
-import { isAuthenticated } from "../../auth";
-import PreReservationTable from "../ReservationsFolder/PreReservationTable";
+import { isAuthenticated } from "../auth";
+import PreReservationTable from "./PreReservationTable";
 import { Spin } from "antd";
 import { toast } from "react-toastify";
 

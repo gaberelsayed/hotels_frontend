@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import AdminNavbar from "../AdminNavbar/AdminNavbar";
 import AdminNavbarArabic from "../AdminNavbar/AdminNavbarArabic";
 import styled from "styled-components";
-import { Link } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { useCartContext } from "../../cart_context";
 import {
 	createRooms,
@@ -19,6 +19,7 @@ import HotelOverview from "./HotelOverview";
 import { defaultHotelDetails } from "../../AdminModule/NewHotels/Assets";
 
 const HotelSettingsMain = () => {
+	const history = useHistory();
 	const [AdminMenuStatus, setAdminMenuStatus] = useState(false);
 	const [collapsed, setCollapsed] = useState(false);
 	const [hotelDetails, setHotelDetails] = useState("");
@@ -34,9 +35,35 @@ const HotelSettingsMain = () => {
 	const [modalVisible, setModalVisible] = useState(false);
 	const [modalVisible2, setModalVisible2] = useState(false);
 	const [clickedFloor, setClickedFloor] = useState("");
-	const [clickedRoom, setClickedRoom] = useState("");
+	const [clickedRoom, setClickedRoom] = useState({
+		_id: "",
+		room_number: "",
+		room_type: "",
+		room_features: [
+			{
+				bedSize: "",
+				view: "",
+			},
+		],
+		bathroom: ["bathtub", "jacuzzi"],
+		airConditioning: "",
+		television: "",
+		internet: ["WiFi", "Ethernet Connection"],
+		Minibar: [""],
+		smoking: false,
+		room_pricing: {
+			// Assuming there are pricing details here
+		},
+		floor: 15,
+		roomColorCode: "",
+		belongsTo: "",
+		hotelId: "",
+	});
 	const [currentAddingRoom, setCurrentAddingRoom] = useState("");
 	const [hotelRooms, setHotelRooms] = useState("");
+	const [inheritModalVisible, setInheritModalVisible] = useState(false);
+	const [baseFloor, setBaseFloor] = useState("");
+	const [roomsAlreadyExists, setRoomsAlreadyExists] = useState(false);
 
 	useEffect(() => {
 		if (window.innerWidth <= 1000) {
@@ -68,6 +95,7 @@ const HotelSettingsMain = () => {
 					} else {
 						if (data && data.name && data._id && data2 && data2.length > 0) {
 							setHotelDetails(data2[0]);
+							console.log(data2[0], "data2[0]");
 							// other state updates...
 							setHotelPhotos(
 								data2[0] &&
@@ -89,7 +117,13 @@ const HotelSettingsMain = () => {
 								if (data4 && data4.error) {
 									console.log(data4.error);
 								} else {
-									setHotelRooms(data4);
+									if (data4.length > 0) {
+										setRoomsAlreadyExists(true);
+									}
+									if (hotelRooms.length === 0) {
+										setHotelRooms(data4);
+									}
+									// setHotelRooms([]);
 
 									if (clickedFloor && modalVisible) {
 										// Aggregate room types for the clicked floor
@@ -198,6 +232,7 @@ const HotelSettingsMain = () => {
 		});
 	};
 
+	console.log(hotelRooms, "hotelRooms");
 	return (
 		<HotelSettingsMainWrapper
 			dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}
@@ -252,37 +287,35 @@ const HotelSettingsMain = () => {
 								isActive={activeTab === "HotelDetails"}
 								onClick={() => {
 									setActiveTab("HotelDetails");
+									history.push("/hotel-management/settings?hoteldetails"); // Programmatic navigation
 								}}
 							>
-								<Link to='/hotel-management/settings?hoteldetails'>
-									{chosenLanguage === "Arabic"
-										? "تفاصيل الفندق"
-										: "Hotel Details"}
-								</Link>
+								{chosenLanguage === "Arabic"
+									? "تفاصيل الفندق"
+									: "Hotel Details"}
 							</Tab>
 							<Tab
 								isActive={activeTab === "PricingCalendar"}
 								onClick={() => {
 									setActiveTab("PricingCalendar");
+									history.push("/hotel-management/settings?pricing"); // Programmatic navigation
 								}}
 							>
-								<Link to='/hotel-management/settings?pricing'>
-									{chosenLanguage === "Arabic"
-										? "تقويم التسعير"
-										: "Pricing Calendar"}
-								</Link>
+								{chosenLanguage === "Arabic"
+									? "تقويم التسعير"
+									: "Pricing Calendar"}
 							</Tab>
+
 							<Tab
 								isActive={activeTab === "RoomDetails"}
 								onClick={() => {
 									setActiveTab("RoomDetails");
+									history.push("/hotel-management/settings?roomdetails"); // Programmatic navigation
 								}}
 							>
-								<Link to='/hotel-management/settings?roomdetails'>
-									{chosenLanguage === "Arabic"
-										? "توزيع الغرف على الطوابق"
-										: "Room Details"}
-								</Link>
+								{chosenLanguage === "Arabic"
+									? "توزيع الغرف على الطوابق"
+									: "Room Details"}
 							</Tab>
 						</div>
 					</div>
@@ -302,7 +335,8 @@ const HotelSettingsMain = () => {
 									setHotelPhotos={setHotelPhotos}
 								/>
 							</div>
-						) : activeTab === "RoomDetails" && hotelRooms.length > 0 ? (
+						) : activeTab === "RoomDetails" ? (
+							// && hotelRooms.length > 0
 							<HotelOverview
 								hotelRooms={hotelRooms}
 								hotelDetails={hotelDetails}
@@ -320,6 +354,11 @@ const HotelSettingsMain = () => {
 								setClickedFloor={setClickedFloor}
 								clickedRoom={clickedRoom}
 								setClickedRoom={setClickedRoom}
+								inheritModalVisible={inheritModalVisible}
+								setInheritModalVisible={setInheritModalVisible}
+								baseFloor={baseFloor}
+								setBaseFloor={setBaseFloor}
+								roomsAlreadyExists={roomsAlreadyExists}
 							/>
 						) : activeTab === "PricingCalendar" &&
 						  hotelDetails &&
@@ -395,7 +434,5 @@ const Tab = styled.div`
 	z-index: 100;
 	font-size: 1.2rem;
 
-	a {
-		color: ${(props) => (props.isActive ? "white" : "black")};
-	}
+	color: ${(props) => (props.isActive ? "white" : "black !important")};
 `;
