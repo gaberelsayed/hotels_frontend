@@ -199,8 +199,8 @@ const NewReservationMain = () => {
 					setCustomer_details(data.customer_details);
 					setStart_date(data.checkin_date);
 					setEnd_date(data.checkout_date);
-					const checkin = moment(data.checkin_date);
-					const checkout = moment(data.checkout_date);
+					const checkin = moment(data.checkin_date, "YYYY-MM-DD");
+					const checkout = moment(data.checkout_date, "YYYY-MM-DD");
 					const duration = checkout.diff(checkin, "days") + 1;
 
 					setDays_of_residence(duration);
