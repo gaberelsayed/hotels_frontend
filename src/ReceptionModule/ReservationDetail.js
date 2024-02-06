@@ -7,6 +7,7 @@ import moment from "moment";
 import { EditOutlined } from "@ant-design/icons";
 import {
 	getHotelRooms,
+	hotelAccount,
 	sendPaymnetLinkToTheClient,
 	sendReservationConfirmationEmail,
 	updateSingleReservation,
@@ -231,15 +232,22 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 	};
 
 	const getHotelRoomsDetails = () => {
-		getHotelRooms(reservation.hotelId, user.belongsToId).then((data3) => {
-			if (data3 && data3.error) {
-				console.log(data3.error);
+		hotelAccount(user._id, token, user._id).then((data) => {
+			if (data && data.error) {
+				console.log("This is erroring");
+				console.log(data.error, "Error rendering");
 			} else {
-				// Filter the rooms to only include those whose _id is in reservation.roomId
-				const filteredRooms = data3.filter((room) =>
-					reservation.roomId.includes(room._id)
-				);
-				setChosenRooms(filteredRooms);
+				getHotelRooms(reservation.hotelId, data.belongsToId).then((data3) => {
+					if (data3 && data3.error) {
+						console.log(data3.error);
+					} else {
+						// Filter the rooms to only include those whose _id is in reservation.roomId
+						const filteredRooms = data3.filter((room) =>
+							reservation.roomId.includes(room._id)
+						);
+						setChosenRooms(filteredRooms);
+					}
+				});
 			}
 		});
 	};
