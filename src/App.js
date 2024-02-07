@@ -28,6 +28,7 @@ import PaymentMain from "./HotelModule/Payment/PaymentMain";
 //Reception Routes
 import ReceptionRoute from "./auth/ReceptionRoute";
 import NewReservationMainReception from "./ReceptionModule/NewReservationMain";
+import JanatWebsiteMain from "./AdminModule/JanatWebsite/JanatWebsiteMain";
 
 function App() {
 	const { languageToggle, chosenLanguage } = useCartContext();
@@ -66,6 +67,11 @@ function App() {
 						component={AdminDashboard}
 					/>
 					<AdminRoute path='/admin/new-hotel' exact component={AddNewHotel} />
+					<AdminRoute
+						path='/admin/janat-website'
+						exact
+						component={JanatWebsiteMain}
+					/>
 					<AdminRoute
 						path='/admin/added-hotels'
 						exact

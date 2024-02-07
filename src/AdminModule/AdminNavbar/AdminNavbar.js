@@ -17,7 +17,6 @@ import {
 } from "@ant-design/icons";
 import { Button, Menu } from "antd";
 import LastAddedLogoImage from "./LastAddedLogoImage";
-import { useCartContext } from "../../cart_context";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 import { signout } from "../../auth";
 
@@ -78,7 +77,9 @@ const items = [
 	getItem(<Link to='#'>Hotel Branches</Link>, "sub7", <TeamOutlined />),
 
 	getItem(
-		<Link to='#'>Hotel Website Builder</Link>,
+		<Link to='/admin/janat-website' style={{ fontWeight: "bold" }}>
+			JANAT BOOKING WEBSITE
+		</Link>,
 		"sub10",
 		<>
 			<DollarCircleOutlined />
@@ -147,7 +148,6 @@ const AdminNavbar = ({
 	setCollapsed,
 }) => {
 	const [clickedOn, setClickedOn] = useState(false);
-	const { chosenLanguage } = useCartContext();
 
 	const toggleCollapsed = () => {
 		setCollapsed(!collapsed);
@@ -163,7 +163,6 @@ const AdminNavbar = ({
 			style={{
 				width: 285,
 			}}
-			dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}
 		>
 			<Button
 				type='primary'
@@ -171,14 +170,11 @@ const AdminNavbar = ({
 				style={{
 					marginBottom: 8,
 					textAlign: "center",
-					marginLeft: chosenLanguage === "Arabic" ? 200 : 5,
-					marginTop: chosenLanguage === "Arabic" ? 10 : 10,
 				}}
 			>
 				{collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
 			</Button>
 			<Menu
-				dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}
 				defaultSelectedKeys={
 					fromPage === "AdminDasboard"
 						? "sub1"
@@ -196,7 +192,7 @@ const AdminNavbar = ({
 						            ? "sub7"
 						            : fromPage === "AddProducts"
 						              ? "sub8"
-						              : fromPage === "WebsiteManagement"
+						              : fromPage === "JanatWebsite"
 						                ? "sub10"
 						                : fromPage === "CouponManagement"
 						                  ? "sub12"

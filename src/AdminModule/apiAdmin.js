@@ -128,3 +128,31 @@ export const cloudinaryUpload1 = (userId, token, image) => {
 			console.log(err);
 		});
 };
+
+export const JanatWebsite = (documentId, JanatWebsite) => {
+	return fetch(`${process.env.REACT_APP_API_URL}/janat-website/${documentId}`, {
+		method: "POST",
+		headers: {
+			Accept: "application/json",
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify(JanatWebsite),
+		// body: image,
+	})
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => {
+			console.log(err);
+		});
+};
+
+export const getJanatWebsiteRecord = () => {
+	return fetch(`${process.env.REACT_APP_API_URL}/janat-website-document`, {
+		method: "GET",
+	})
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
