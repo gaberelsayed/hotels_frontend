@@ -19,9 +19,9 @@ const ZHomePageBanners = ({ addThumbnail, setAddThumbnail }) => {
 			for (let i = 0; i < files.length; i++) {
 				Resizer.imageFileResizer(
 					files[i],
-					800,
-					954,
-					"JPEG",
+					1920,
+					997,
+					"jpeg",
 					100,
 					0,
 					(uri) => {
@@ -74,7 +74,11 @@ const ZHomePageBanners = ({ addThumbnail, setAddThumbnail }) => {
 				let filteredImages = images.filter((item) => {
 					return item.public_id !== public_id;
 				});
-				setAddThumbnail({ ...addThumbnail, images: filteredImages });
+				if (addThumbnail.images.length === 1) {
+					setAddThumbnail([]);
+				} else {
+					setAddThumbnail({ ...addThumbnail, images: filteredImages });
+				}
 				setLoading(false);
 			})
 			.catch((err) => {

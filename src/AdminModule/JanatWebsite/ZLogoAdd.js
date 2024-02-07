@@ -25,9 +25,9 @@ const ZLogoAdd = ({ addThumbnail, setAddThumbnail }) => {
 			for (let i = 0; i < files.length; i++) {
 				Resizer.imageFileResizer(
 					files[i],
-					720,
-					720,
-					"JPEG",
+					222,
+					46,
+					"PNG",
 					100,
 					0,
 					(uri) => {

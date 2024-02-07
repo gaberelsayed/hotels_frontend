@@ -66,7 +66,7 @@ const ImageCardAboutUs = ({
 					</div>
 
 					<div className='text-muted fs-7'>
-						Width: 1920px, Height: 600px;
+						Width: 1920px, Height: 400px;
 						<br />
 						Set the secondary banner image. Only *.png, *.jpg and *.jpeg image
 						files are accepted
