@@ -37,9 +37,17 @@ const JanatWebsiteMain = ({ chosenLanguage }) => {
 					data[0].hotelPageBanner
 				)
 					setLogo({ images: data && data[0] && [data[0].janatLogo] });
-				setHomeMainBanners({
-					images: data && data[0] && data[0].homeMainBanners,
-				});
+				if (
+					data &&
+					data[0] &&
+					data[0].homeMainBanners &&
+					data[0].homeMainBanners.length > 0
+				) {
+					setHomeMainBanners({
+						images: data && data[0] && data[0].homeMainBanners,
+					});
+				}
+
 				setHomeSecondBanner({
 					images: data && data[0] && [data[0].homeSecondBanner],
 				});
@@ -49,9 +57,12 @@ const JanatWebsiteMain = ({ chosenLanguage }) => {
 				setAboutUsBanner({
 					images: data && data[0] && [data[0].aboutUsBanner],
 				});
-				setHotelPageBanner({
-					images: data && data[0] && [data[0].hotelPageBanner],
-				});
+				if (data && data[0] && [data[0].hotelPageBanner]) {
+					setHotelPageBanner({
+						images: data && data[0] && [data[0].hotelPageBanner],
+					});
+				}
+
 				setDocumentId(data && data[0] && data[0]._id);
 			}
 		});
