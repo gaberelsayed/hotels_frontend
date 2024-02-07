@@ -37,16 +37,6 @@ const JanatWebsiteMain = ({ chosenLanguage }) => {
 					data[0].hotelPageBanner
 				)
 					setLogo({ images: data && data[0] && [data[0].janatLogo] });
-				if (
-					data &&
-					data[0] &&
-					data[0].homeMainBanners &&
-					data[0].homeMainBanners.length > 0
-				) {
-					setHomeMainBanners({
-						images: data && data[0] && data[0].homeMainBanners,
-					});
-				}
 
 				setHomeSecondBanner({
 					images: data && data[0] && [data[0].homeSecondBanner],
