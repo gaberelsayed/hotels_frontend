@@ -195,10 +195,10 @@ const HotelManagerDashboard = () => {
 						className='mx-2'
 						style={{
 							position: "absolute",
-							top: 4,
-							right: "15%",
+							top: 50,
+							right: chosenLanguage === "Arabic" ? "96%" : "",
 							padding: "2px",
-							color: "#f0f0f0",
+							color: "#8a8a8a",
 						}}
 					>
 						hello
