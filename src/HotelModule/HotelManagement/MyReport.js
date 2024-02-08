@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { Table } from "antd";
 import CountUp from "react-countup";
 
-const MyReport = ({ reservations, chosenLanguage, fromTab }) => {
+const MyReport = ({ reservations, chosenLanguage, fromTab, formattedDate }) => {
 	const aggregateData = (reservations) => {
 		const aggregation =
 			reservations &&
@@ -135,8 +135,6 @@ const MyReport = ({ reservations, chosenLanguage, fromTab }) => {
 				aggregatedBookedToday.reduce((sum, item) => sum + item.count, 0),
 		},
 	};
-
-	console.log(summaryObject, "summaryObjectFrom TodaysReport");
 
 	const AggregatedTable = ({ data, title, theDay }) => {
 		const dataSource = data.map((item, index) => ({

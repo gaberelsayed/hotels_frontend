@@ -117,15 +117,15 @@ const NewReservationMain = () => {
 						if (data && data.name && data._id && data2 && data2.length > 0) {
 							if (start_date && end_date) {
 								getHotelReservations(
-									user._id,
 									data2[0]._id,
+									data.belongsToId,
 									formattedStartDate,
 									formattedEndDate
 								).then((data3) => {
 									if (data3 && data3.error) {
 										console.log(data3.error);
 									} else {
-										console.log(data3, "data3");
+										console.log(data3, "data3 for reception module");
 
 										setAllReservations(data3 && data3.length > 0 ? data3 : []);
 									}

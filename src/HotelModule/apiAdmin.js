@@ -557,19 +557,16 @@ export const getBraintreeClientToken = (token) => {
 		.catch((err) => console.log(err));
 };
 
-export const processPayment_Subscription = (userId, token, paymentData) => {
-	return fetch(
-		`${process.env.REACT_APP_API_URL}/braintree/subscription/${userId}`,
-		{
-			method: "POST",
-			headers: {
-				Accept: "application/json",
-				"Content-Type": "application/json",
-				Authorization: `Bearer ${token}`,
-			},
-			body: JSON.stringify(paymentData),
-		}
-	)
+export const processPayment_Subscription = (token, paymentData) => {
+	return fetch(`${process.env.REACT_APP_API_URL}/braintree/subscription`, {
+		method: "POST",
+		headers: {
+			Accept: "application/json",
+			"Content-Type": "application/json",
+			Authorization: `Bearer ${token}`,
+		},
+		body: JSON.stringify(paymentData),
+	})
 		.then((response) => {
 			return response.json();
 		})
@@ -604,6 +601,69 @@ export const currecyConversion = (saudimoney) => {
 			headers: {
 				Accept: "application/json",
 				"Content-Type": "application/json",
+			},
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
+export const updateSubscriptionCardFn = (token, paymentData) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/braintree/update-subscription-card`,
+		{
+			method: "PUT",
+			headers: {
+				Accept: "application/json",
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${token}`,
+			},
+			body: JSON.stringify(paymentData),
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
+export const updateOwnerProfile = (userId, token, user) => {
+	return fetch(`${process.env.REACT_APP_API_URL}/user/${userId}`, {
+		method: "PUT",
+		headers: {
+			Accept: "application/json",
+			"Content-Type": "application/json",
+			Authorization: `Bearer ${token}`,
+		},
+		body: JSON.stringify(user),
+	})
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
+export const updateUser = (user, next) => {
+	if (typeof window !== "undefined") {
+		if (localStorage.getItem("jwt")) {
+			let auth = JSON.parse(localStorage.getItem("jwt"));
+			auth.user = user;
+			localStorage.setItem("jwt", JSON.stringify(auth));
+			next();
+		}
+	}
+};
+
+export const getSubscriptionData = (userId, token, subscriptionId) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/braintree/subscription-data/${userId}/${subscriptionId}`,
+		{
+			method: "GET",
+			headers: {
+				Accept: "application/json",
+				Authorization: `Bearer ${token}`,
 			},
 		}
 	)
