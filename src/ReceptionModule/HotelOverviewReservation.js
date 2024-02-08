@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import styled, { keyframes } from "styled-components";
-import { InputNumber, Modal, Select } from "antd";
+import { InputNumber, Modal, Select, Tooltip } from "antd";
 import moment from "moment";
 const { Option } = Select;
 
@@ -243,32 +243,41 @@ const HotelOverviewReservation = ({
 									.map((room, idx) => {
 										const roomIsBooked = isRoomBooked(room._id);
 										return (
-											<RoomSquare
-												key={idx}
-												color={
-													roomIsBooked
-														? "#e7e7e7" // Grey color for booked rooms
-														: pickedHotelRooms.includes(room._id)
-														  ? "darkgreen" // Dark green for selected rooms
-														  : room.roomColorCode // Default room color
+											<Tooltip
+												title={
+													<span style={{ textTransform: "capitalize" }}>
+														{room.room_type}
+													</span>
 												}
-												onClick={() => {
-													if (!roomIsBooked) {
-														handleRoomClick(room._id, true, room);
-													}
-												}}
-												picked={pickedHotelRooms.includes(room._id)}
-												reserved={roomIsBooked}
-												style={{
-													cursor: roomIsBooked ? "not-allowed" : "pointer",
-													opacity: roomIsBooked ? 0.5 : 1, // Reduce opacity for booked rooms
-													textDecoration: roomIsBooked
-														? "line-through"
-														: "none", // Line-through for booked rooms
-												}}
+												key={idx}
 											>
-												{room.room_number}
-											</RoomSquare>
+												<RoomSquare
+													key={idx}
+													color={
+														roomIsBooked
+															? "#e7e7e7" // Grey color for booked rooms
+															: pickedHotelRooms.includes(room._id)
+															  ? "darkgreen" // Dark green for selected rooms
+															  : room.roomColorCode // Default room color
+													}
+													onClick={() => {
+														if (!roomIsBooked) {
+															handleRoomClick(room._id, true, room);
+														}
+													}}
+													picked={pickedHotelRooms.includes(room._id)}
+													reserved={roomIsBooked}
+													style={{
+														cursor: roomIsBooked ? "not-allowed" : "pointer",
+														opacity: roomIsBooked ? 0.5 : 1, // Reduce opacity for booked rooms
+														textDecoration: roomIsBooked
+															? "line-through"
+															: "none", // Line-through for booked rooms
+													}}
+												>
+													{room.room_number}
+												</RoomSquare>
+											</Tooltip>
 										);
 									})}
 						</div>
@@ -278,7 +287,22 @@ const HotelOverviewReservation = ({
 			</FloorsContainer>
 
 			<Modal
-				title='Select Room Pricing'
+				title={
+					<span>
+						{" "}
+						Select Room Pricing (
+						<span
+							style={{
+								fontWeight: "bolder",
+								textTransform: "capitalize",
+								color: "#00003d",
+							}}
+						>
+							{currentRoom?.room_type}
+						</span>
+						){" "}
+					</span>
+				}
 				open={isModalVisible}
 				onOk={handleOk}
 				onCancel={handleCancel}
