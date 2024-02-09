@@ -117,10 +117,16 @@ const NewReservationMain = () => {
 				const formattedStartDate = formatDate(start_date);
 				const formattedEndDate = formatDate(end_date);
 
-				const heatMapStartDate = formatDate(new Date());
 				const endDate = new Date();
+				const startDate = new Date();
+				startDate.setDate(endDate.getDate() - 1); // Adding 15 days
+				const heatMapStartDate = formatDate(startDate);
+
 				endDate.setDate(endDate.getDate() + 15); // Adding 15 days
 				const heatMapEndDate = formatDate(endDate);
+
+				setStart_date_Map(moment(heatMapStartDate));
+				setEnd_date_Map(moment(heatMapEndDate));
 
 				setStart_date_Map(heatMapEndDate);
 				setEnd_date_Map(heatMapEndDate);
