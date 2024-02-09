@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled, { keyframes } from "styled-components";
 // eslint-disable-next-line
 import { roomTypeColors } from "../../AdminModule/NewHotels/Assets";
@@ -25,6 +25,22 @@ const HotelOverviewReservation = ({
 	const [currentRoom, setCurrentRoom] = useState(null);
 	const [customPrice, setCustomPrice] = useState(null);
 	const [selectedPrice, setSelectedPrice] = useState("");
+	const [fixIt, setFixIt] = useState(false);
+
+	useEffect(() => {
+		const handleScroll = () => {
+			const currentPosition = window.scrollY;
+			setFixIt(currentPosition > 900);
+		};
+
+		// Add event listener
+		window.addEventListener("scroll", handleScroll);
+
+		// Clean up
+		return () => {
+			window.removeEventListener("scroll", handleScroll);
+		};
+	}, []);
 
 	const { hotelFloors, parkingLot } = hotelDetails;
 	const floors = Array.from(
@@ -188,159 +204,166 @@ const HotelOverviewReservation = ({
 		}, []);
 
 	return (
-		<HotelOverviewWrapper>
-			<div className='colors-grid mt-3'>
-				<div
-					style={{ textAlign: "center", cursor: "pointer" }}
-					onClick={handleSelectAllClick}
-				>
-					<div
-						style={{
-							width: "20px",
-							height: "20px",
-							backgroundColor: "grey",
-							margin: "0 auto",
-							marginBottom: "5px",
-						}}
-					></div>
-					<span style={{ textTransform: "capitalize", fontSize: "13px" }}>
-						{chosenLanguage === "Arabic" ? "اختر الكل" : "Select All"}
-					</span>
-				</div>
-				{distinctRoomTypesWithColors &&
-					distinctRoomTypesWithColors.map((room, i) => (
-						<div
-							key={i}
-							style={{
-								textAlign: "center",
-								cursor: "pointer",
-							}}
-							onClick={() => handleRoomTypeClick(room.room_type)}
-						>
-							<div
-								style={{
-									width: "20px",
-									height: "20px",
-									backgroundColor: room.roomColorCode,
-									margin: "0 auto",
-									marginBottom: "5px",
-								}}
-							></div>
-							<span style={{ textTransform: "capitalize", fontSize: "13px" }}>
-								{room.room_type.replace(/([A-Z])/g, " $1").trim()}
-							</span>
-						</div>
-					))}
-			</div>
-			<FloorsContainer>
-				{floors.map((floor, index) => (
-					<Floor key={index} delay={index * 0.3}>
-						<h2 className='mb-4'>
-							{chosenLanguage === "Arabic" ? "الطابق" : "Floor"} {floor}
-						</h2>
-						<div style={{ display: "flex", flexWrap: "wrap" }}>
-							{filteredRooms &&
-								filteredRooms
-									.filter((room) => room.floor === floor)
-									.map((room, idx) => {
-										const roomIsBooked = isRoomBooked(room._id);
-										return (
-											<Tooltip
-												title={
-													<span style={{ textTransform: "capitalize" }}>
-														{room.room_type}
-													</span>
-												}
-												key={idx}
-											>
-												<RoomSquare
-													key={idx}
-													color={
-														roomIsBooked
-															? "#e7e7e7" // Grey color for booked rooms
-															: pickedHotelRooms.includes(room._id)
-															  ? "darkgreen" // Dark green for selected rooms
-															  : room.roomColorCode // Default room color
-													}
-													onClick={() => {
-														if (!roomIsBooked) {
-															handleRoomClick(room._id, true, room);
+		<HotelOverviewWrapper fixIt={fixIt}>
+			<div className='canvas-grid'>
+				<div>
+					<FloorsContainer>
+						{floors.map((floor, index) => (
+							<Floor key={index} delay={index * 0.3}>
+								<h2 className='mb-4'>
+									{chosenLanguage === "Arabic" ? "الطابق" : "Floor"} {floor}
+								</h2>
+								<div style={{ display: "flex", flexWrap: "wrap" }}>
+									{filteredRooms &&
+										filteredRooms
+											.filter((room) => room.floor === floor)
+											.map((room, idx) => {
+												const roomIsBooked = isRoomBooked(room._id);
+												return (
+													<Tooltip
+														title={
+															<span style={{ textTransform: "capitalize" }}>
+																{room.room_type}
+															</span>
 														}
-													}}
-													picked={pickedHotelRooms.includes(room._id)}
-													reserved={roomIsBooked}
-													style={{
-														cursor: roomIsBooked ? "not-allowed" : "pointer",
-														opacity: roomIsBooked ? 0.5 : 1, // Reduce opacity for booked rooms
-														textDecoration: roomIsBooked
-															? "line-through"
-															: "none", // Line-through for booked rooms
-													}}
-												>
-													{room.room_number}
-												</RoomSquare>
-											</Tooltip>
-										);
-									})}
-						</div>
-					</Floor>
-				))}
-				{parkingLot && <ParkingLot>Parking Lot</ParkingLot>}
-			</FloorsContainer>
+														key={idx}
+													>
+														<RoomSquare
+															key={idx}
+															color={
+																roomIsBooked
+																	? "#e7e7e7" // Grey color for booked rooms
+																	: pickedHotelRooms.includes(room._id)
+																	  ? "darkgreen" // Dark green for selected rooms
+																	  : room.roomColorCode // Default room color
+															}
+															onClick={() => {
+																if (!roomIsBooked) {
+																	handleRoomClick(room._id, true, room);
+																}
+															}}
+															picked={pickedHotelRooms.includes(room._id)}
+															reserved={roomIsBooked}
+															style={{
+																cursor: roomIsBooked
+																	? "not-allowed"
+																	: "pointer",
+																opacity: roomIsBooked ? 0.5 : 1, // Reduce opacity for booked rooms
+																textDecoration: roomIsBooked
+																	? "line-through"
+																	: "none", // Line-through for booked rooms
+															}}
+														>
+															{room.room_number}
+														</RoomSquare>
+													</Tooltip>
+												);
+											})}
+								</div>
+							</Floor>
+						))}
+						{parkingLot && <ParkingLot>Parking Lot</ParkingLot>}
+					</FloorsContainer>
 
-			<Modal
-				title={
-					<span>
-						{" "}
-						Select Room Pricing (
-						<span
-							style={{
-								fontWeight: "bolder",
-								textTransform: "capitalize",
-								color: "#00003d",
-							}}
+					<Modal
+						title={
+							<span>
+								{" "}
+								Select Room Pricing (
+								<span
+									style={{
+										fontWeight: "bolder",
+										textTransform: "capitalize",
+										color: "#00003d",
+									}}
+								>
+									{currentRoom?.room_type}
+								</span>
+								){" "}
+							</span>
+						}
+						open={isModalVisible}
+						onOk={handleOk}
+						onCancel={handleCancel}
+					>
+						<Select
+							defaultValue=''
+							style={{ width: "100%" }}
+							onChange={handlePriceChange}
 						>
-							{currentRoom?.room_type}
+							<Option value=''>Please Select</Option>
+							<Option value='basePrice'>
+								Base Price: {currentRoom?.room_pricing.basePrice}
+							</Option>
+							<Option value='seasonPrice'>
+								Season Price: {currentRoom?.room_pricing.seasonPrice}
+							</Option>
+							<Option value='weekendPrice'>
+								Weekend Price: {currentRoom?.room_pricing.weekendPrice}
+							</Option>
+							<Option value='lastMinuteDealPrice'>
+								Last Minute Deal Price:{" "}
+								{currentRoom?.room_pricing.lastMinuteDealPrice}
+							</Option>
+							<Option value='custom'>
+								{chosenLanguage === "Arabic" ? "" : ""}Custom Price
+							</Option>
+						</Select>
+						{selectedPrice === "custom" && (
+							<InputNumber
+								value={customPrice}
+								onChange={setCustomPrice}
+								style={{ width: "100%", marginTop: "10px" }}
+								min={0} // Set minimum value if needed
+							/>
+						)}
+					</Modal>
+				</div>
+
+				<div className='colors-grid mt-3'>
+					<div
+						style={{ textAlign: "center", cursor: "pointer" }}
+						onClick={handleSelectAllClick}
+					>
+						<div
+							style={{
+								width: "20px",
+								height: "20px",
+								backgroundColor: "grey",
+								margin: "0 auto",
+								marginBottom: "5px",
+							}}
+						></div>
+						<span style={{ textTransform: "capitalize", fontSize: "13px" }}>
+							{chosenLanguage === "Arabic" ? "اختر الكل" : "Select All"}
 						</span>
-						){" "}
-					</span>
-				}
-				open={isModalVisible}
-				onOk={handleOk}
-				onCancel={handleCancel}
-			>
-				<Select
-					defaultValue=''
-					style={{ width: "100%" }}
-					onChange={handlePriceChange}
-				>
-					<Option value=''>Please Select</Option>
-					<Option value='basePrice'>
-						Base Price: {currentRoom?.room_pricing.basePrice}
-					</Option>
-					<Option value='seasonPrice'>
-						Season Price: {currentRoom?.room_pricing.seasonPrice}
-					</Option>
-					<Option value='weekendPrice'>
-						Weekend Price: {currentRoom?.room_pricing.weekendPrice}
-					</Option>
-					<Option value='lastMinuteDealPrice'>
-						Last Minute Deal Price:{" "}
-						{currentRoom?.room_pricing.lastMinuteDealPrice}
-					</Option>
-					<Option value='custom'>
-						{chosenLanguage === "Arabic" ? "" : ""}Custom Price
-					</Option>
-				</Select>
-				{selectedPrice === "custom" && (
-					<InputNumber
-						value={customPrice}
-						onChange={setCustomPrice}
-						style={{ width: "100%", marginTop: "10px" }}
-						min={0} // Set minimum value if needed
-					/>
-				)}
-			</Modal>
+					</div>
+					{distinctRoomTypesWithColors &&
+						distinctRoomTypesWithColors.map((room, i) => (
+							<div
+								key={i}
+								style={{
+									textAlign: "center",
+									cursor: "pointer",
+								}}
+								onClick={() => handleRoomTypeClick(room.room_type)}
+							>
+								<div
+									style={{
+										width: "20px",
+										height: "20px",
+										backgroundColor: room.roomColorCode,
+										margin: "0 auto",
+										marginBottom: "5px",
+									}}
+								></div>
+								<span style={{ textTransform: "capitalize", fontSize: "13px" }}>
+									{room.room_type.replace(/([A-Z])/g, " $1").trim()}
+								</span>
+							</div>
+						))}
+				</div>
+			</div>
 		</HotelOverviewWrapper>
 	);
 };
@@ -363,15 +386,22 @@ const HotelOverviewWrapper = styled.div`
 		color: #006ad1;
 	}
 
+	.canvas-grid {
+		display: grid;
+		grid-template-columns: 95% 5%;
+	}
+
 	.colors-grid {
 		display: grid;
-		grid-template-columns: repeat(
-			auto-fit,
-			minmax(20px, 1fr)
-		); // Adjust 'minmax' as needed
-		gap: 2px;
-		justify-content: center; // Horizontally center grid items
-		align-items: center; // Vertically center grid items
+		grid-template-columns: repeat(2, 1fr); // Two columns layout
+		gap: 10px;
+		margin-left: 20px; // Adjust based on your layout
+		position: sticky;
+		top: 0;
+		align-self: start;
+		position: ${(props) => (props.fixIt ? "fixed" : "")};
+		top: ${(props) => (props.fixIt ? "20%" : "")};
+		left: ${(props) => (props.fixIt ? "2%" : "")};
 	}
 `;
 
@@ -386,7 +416,7 @@ const Floor = styled.div`
 	padding: 50px;
 	background-color: lightblue;
 	border: 1px solid #ccc;
-	width: 85%;
+	width: 90%;
 	text-align: center;
 	font-weight: bold;
 	cursor: pointer;
@@ -401,7 +431,7 @@ const ParkingLot = styled.div`
 	padding: 40px;
 	background-color: lightgreen;
 	border: 1px solid #ccc;
-	width: 70%;
+	width: 75%;
 	text-align: center;
 	font-weight: bold;
 `;

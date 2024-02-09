@@ -1,34 +1,23 @@
 import React, { useEffect, useState } from "react";
 import styled, { keyframes } from "styled-components";
-import { InputNumber, Modal, Select, Tooltip } from "antd";
+import { Tooltip } from "antd";
 import moment from "moment";
-const { Option } = Select;
 
-const HotelOverviewReservation = ({
+const HotelHeatMap = ({
 	hotelRooms,
 	hotelDetails,
-	pickedHotelRooms,
-	setPickedHotelRooms,
-	total_amount,
-	setTotal_Amount,
-	setPickedRoomPricing,
-	pickedRoomPricing,
 	start_date,
 	end_date,
 	allReservations,
 	chosenLanguage,
 }) => {
 	const [selectedRoomType, setSelectedRoomType] = useState(null);
-	const [isModalVisible, setIsModalVisible] = useState(false);
-	const [currentRoom, setCurrentRoom] = useState(null);
-	const [customPrice, setCustomPrice] = useState(null);
-	const [selectedPrice, setSelectedPrice] = useState("");
 	const [fixIt, setFixIt] = useState(false);
 
 	useEffect(() => {
 		const handleScroll = () => {
 			const currentPosition = window.scrollY;
-			setFixIt(currentPosition > 900);
+			setFixIt(currentPosition > 100);
 		};
 
 		// Add event listener
@@ -46,147 +35,11 @@ const HotelOverviewReservation = ({
 		(_, index) => hotelFloors - index
 	);
 
-	const handleRoomClick = (roomId, show, room) => {
-		// eslint-disable-next-line
-		let priceToAdd;
-
-		if (isRoomBooked(roomId)) {
-			// If the room is booked, do not proceed further
-			console.log("Room is booked. Cannot select.");
-			return;
-		}
-
-		if (pickedHotelRooms.includes(roomId)) {
-			setPickedHotelRooms(pickedHotelRooms.filter((id) => id !== roomId));
-			// eslint-disable-next-line
-			priceToAdd = currentRoom?.room_pricing[selectedPrice];
-
-			var newAmount =
-				pickedRoomPricing.filter((room) => room.roomId !== roomId) &&
-				pickedRoomPricing
-					.filter((room) => room.roomId !== roomId)
-					.map((ii) => ii.chosenPrice);
-
-			setTotal_Amount(
-				newAmount.reduce(
-					(accumulator, currentValue) => accumulator + Number(currentValue),
-					0
-				)
-			);
-
-			setPickedRoomPricing(
-				pickedRoomPricing.filter((room) => room.roomId !== roomId)
-			);
-		} else {
-			setPickedHotelRooms([...pickedHotelRooms, roomId]);
-			setCurrentRoom(room);
-			showModal(room); // Open the modal for room pricing
-		}
-	};
-
-	const handleRoomTypeClick = (roomType) => {
-		setSelectedRoomType(roomType);
-	};
-
-	const handleSelectAllClick = () => {
-		setSelectedRoomType(null); // Reset room type filter
-	};
-
 	// console.log(pickedRoomPricing, "pickedRoomPricing");
 
 	const filteredRooms = selectedRoomType
 		? hotelRooms.filter((room) => room.room_type === selectedRoomType)
 		: hotelRooms;
-
-	const showModal = (room) => {
-		setCurrentRoom(room);
-		setIsModalVisible(true);
-	};
-
-	const handleOk = () => {
-		let priceToAdd = null;
-		if (selectedPrice === "custom" && customPrice) {
-			priceToAdd = customPrice;
-			// Add room pricing information
-			setPickedRoomPricing([
-				...pickedRoomPricing,
-				{ roomId: currentRoom._id, chosenPrice: customPrice },
-			]);
-		} else if (selectedPrice) {
-			priceToAdd = currentRoom?.room_pricing[selectedPrice];
-			// Add room pricing information
-			setPickedRoomPricing([
-				...pickedRoomPricing,
-				{ roomId: currentRoom._id, chosenPrice: priceToAdd },
-			]);
-		} else {
-			// Deselect the room if no price is selected
-			handleRoomDeselection();
-		}
-
-		// Update total amount if a valid price is added
-		if (priceToAdd !== null) {
-			setTotal_Amount((prevTotal) => prevTotal + Number(priceToAdd));
-		}
-
-		setIsModalVisible(false);
-	};
-
-	const handlePriceChange = (value) => {
-		setSelectedPrice(value);
-		if (value !== "custom") {
-			setCustomPrice(null); // Reset custom price if a preset price is selected
-		}
-	};
-
-	const handleCancel = () => {
-		handleRoomDeselection();
-		setIsModalVisible(false);
-		setCustomPrice(null); // Reset custom price
-	};
-
-	const handleRoomDeselection = () => {
-		if (currentRoom) {
-			// Deselect the room by removing it from pickedHotelRooms
-			setPickedHotelRooms(
-				pickedHotelRooms.filter((id) => id !== currentRoom._id)
-			);
-
-			// Update total amount by subtracting the price of the deselected room
-			const priceToRemove = pickedRoomPricing.find(
-				(pricing) => pricing.roomId === currentRoom._id
-			)?.chosenPrice;
-			if (priceToRemove) {
-				setTotal_Amount((prevTotal) => prevTotal - Number(priceToRemove));
-			}
-
-			// Remove the room's pricing information from pickedRoomPricing
-			setPickedRoomPricing(
-				pickedRoomPricing.filter(
-					(pricing) => pricing.roomId !== currentRoom._id
-				)
-			);
-		}
-	};
-
-	const isRoomBooked = (roomId) => {
-		if (!start_date || !end_date) return false;
-
-		const startDate = moment(start_date);
-		const endDate = moment(end_date);
-
-		return allReservations.some((reservation) => {
-			const reservationStart = moment(reservation.checkin_date);
-			const reservationEnd = moment(reservation.checkout_date);
-
-			// Check if the date range overlaps and the room ID is in the reservation's roomId array
-			return (
-				startDate.isBefore(reservationEnd) &&
-				endDate.isAfter(reservationStart) &&
-				reservation.roomId.some((room) => room._id === roomId)
-			);
-		});
-	};
 
 	const distinctRoomTypesWithColors =
 		hotelRooms &&
@@ -200,6 +53,34 @@ const HotelOverviewReservation = ({
 			}
 			return accumulator;
 		}, []);
+
+	const isRoomBooked = (roomId) => {
+		if (!start_date || !end_date) return false;
+
+		// const startDate = moment(start_date);
+		const endDate = moment(end_date);
+
+		return allReservations.some((reservation) => {
+			const reservationStart = moment(reservation.checkin_date);
+			// const reservationEnd = moment(reservation.checkout_date);
+
+			// Check if the date range overlaps and the room ID is in the reservation's roomId array
+			return (
+				// startDate.isBefore(reservationEnd) &&
+				endDate.isAfter(reservationStart) &&
+				reservation.roomId.some((room) => room._id === roomId)
+			);
+		});
+	};
+
+	const handleSelectAllClick = () => {
+		setSelectedRoomType(null); // Reset room type filter
+	};
+
+	console.log(
+		allReservations.map((room) => room.roomId),
+		"allResrvatiosn"
+	);
 
 	return (
 		<HotelOverviewWrapper fixIt={fixIt}>
@@ -217,6 +98,10 @@ const HotelOverviewReservation = ({
 											.filter((room) => room.floor === floor)
 											.map((room, idx) => {
 												const roomIsBooked = isRoomBooked(room._id);
+												console.log(
+													isRoomBooked(room._id),
+													"HHHHHHHHHHHHHHHHHH"
+												);
 												return (
 													<Tooltip
 														title={
@@ -228,19 +113,8 @@ const HotelOverviewReservation = ({
 													>
 														<RoomSquare
 															key={idx}
-															color={
-																roomIsBooked
-																	? "#e7e7e7" // Grey color for booked rooms
-																	: pickedHotelRooms.includes(room._id)
-																	  ? "darkgreen" // Dark green for selected rooms
-																	  : room.roomColorCode // Default room color
-															}
-															onClick={() => {
-																if (!roomIsBooked) {
-																	handleRoomClick(room._id, true, room);
-																}
-															}}
-															picked={pickedHotelRooms.includes(room._id)}
+															color={room.roomColorCode}
+															picked={""}
 															reserved={roomIsBooked}
 															style={{
 																cursor: roomIsBooked
@@ -262,60 +136,6 @@ const HotelOverviewReservation = ({
 						))}
 						{parkingLot && <ParkingLot>Parking Lot</ParkingLot>}
 					</FloorsContainer>
-
-					<Modal
-						title={
-							<span>
-								{" "}
-								Select Room Pricing (
-								<span
-									style={{
-										fontWeight: "bolder",
-										textTransform: "capitalize",
-										color: "#00003d",
-									}}
-								>
-									{currentRoom?.room_type}
-								</span>
-								){" "}
-							</span>
-						}
-						open={isModalVisible}
-						onOk={handleOk}
-						onCancel={handleCancel}
-					>
-						<Select
-							defaultValue=''
-							style={{ width: "100%" }}
-							onChange={handlePriceChange}
-						>
-							<Option value=''>Please Select</Option>
-							<Option value='basePrice'>
-								Base Price: {currentRoom?.room_pricing.basePrice}
-							</Option>
-							<Option value='seasonPrice'>
-								Season Price: {currentRoom?.room_pricing.seasonPrice}
-							</Option>
-							<Option value='weekendPrice'>
-								Weekend Price: {currentRoom?.room_pricing.weekendPrice}
-							</Option>
-							<Option value='lastMinuteDealPrice'>
-								Last Minute Deal Price:{" "}
-								{currentRoom?.room_pricing.lastMinuteDealPrice}
-							</Option>
-							<Option value='custom'>
-								{chosenLanguage === "Arabic" ? "" : ""}Custom Price
-							</Option>
-						</Select>
-						{selectedPrice === "custom" && (
-							<InputNumber
-								value={customPrice}
-								onChange={setCustomPrice}
-								style={{ width: "100%", marginTop: "10px" }}
-								min={0} // Set minimum value if needed
-							/>
-						)}
-					</Modal>
 				</div>
 
 				<div className='colors-grid mt-3'>
@@ -344,7 +164,6 @@ const HotelOverviewReservation = ({
 									textAlign: "center",
 									cursor: "pointer",
 								}}
-								onClick={() => handleRoomTypeClick(room.room_type)}
 							>
 								<div
 									style={{
@@ -366,7 +185,7 @@ const HotelOverviewReservation = ({
 	);
 };
 
-export default HotelOverviewReservation;
+export default HotelHeatMap;
 
 // Styled components
 const fadeIn = keyframes`

@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
+import { Modal, DatePicker, Button } from "antd";
 
 const FiltersContainer = styled.div`
 	display: flex;
@@ -15,71 +16,160 @@ const FilterGroup = styled.div`
 	align-items: center;
 `;
 
-const FilterButton = styled.button`
-	background: ${({ active }) => (active ? "lightgrey" : "white")};
-	border: 1px solid #ccc;
-	padding: 5px 10px;
-	cursor: pointer;
-	font-weight: ${({ active }) => (active ? "bold" : "normal")};
-	font-size: 0.8rem;
-	transition:
-		background-color 0.3s,
-		font-weight 0.3s; // Smooth transition for background-color and font-weight
-
-	&:hover {
-		background: #e9e9e9;
-		transition: 0.3s;
-		font-weight: bold;
+const FilterButton = styled(Button)`
+	&.ant-btn {
+		background: ${({ active }) => (active ? "lightgrey" : "white")};
+		border: 1px solid #ccc;
+		position: relative; // For notification positioning
+		font-weight: ${({ active }) => (active ? "bold" : "normal")};
 	}
+`;
+
+const Notification = styled.span`
+	background-color: #00468b;
+	border-radius: 50%;
+	color: white;
+	padding: 2px 6px;
+	font-size: 12px;
+	position: absolute;
+	top: -20px;
+	right: -0px;
 `;
 
 const FilterComponent = ({
 	selectedFilter,
 	setSelectedFilter,
 	chosenLanguage,
+	setSelectedDates, // Adjusted to handle setting date as a string
+	reservationObject,
 }) => {
-	const handleFilterClick = (filterName) => {
-		setSelectedFilter((prevFilter) =>
-			prevFilter === filterName ? "" : filterName
-		); // Toggle selection
+	const [isModalVisible, setIsModalVisible] = useState(false);
+	const [isModalVisible2, setIsModalVisible2] = useState(false);
+	const [dateString, setDateString] = useState(""); // Temporary state to hold the date string
+
+	const handleOk = () => {
+		setSelectedDates(dateString); // Set selected date on OK
+		setIsModalVisible(false); // Close modal
+	};
+
+	const handleCancel = () => {
+		setIsModalVisible(false);
+	};
+
+	const handleOk2 = () => {
+		setSelectedDates(dateString); // Set selected date on OK
+		setIsModalVisible2(false); // Close modal
+	};
+
+	const handleCancel2 = () => {
+		setIsModalVisible2(false);
+	};
+
+	const handleDateChange = (date, dateString) => {
+		setDateString(dateString); // Update temporary date string state
+	};
+
+	const handleDateChange2 = (date, dateString) => {
+		setDateString(dateString); // Update temporary date string state
 	};
 
 	// Define filter labels in both English and Arabic
 	const filterLabels = {
-		"New Reservation": "حجز جديد",
-		Cancelations: "الإلغاءات",
-		"Today's Arrivals": "وصول اليوم",
-		"Today's Departures": "مغادرة اليوم",
-		"In House": "In House",
-		"Incomplete reservations": "الحجوزات الغير مكتملة",
+		All: chosenLanguage === "Arabic" ? "إختيار الكل" : "All",
+		"New Reservation":
+			chosenLanguage === "Arabic" ? "حجز جديد" : "New Reservation",
+		Cancelations: chosenLanguage === "Arabic" ? "الإلغاءات" : "Cancelations",
+		"Today's Arrivals":
+			chosenLanguage === "Arabic" ? "وصول اليوم" : "Today's Arrivals",
+		"Today's Departures":
+			chosenLanguage === "Arabic" ? "مغادرة اليوم" : "Today's Departures",
+		"In House": chosenLanguage === "Arabic" ? "في المنزل" : "In House",
+		"Incomplete reservations":
+			chosenLanguage === "Arabic"
+				? "الحجوزات الغير مكتملة"
+				: "Incomplete reservations",
+		"Specific Date":
+			chosenLanguage === "Arabic" ? "تاريخ الوصول" : "Checkin Date",
+		"Specific Date2":
+			chosenLanguage === "Arabic" ? "تاريخ المغادرة" : "Checkout Date",
+		no_show: chosenLanguage === "Arabic" ? "No Show" : "No Show",
 	};
 
-	// Define the filter buttons based on chosenLanguage
-	const filterButtons = [
-		{ key: "New Reservation", label: filterLabels["New Reservation"] },
-		{ key: "Cancelations", label: filterLabels["Cancelations"] },
-		{ key: "Today's Arrivals", label: filterLabels["Today's Arrivals"] },
-		{ key: "Today's Departures", label: filterLabels["Today's Departures"] },
-		{ key: "In House", label: filterLabels["In House"] },
-		{
-			key: "Incomplete reservations",
-			label: filterLabels["Incomplete reservations"],
-		},
-	];
+	const handleFilterClick = (filterName) => {
+		if (filterName === "Specific Date" || filterName === "Specific Date2") {
+			setIsModalVisible(true); // Directly show modal for date filters
+		} else if (filterName === "no_show") {
+			setIsModalVisible2(true); // Directly show modal for date filters
+		} else {
+			setIsModalVisible(false); // Ensure modal is not shown for other filters
+			setIsModalVisible2(false); // Ensure modal is not shown for other filters
+			setSelectedDates(""); // Clear date string for non-date filters
+		}
+		setSelectedFilter(filterName); // Update selected filter
+	};
+
+	// Map filter names to their corresponding keys in reservationObject for count display
+	const filterCounts = {
+		"New Reservation": reservationObject.newReservations,
+		Cancelations: reservationObject.cancellations || 0,
+		"Today's Arrivals": reservationObject.todayArrival || 0,
+		"Today's Departures": reservationObject.departureToday || 0,
+		"In House": reservationObject.inHouse || 0,
+		"Incomplete reservations": reservationObject.inComplete || 0,
+		All:
+			(reservationObject.allReservations &&
+				reservationObject.allReservations.toLocaleString()) ||
+			0,
+	};
+
+	console.log(filterCounts, "filterCounts");
 
 	return (
 		<FiltersContainer>
 			<FilterGroup>
-				{filterButtons.map(({ key, label }) => (
+				{Object.entries(filterLabels).map(([key, label]) => (
 					<FilterButton
 						key={key}
 						active={selectedFilter === key}
 						onClick={() => handleFilterClick(key)}
 					>
-						{chosenLanguage === "Arabic" ? label : key}
+						{label}
+						{/* Display count if available */}
+						{filterCounts[key] ? (
+							<Notification>{filterCounts[key]}</Notification>
+						) : null}
 					</FilterButton>
 				))}
 			</FilterGroup>
+			<Modal
+				title={
+					selectedFilter === "Specific Date"
+						? chosenLanguage === "Arabic"
+							? "اختر تاريخ الوصول"
+							: "Select Checkin Date"
+						: chosenLanguage === "Arabic"
+						  ? "اختر تاريخ المغادرة"
+						  : "Select Checkout Date"
+				}
+				open={isModalVisible}
+				onOk={handleOk}
+				onCancel={handleCancel}
+			>
+				<DatePicker onChange={handleDateChange} />
+			</Modal>
+
+			<Modal
+				title={
+					selectedFilter === "no_show"
+						? "Select No Show Date"
+						: "Select No Show Date"
+				}
+				open={isModalVisible2}
+				onOk={handleOk2}
+				onCancel={handleCancel2}
+			>
+				<DatePicker onChange={handleDateChange2} />
+			</Modal>
 		</FiltersContainer>
 	);
 };

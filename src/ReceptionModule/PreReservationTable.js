@@ -23,6 +23,9 @@ const PreReservationTable = ({
 	setAllPreReservations,
 	setSearchClicked,
 	searchClicked,
+	selectedDates,
+	setSelectedDates,
+	reservationObject,
 }) => {
 	const [isModalVisible, setIsModalVisible] = useState(false);
 	const [selectedReservation, setSelectedReservation] = useState(null);
@@ -177,10 +180,28 @@ const PreReservationTable = ({
 				)),
 		},
 		{
+			title: chosenLanguage === "Arabic" ? "رقم الغرفة" : "Room Number",
+			dataIndex: "roomDetails",
+			key: "roomDetails",
+			render: (roomDetails) => {
+				if (!roomDetails || roomDetails.length === 0) {
+					return "No Room";
+				}
+
+				return roomDetails.map((room, index) => (
+					<div key={index}>
+						{room.room_number ? room.room_number : "No Room"}
+					</div>
+				));
+			},
+		},
+
+		{
 			title: chosenLanguage === "Arabic" ? "المبلغ الإجمالي" : "Total Amount",
 			dataIndex: "total_amount",
 			key: "total_amount",
-			render: (total_amount) => `${total_amount.toLocaleString()} SAR`,
+			render: (total_amount) =>
+				`${total_amount && total_amount.toLocaleString()} SAR`,
 		},
 		{
 			title: chosenLanguage === "Arabic" ? "تفاصيل" : "DETAILS...",
@@ -266,6 +287,9 @@ const PreReservationTable = ({
 					setSelectedFilter={setSelectedFilter}
 					selectedFilter={selectedFilter}
 					chosenLanguage={chosenLanguage}
+					selectedDates={selectedDates}
+					setSelectedDates={setSelectedDates}
+					reservationObject={reservationObject}
 				/>
 				<Table
 					key={Date.now()} // Adds a new key every time the component renders

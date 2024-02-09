@@ -103,7 +103,7 @@ const Signin = ({ history }) => {
 			isAuthenticated().user &&
 			isAuthenticated().user.role === 3000
 		) {
-			return (window.location.href = "/staff/dashboard");
+			return (window.location.href = "/reception-management/new-reservation");
 		}
 	};
 

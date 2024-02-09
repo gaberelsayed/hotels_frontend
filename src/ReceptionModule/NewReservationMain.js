@@ -21,6 +21,7 @@ import { toast } from "react-toastify";
 import ZReservationForm2 from "./ZReservationForm2";
 import { Spin } from "antd";
 import HotelRunnerReservationList from "./HotelRunnerReservationList";
+import HotelHeatMap from "./HotelHeatMap";
 
 const NewReservationMain = () => {
 	const [loading, setLoading] = useState(false);
@@ -46,6 +47,9 @@ const NewReservationMain = () => {
 	const [activeTab, setActiveTab] = useState("reserveARoom");
 	const [sendEmail, setSendEmail] = useState(false);
 	const [total_guests, setTotalGuests] = useState("");
+	const [start_date_Map, setStart_date_Map] = useState("");
+	const [end_date_Map, setEnd_date_Map] = useState("");
+	const [allReservationsHeatMap, setAllReservationsHeatMap] = useState("");
 	const [customer_details, setCustomer_details] = useState({
 		name: "",
 		phone: "",
@@ -75,6 +79,8 @@ const NewReservationMain = () => {
 			setActiveTab("list");
 		} else if (window.location.search.includes("inventory")) {
 			setActiveTab("inventory");
+		} else if (window.location.search.includes("heatmap")) {
+			setActiveTab("heatmap");
 		} else {
 			setActiveTab("reserveARoom");
 		}
@@ -110,6 +116,15 @@ const NewReservationMain = () => {
 				setValues(data);
 				const formattedStartDate = formatDate(start_date);
 				const formattedEndDate = formatDate(end_date);
+
+				const heatMapStartDate = formatDate(new Date());
+				const endDate = new Date();
+				endDate.setDate(endDate.getDate() + 15); // Adding 15 days
+				const heatMapEndDate = formatDate(endDate);
+
+				setStart_date_Map(heatMapEndDate);
+				setEnd_date_Map(heatMapEndDate);
+
 				getHotelDetails(data.belongsToId).then((data2) => {
 					if (data2 && data2.error) {
 						console.log(data2.error, "Error rendering");
@@ -131,6 +146,21 @@ const NewReservationMain = () => {
 									}
 								});
 							}
+
+							getHotelReservations(
+								data2[0]._id,
+								data.belongsToId,
+								heatMapStartDate,
+								heatMapEndDate
+							).then((data4) => {
+								if (data4 && data4.error) {
+									console.log(data4.error);
+								} else {
+									setAllReservationsHeatMap(
+										data4 && data4.length > 0 ? data4 : []
+									);
+								}
+							});
 
 							if (!hotelDetails) {
 								setHotelDetails(data2[0]);
@@ -484,6 +514,17 @@ const NewReservationMain = () => {
 									? "قائمة الحجوزات"
 									: "Reservation List"}
 							</Tab>
+							<Tab
+								isActive={activeTab === "heatmap"}
+								onClick={() => {
+									setActiveTab("heatmap");
+									history.push("/reception-management/new-reservation?heatmap"); // Programmatically navigate
+								}}
+							>
+								{chosenLanguage === "Arabic"
+									? "خريطة الفندق"
+									: "Hotel Heat Map"}
+							</Tab>
 						</div>
 					</div>
 
@@ -550,6 +591,19 @@ const NewReservationMain = () => {
 									/>
 								) : null}
 							</>
+						) : activeTab === "heatmap" ? (
+							<>
+								{allReservationsHeatMap && allReservationsHeatMap.length > 0 ? (
+									<HotelHeatMap
+										hotelRooms={hotelRooms}
+										hotelDetails={hotelDetails}
+										start_date={start_date_Map}
+										end_date={end_date_Map}
+										allReservations={allReservationsHeatMap}
+										chosenLanguage={chosenLanguage}
+									/>
+								) : null}
+							</>
 						) : (
 							<>
 								<ZReservationForm2
@@ -608,7 +662,7 @@ const NewReservationMainWrapper = styled.div`
 
 	.grid-container-main {
 		display: grid;
-		grid-template-columns: ${(props) => (props.showList ? "5% 92%" : "5% 92%")};
+		grid-template-columns: ${(props) => (props.showList ? "1% 98%" : "5% 92%")};
 	}
 
 	.container-wrapper {

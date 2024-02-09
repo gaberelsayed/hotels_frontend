@@ -4,6 +4,7 @@ import {
 	airbnbData,
 	bookingData,
 	expediaData,
+	getReservationSummary,
 	reservationsList,
 	reservationsTotalRecords,
 } from "../apiAdmin";
@@ -24,6 +25,8 @@ const HotelRunnerReservationList = ({
 	const [recordsPerPage] = useState(50); // You can adjust this as needed
 	const [selectedFilter, setSelectedFilter] = useState(""); // New state for selected filter
 	const [totalRecords, setTotalRecords] = useState(0);
+	const [selectedDates, setSelectedDates] = useState("");
+	const [reservationObject, setReservationObject] = useState("");
 
 	const [q, setQ] = useState("");
 	const [searchClicked, setSearchClicked] = useState(false);
@@ -45,20 +48,28 @@ const HotelRunnerReservationList = ({
 
 	const getAllPreReservation = () => {
 		setLoading(true); // Set loading to true when fetching data
-		const today = formatDate(new Date()); // Format today's date
+		const dateToUse = selectedDates ? selectedDates : formatDate(new Date());
 
 		reservationsList(
 			currentPage,
 			recordsPerPage,
 			JSON.stringify({ selectedFilter }),
 			hotelDetails._id,
-			today // Pass the formatted date
+			dateToUse // Pass the formatted date
 		)
 			.then((data) => {
 				if (data && data.error) {
 					console.log(data.error);
 				} else {
 					setAllPreReservations(data && data.length > 0 ? data : []);
+					getReservationSummary(hotelDetails._id, dateToUse).then((data2) => {
+						if (data2 && data2.error) {
+							console.log("Error summary");
+						} else {
+							console.log(data2, "data2");
+							setReservationObject(data2);
+						}
+					});
 				}
 			})
 			.catch((err) => console.log(err))
@@ -66,7 +77,7 @@ const HotelRunnerReservationList = ({
 	};
 
 	useEffect(() => {
-		const today = formatDate(new Date()); // Format today's date
+		const dateToUse = selectedDates ? selectedDates : formatDate(new Date());
 
 		// Fetch total records
 		reservationsTotalRecords(
@@ -74,7 +85,7 @@ const HotelRunnerReservationList = ({
 			recordsPerPage,
 			JSON.stringify({ selectedFilter }),
 			hotelDetails._id,
-			today // Pass the formatted date
+			dateToUse // Pass the formatted date
 		).then((data) => {
 			if (data && data.error) {
 				console.log(data.error);
@@ -86,7 +97,7 @@ const HotelRunnerReservationList = ({
 			getAllPreReservation();
 		}
 		// eslint-disable-next-line
-	}, [currentPage, selectedFilter, searchClicked]);
+	}, [currentPage, selectedFilter, searchClicked, selectedDates]);
 
 	const handlePageChange = (newPage) => {
 		setCurrentPage(newPage);
@@ -200,6 +211,9 @@ const HotelRunnerReservationList = ({
 							searchClicked={searchClicked}
 							getAllPreReservation={getAllPreReservation}
 							hotelDetails={hotelDetails}
+							selectedDates={selectedDates}
+							setSelectedDates={setSelectedDates}
+							reservationObject={reservationObject}
 						/>
 					</div>
 				</>

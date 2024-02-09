@@ -401,8 +401,8 @@ const ZReservationForm = ({
 									>
 										<label style={{ fontWeight: "bold" }}>
 											{chosenLanguage === "Arabic"
-												? "تاريخ انتهاء جواز السفر"
-												: "Passport Expiry Date"}
+												? "تاريخ الميلاد"
+												: "Date Of Birth"}
 										</label>
 										<input
 											background='red'
@@ -547,6 +547,7 @@ const ZReservationForm = ({
 											<option value='trivago'>Trivago</option>
 											<option value='expedia'>Expedia</option>
 											<option value='hotel.com'>Hotel.com</option>
+											<option value='airbnb'>Airbnb</option>
 										</select>
 									</div>
 								</div>

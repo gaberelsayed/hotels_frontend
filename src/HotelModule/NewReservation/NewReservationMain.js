@@ -24,6 +24,7 @@ import ZReservationForm2 from "./ZReservationForm2";
 import { Spin } from "antd";
 import HotelRunnerReservationList from "./HotelRunnerReservationList";
 import useBoss from "../useBoss";
+import HotelHeatMap from "./HotelHeatMap";
 
 const NewReservationMain = () => {
 	const [AdminMenuStatus, setAdminMenuStatus] = useState(false);
@@ -51,6 +52,9 @@ const NewReservationMain = () => {
 	const [activeTab, setActiveTab] = useState("reserveARoom");
 	const [sendEmail, setSendEmail] = useState(false);
 	const [total_guests, setTotalGuests] = useState("");
+	const [allReservationsHeatMap, setAllReservationsHeatMap] = useState("");
+	const [start_date_Map, setStart_date_Map] = useState("");
+	const [end_date_Map, setEnd_date_Map] = useState("");
 	const [customer_details, setCustomer_details] = useState({
 		name: "",
 		phone: "",
@@ -72,8 +76,6 @@ const NewReservationMain = () => {
 	// Inside your functional component
 	const history = useHistory(); // Initialize the history object
 
-	console.log(isBoss, "isBosssss");
-
 	useEffect(() => {
 		if (window.innerWidth <= 1000) {
 			setCollapsed(true);
@@ -87,6 +89,8 @@ const NewReservationMain = () => {
 			setActiveTab("list");
 		} else if (window.location.search.includes("inventory")) {
 			setActiveTab("inventory");
+		} else if (window.location.search.includes("heatmap")) {
+			setActiveTab("heatmap");
 		} else {
 			setActiveTab("reserveARoom");
 		}
@@ -122,6 +126,15 @@ const NewReservationMain = () => {
 				setValues(data);
 				const formattedStartDate = formatDate(start_date);
 				const formattedEndDate = formatDate(end_date);
+
+				const heatMapStartDate = formatDate(new Date());
+				const endDate = new Date();
+				endDate.setDate(endDate.getDate() + 15); // Adding 15 days
+				const heatMapEndDate = formatDate(endDate);
+
+				setStart_date_Map(heatMapEndDate);
+				setEnd_date_Map(heatMapEndDate);
+
 				getHotelDetails(data._id).then((data2) => {
 					if (data2 && data2.error) {
 						console.log(data2.error, "Error rendering");
@@ -141,6 +154,21 @@ const NewReservationMain = () => {
 									}
 								});
 							}
+
+							getHotelReservations(
+								data2[0]._id,
+								user._id,
+								heatMapStartDate,
+								heatMapEndDate
+							).then((data4) => {
+								if (data4 && data4.error) {
+									console.log(data4.error);
+								} else {
+									setAllReservationsHeatMap(
+										data4 && data4.length > 0 ? data4 : []
+									);
+								}
+							});
 
 							if (!hotelDetails) {
 								setHotelDetails(data2[0]);
@@ -186,7 +214,6 @@ const NewReservationMain = () => {
 	const gettingSearchQuery = () => {
 		// Make sure to have searchQuery and searchClicked defined in your state
 		if (searchQuery && searchClicked) {
-			console.log("here ahowan search");
 			setLoading(true); // Assuming you have setLoading defined to control loading state
 			getReservationSearch(searchQuery, hotelDetails._id).then((data) => {
 				if (data && data.error) {
@@ -428,6 +455,9 @@ const NewReservationMain = () => {
 		// eslint-disable-next-line
 	}, [start_date, end_date]);
 
+	console.log(end_date_Map, "end_date_Map");
+	console.log(start_date_Map, "start_date_Map");
+
 	return (
 		<NewReservationMainWrapper
 			dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}
@@ -515,42 +545,23 @@ const NewReservationMain = () => {
 									? "قائمة الحجوزات"
 									: "Reservation List"}
 							</Tab>
+							<Tab
+								isActive={activeTab === "heatmap"}
+								onClick={() => {
+									setActiveTab("heatmap");
+									history.push("/hotel-management/new-reservation?heatmap"); // Programmatically navigate
+								}}
+							>
+								{chosenLanguage === "Arabic"
+									? "خريطة الفندق"
+									: "Hotel Heat Map"}
+							</Tab>
 						</div>
 					</div>
 
 					<div className='container-wrapper'>
 						{activeTab === "reserveARoom" ? (
 							<>
-								{/* <div className='row text-center ml-5 my-3'>
-									<div
-										style={isActive(clickedMenu, "reserveARoom")}
-										className='col-md-6 col-6  menuItems'
-										onClick={() => setClickedMenu("reserveARoom")}
-									>
-										<Link
-											className='dashboardLinks p-0'
-											style={isActive(clickedMenu, "reserveARoom")}
-											to='/hotel-management/new-reservation?reserveARoom'
-										>
-											<i className='fa-brands fa-servicestack mx-1'></i>
-											Reservation WITH a ROOM
-										</Link>
-									</div>
-									<div
-										style={isActive(clickedMenu, "newReservation")}
-										className='col-md-6 col-6  menuItems'
-										onClick={() => setClickedMenu("newReservation")}
-									>
-										<Link
-											className='dashboardLinks p-0'
-											style={isActive(clickedMenu, "newReservation")}
-											to='/hotel-management/new-reservation?newReservation'
-										>
-											<i className='fa-brands fa-servicestack mx-1'></i>
-											New Reservation WITH NO ROOM
-										</Link>
-									</div>
-								</div> */}
 								{loading ? (
 									<>
 										<div className='text-center my-5'>
@@ -610,6 +621,19 @@ const NewReservationMain = () => {
 										hotelDetails={hotelDetails}
 										chosenLanguage={chosenLanguage}
 										isBoss={isBoss}
+									/>
+								) : null}
+							</>
+						) : activeTab === "heatmap" ? (
+							<>
+								{allReservationsHeatMap && allReservationsHeatMap.length > 0 ? (
+									<HotelHeatMap
+										hotelRooms={hotelRooms}
+										hotelDetails={hotelDetails}
+										start_date={start_date_Map}
+										end_date={end_date_Map}
+										allReservations={allReservationsHeatMap}
+										chosenLanguage={chosenLanguage}
 									/>
 								) : null}
 							</>

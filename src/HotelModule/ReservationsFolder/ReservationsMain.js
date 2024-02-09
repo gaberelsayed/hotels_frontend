@@ -3,6 +3,7 @@ import AdminNavbar from "../AdminNavbar/AdminNavbar";
 import AdminNavbarArabic from "../AdminNavbar/AdminNavbarArabic";
 import {
 	getHotelDetails,
+	getReservationSummary,
 	hotelAccount,
 	reservationsList,
 	reservationsTotalRecords,
@@ -23,6 +24,8 @@ const ReservationsMain = () => {
 	const [selectedFilter, setSelectedFilter] = useState(""); // New state for selected filter
 	const [totalRecords, setTotalRecords] = useState(0);
 	const [hotelDetails, setHotelDetails] = useState(0);
+	const [reservationObject, setReservationObject] = useState("");
+	const [selectedDates, setSelectedDates] = useState("");
 
 	const [q, setQ] = useState("");
 	const [searchClicked, setSearchClicked] = useState(false);
@@ -56,14 +59,16 @@ const ReservationsMain = () => {
 					} else {
 						if (data && data.name && data._id && data2 && data2.length > 0) {
 							setHotelDetails(data2[0]);
-							const today = formatDate(new Date()); // Format today's date
+							const dateToUse = selectedDates
+								? selectedDates
+								: formatDate(new Date());
 
 							reservationsList(
 								currentPage,
 								recordsPerPage,
 								JSON.stringify({ selectedFilter }),
 								data2[0]._id,
-								today // Pass the formatted date
+								dateToUse // Pass the formatted date
 							)
 								.then((data) => {
 									if (data && data.error) {
@@ -75,7 +80,7 @@ const ReservationsMain = () => {
 											recordsPerPage,
 											JSON.stringify({ selectedFilter }),
 											data2[0]._id,
-											today // Pass the formatted date
+											dateToUse // Pass the formatted date
 										).then((data) => {
 											if (data && data.error) {
 												console.log(data.error);
@@ -83,6 +88,18 @@ const ReservationsMain = () => {
 												setTotalRecords(data.total); // Set total records
 											}
 										});
+
+										getReservationSummary(data2[0]._id, dateToUse).then(
+											(data2) => {
+												if (data2 && data2.error) {
+													console.log("Error summary");
+												} else {
+													console.log(data2, "data2");
+													setReservationObject(data2);
+												}
+											}
+										);
+
 										setLoading(false);
 									}
 								})
@@ -102,7 +119,7 @@ const ReservationsMain = () => {
 			getAllPreReservation();
 		}
 		// eslint-disable-next-line
-	}, [currentPage, selectedFilter, searchClicked]);
+	}, [currentPage, selectedFilter, searchClicked, selectedDates]);
 
 	const handlePageChange = (newPage) => {
 		setCurrentPage(newPage);
@@ -192,6 +209,9 @@ const ReservationsMain = () => {
 										searchClicked={searchClicked}
 										getAllPreReservation={getAllPreReservation}
 										hotelDetails={hotelDetails}
+										reservationObject={reservationObject}
+										setSelectedDates={setSelectedDates}
+										selectedDates={selectedDates}
 									/>
 								</div>
 							</div>

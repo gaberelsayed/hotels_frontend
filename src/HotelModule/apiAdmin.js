@@ -223,6 +223,19 @@ export const reservationsList = (page, records, filters, hotelId, date) => {
 		.catch((err) => console.log(err));
 };
 
+export const getReservationSummary = (hotelId, date) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/reservations-summary/${hotelId}/${date}`,
+		{
+			method: "GET",
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
 export const reservationsTotalRecords = (
 	page,
 	records,
