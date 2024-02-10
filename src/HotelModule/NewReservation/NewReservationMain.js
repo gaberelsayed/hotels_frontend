@@ -124,8 +124,10 @@ const NewReservationMain = () => {
 				console.log(data.error, "Error rendering");
 			} else {
 				setValues(data);
-				const formattedStartDate = formatDate(start_date);
-				const formattedEndDate = formatDate(end_date);
+				// eslint-disable-next-line
+				const formattedStartDate = moment(formatDate(new Date(start_date)));
+				// eslint-disable-next-line
+				const formattedEndDate = moment(formatDate(new Date(end_date)));
 
 				const endDate = new Date();
 				const startDate = new Date();
@@ -147,12 +149,13 @@ const NewReservationMain = () => {
 								getHotelReservations(
 									data2[0]._id,
 									user._id,
-									formattedStartDate,
-									formattedEndDate
+									moment(heatMapStartDate),
+									moment(heatMapEndDate)
 								).then((data3) => {
 									if (data3 && data3.error) {
 										console.log(data3.error);
 									} else {
+										console.log(data3, "data3");
 										setAllReservations(data3 && data3.length > 0 ? data3 : []);
 									}
 								});
