@@ -334,6 +334,10 @@ const NewReservationMain = () => {
 			return toast.error("Booking Source is required");
 		}
 
+		if (total_amount === 0 && calculateTotalAmountWithRooms() === 0) {
+			return toast.error("Please pick up the correct price");
+		}
+
 		const calculatedPickedRoomsType = calculatePickedRoomsType();
 		const total_amount_calculated = calculateTotalAmountNoRooms();
 		const total_amount_calculated_WithRooms = calculateTotalAmountWithRooms();

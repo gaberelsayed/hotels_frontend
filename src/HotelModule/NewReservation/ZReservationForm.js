@@ -1110,6 +1110,7 @@ const ZReservationForm = ({
 								chosenLanguage={chosenLanguage}
 								pickedRoomsType={pickedRoomsType}
 								setPickedRoomsType={setPickedRoomsType}
+								searchedReservation={searchedReservation}
 							/>
 						</>
 					) : null}

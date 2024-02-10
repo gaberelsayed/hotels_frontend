@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import styled, { keyframes } from "styled-components";
-import { InputNumber, Modal, Select, Tooltip } from "antd";
+import { InputNumber, Modal, Select, Tooltip, Checkbox } from "antd";
 import moment from "moment";
+import { toast } from "react-toastify";
+// eslint-disable-next-line
 const { Option } = Select;
 
 const HotelOverviewReservation = ({
@@ -17,6 +19,7 @@ const HotelOverviewReservation = ({
 	end_date,
 	allReservations,
 	chosenLanguage,
+	searchedReservation,
 }) => {
 	const [selectedRoomType, setSelectedRoomType] = useState(null);
 	const [isModalVisible, setIsModalVisible] = useState(false);
@@ -24,6 +27,8 @@ const HotelOverviewReservation = ({
 	const [customPrice, setCustomPrice] = useState(null);
 	const [selectedPrice, setSelectedPrice] = useState("");
 	const [fixIt, setFixIt] = useState(false);
+	const [useReservationPrice, setUseReservationPrice] = useState(false);
+	const [addCustomPrice, setAddCustomPrice] = useState(false);
 
 	useEffect(() => {
 		const handleScroll = () => {
@@ -104,34 +109,47 @@ const HotelOverviewReservation = ({
 	};
 
 	const handleOk = () => {
+		// Initialize priceToAdd as null
 		let priceToAdd = null;
-		if (selectedPrice === "custom" && customPrice) {
+
+		if (addCustomPrice && customPrice) {
+			// If the custom price checkbox is checked and there's a custom price
 			priceToAdd = customPrice;
-			// Add room pricing information
-			setPickedRoomPricing([
-				...pickedRoomPricing,
-				{ roomId: currentRoom._id, chosenPrice: customPrice },
-			]);
-		} else if (selectedPrice) {
-			priceToAdd = currentRoom?.room_pricing[selectedPrice];
-			// Add room pricing information
+		} else if (
+			useReservationPrice &&
+			searchedReservation &&
+			searchedReservation.pickedRoomsType &&
+			searchedReservation.pickedRoomsType.length === 1
+		) {
+			// If the reservation price checkbox is checked and there's a valid reservation price
+			priceToAdd = Number(searchedReservation.pickedRoomsType[0].chosenPrice);
+		}
+
+		if (priceToAdd !== null) {
+			// Add room pricing information if a valid price is added
 			setPickedRoomPricing([
 				...pickedRoomPricing,
 				{ roomId: currentRoom._id, chosenPrice: priceToAdd },
 			]);
-		} else {
-			// Deselect the room if no price is selected
-			handleRoomDeselection();
-		}
-
-		// Update total amount if a valid price is added
-		if (priceToAdd !== null) {
+			// Update total amount
 			setTotal_Amount((prevTotal) => prevTotal + Number(priceToAdd));
+		} else {
+			// If no valid option is selected, possibly show a message or handle accordingly
+			// For example, using a toast to notify the user to select or enter a price
+			toast.error(
+				chosenLanguage === "Arabic"
+					? "الرجاء اختيار أو إدخال سعر"
+					: "Please select or enter a price"
+			);
+			// Optionally, you might want to prevent the modal from closing if no valid price is selected
+			// If you decide to keep the modal open, remove or comment out the line below
 		}
 
+		// Close the modal
 		setIsModalVisible(false);
 	};
 
+	// eslint-disable-next-line
 	const handlePriceChange = (value) => {
 		setSelectedPrice(value);
 		if (value !== "custom") {
@@ -266,8 +284,10 @@ const HotelOverviewReservation = ({
 					<Modal
 						title={
 							<span>
-								{" "}
-								Select Room Pricing (
+								{chosenLanguage === "Arabic"
+									? "اختر تسعير الغرفة"
+									: "Select Room Pricing"}{" "}
+								(
 								<span
 									style={{
 										fontWeight: "bolder",
@@ -277,42 +297,73 @@ const HotelOverviewReservation = ({
 								>
 									{currentRoom?.room_type}
 								</span>
-								){" "}
+								)
 							</span>
 						}
 						open={isModalVisible}
 						onOk={handleOk}
 						onCancel={handleCancel}
 					>
-						<Select
-							defaultValue=''
-							style={{ width: "100%" }}
-							onChange={handlePriceChange}
+						{searchedReservation &&
+						searchedReservation.pickedRoomsType &&
+						searchedReservation.pickedRoomsType.length === 1 &&
+						Number(searchedReservation.pickedRoomsType[0].count) === 1 ? (
+							<Checkbox
+								checked={useReservationPrice}
+								onChange={(e) => {
+									// Deselect the addCustomPrice checkbox when this is checked
+									if (e.target.checked) {
+										setAddCustomPrice(false);
+										if (
+											searchedReservation &&
+											searchedReservation.pickedRoomsType &&
+											searchedReservation.pickedRoomsType.length === 1
+										) {
+											setUseReservationPrice(
+												Number(
+													searchedReservation.pickedRoomsType[0].chosenPrice
+												)
+											);
+										} else {
+											toast.error(
+												chosenLanguage === "Arabic"
+													? "الرجاء اختيار سعر مخصص لهذا الحجز"
+													: "It is recommended to make it a custom price"
+											);
+										}
+									}
+								}}
+							>
+								{chosenLanguage === "Arabic"
+									? "هل تريد أن تأخذ سعر الحجز الأصلي؟"
+									: "Do you want to take the reservation original price?"}
+							</Checkbox>
+						) : null}
+
+						<br />
+						<Checkbox
+							checked={addCustomPrice}
+							onChange={(e) => {
+								setAddCustomPrice(e.target.checked);
+								// Deselect the useReservationPrice checkbox when this is checked
+								if (e.target.checked) {
+									setUseReservationPrice(false);
+								}
+							}}
 						>
-							<Option value=''>Please Select</Option>
-							<Option value='basePrice'>
-								Base Price: {currentRoom?.room_pricing.basePrice}
-							</Option>
-							<Option value='seasonPrice'>
-								Season Price: {currentRoom?.room_pricing.seasonPrice}
-							</Option>
-							<Option value='weekendPrice'>
-								Weekend Price: {currentRoom?.room_pricing.weekendPrice}
-							</Option>
-							<Option value='lastMinuteDealPrice'>
-								Last Minute Deal Price:{" "}
-								{currentRoom?.room_pricing.lastMinuteDealPrice}
-							</Option>
-							<Option value='custom'>
-								{chosenLanguage === "Arabic" ? "" : ""}Custom Price
-							</Option>
-						</Select>
-						{selectedPrice === "custom" && (
+							{chosenLanguage === "Arabic"
+								? "هل ترغب في إضافة سعر مخصص؟"
+								: "Do you want to add a custom price?"}
+						</Checkbox>
+						{addCustomPrice && (
 							<InputNumber
 								value={customPrice}
-								onChange={setCustomPrice}
+								onChange={(value) => {
+									setCustomPrice(value);
+									setSelectedPrice("custom"); // Assuming you're managing the selected price to handle logic in `handleOk`
+								}}
 								style={{ width: "100%", marginTop: "10px" }}
-								min={0} // Set minimum value if needed
+								min={0}
 							/>
 						)}
 					</Modal>
