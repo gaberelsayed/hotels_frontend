@@ -130,9 +130,6 @@ const NewReservationMain = () => {
 				setStart_date_Map(moment(heatMapStartDate));
 				setEnd_date_Map(moment(heatMapEndDate));
 
-				setStart_date_Map(heatMapEndDate);
-				setEnd_date_Map(heatMapEndDate);
-
 				getHotelDetails(data.belongsToId).then((data2) => {
 					if (data2 && data2.error) {
 						console.log(data2.error, "Error rendering");
