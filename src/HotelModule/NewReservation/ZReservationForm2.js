@@ -27,6 +27,7 @@ const ZReservationForm2 = ({
 	booking_comment,
 	setBookingSource,
 	setPaymentStatus,
+	paymentStatus,
 	roomsSummary,
 	confirmation_number,
 	setConfirmationNumber,
@@ -39,6 +40,8 @@ const ZReservationForm2 = ({
 	setTotalGuests,
 	setSendEmail,
 	sendEmail,
+	paidAmount,
+	setPaidAmount,
 	isBoss,
 }) => {
 	const [selectedRoomType, setSelectedRoomType] = useState("");
@@ -455,8 +458,8 @@ const ZReservationForm2 = ({
 									>
 										<label style={{ fontWeight: "bold" }}>
 											{chosenLanguage === "Arabic"
-												? "تاريخ انتهاء جواز السفر"
-												: "Passport Expiry Date"}
+												? "تاريخ الميلاد"
+												: "Date Of Birth"}
 										</label>
 										<input
 											background='red'
@@ -648,8 +651,23 @@ const ZReservationForm2 = ({
 											<option value='not paid'>Not Paid</option>
 											<option value='credit/ debit'>Credit/ Debit</option>
 											<option value='cash'>Cash</option>
+											<option value='deposit'>Deposit</option>
 										</select>
 									</div>
+									{paymentStatus === "deposit" && (
+										<div className='mt-4'>
+											<input
+												value={paidAmount}
+												onChange={(e) => setPaidAmount(e.target.value)}
+												type='number'
+												placeholder={
+													chosenLanguage === "Arabic"
+														? "المبلغ المودع"
+														: "Deposited amount"
+												}
+											/>
+										</div>
+									)}
 								</div>
 
 								<div className='col-md-6 mx-auto my-2'>
@@ -775,6 +793,7 @@ const ZReservationForm2 = ({
 								).toLocaleString()}{" "}
 								SAR
 							</h4>
+
 							<div className='text-center mx-auto'>
 								<button
 									className='btn btn-info'
@@ -986,6 +1005,9 @@ const ZReservationForm2 = ({
 										).toLocaleString()}{" "}
 										SAR
 									</h3>
+									{paidAmount && paymentStatus === "deposit" && (
+										<h3>Paid Amount: {paidAmount.toLocaleString()} SAR</h3>
+									)}
 								</div>
 								<div className='mt-5 mx-auto text-center col-md-6'>
 									<button

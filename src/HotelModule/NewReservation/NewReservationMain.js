@@ -55,6 +55,7 @@ const NewReservationMain = () => {
 	const [allReservationsHeatMap, setAllReservationsHeatMap] = useState("");
 	const [start_date_Map, setStart_date_Map] = useState("");
 	const [end_date_Map, setEnd_date_Map] = useState("");
+	const [paidAmount, setPaidAmount] = useState("");
 	const [customer_details, setCustomer_details] = useState({
 		name: "",
 		phone: "",
@@ -337,7 +338,11 @@ const NewReservationMain = () => {
 			return toast.error("Booking Source is required");
 		}
 
-		if (total_amount === 0 && calculateTotalAmountWithRooms() === 0) {
+		if (
+			total_amount === 0 &&
+			calculateTotalAmountWithRooms() === 0 &&
+			activeTab === "reserveARoom"
+		) {
 			return toast.error("Please pick up the correct price");
 		}
 
@@ -385,6 +390,7 @@ const NewReservationMain = () => {
 			booking_comment: booking_comment,
 			comment: booking_comment,
 			hotelName: hotelDetails.hotelName,
+			paid_amount: paidAmount ? paidAmount : 0,
 			housedBy:
 				searchQuery &&
 				searchedReservation &&
@@ -685,6 +691,9 @@ const NewReservationMain = () => {
 									setSendEmail={setSendEmail}
 									sendEmail={sendEmail}
 									isBoss={isBoss}
+									paymentStatus={payment_status}
+									paidAmount={paidAmount}
+									setPaidAmount={setPaidAmount}
 								/>
 							</>
 						)}
