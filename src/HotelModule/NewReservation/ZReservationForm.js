@@ -721,10 +721,10 @@ const ZReservationForm = ({
 									{chosenLanguage === "Arabic"
 										? "المبلغ المستحق"
 										: "Amount Due:"}{" "}
-									{Number(searchedReservation.total_amount) -
-										Number(
-											searchedReservation.paid_amount
-										).toLocaleString()}{" "}
+									{Number(
+										Number(searchedReservation.total_amount) -
+											Number(searchedReservation.paid_amount)
+									).toLocaleString()}{" "}
 									{chosenLanguage === "Arabic" ? "ريال سعودي" : "SAR"}
 								</h4>
 							) : null}

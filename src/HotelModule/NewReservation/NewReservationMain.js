@@ -346,6 +346,13 @@ const NewReservationMain = () => {
 			return toast.error("Please pick up the correct price");
 		}
 
+		const invalidRoomCount = pickedRoomsType.some(
+			(room) => Number(room.count) <= 0
+		);
+		if (invalidRoomCount && activeTab === "newReservation") {
+			return toast.error("Room count must be greater than 0");
+		}
+
 		const calculatedPickedRoomsType = calculatePickedRoomsType();
 		const total_amount_calculated = calculateTotalAmountNoRooms();
 		const total_amount_calculated_WithRooms = calculateTotalAmountWithRooms();
@@ -390,7 +397,7 @@ const NewReservationMain = () => {
 			booking_comment: booking_comment,
 			comment: booking_comment,
 			hotelName: hotelDetails.hotelName,
-			paid_amount: paidAmount ? paidAmount : 0,
+			paid_amount: paidAmount ? Number(paidAmount) : 0,
 			housedBy:
 				searchQuery &&
 				searchedReservation &&

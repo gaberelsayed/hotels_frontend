@@ -139,7 +139,19 @@ const ZReservationForm2 = ({
 	};
 
 	const handleRoomCountChange = (e) => {
-		setSelectedCount(e.target.value);
+		// Get the input value and parse it to an integer
+		let value = parseInt(e.target.value, 10);
+
+		// If the parsed value is not a number (NaN), reset it to 0
+		if (isNaN(value)) {
+			value = 0;
+		}
+
+		// Ensure the value is not negative; if it is, set it to 0
+		value = Math.max(value, 0);
+
+		// Update the state with the new value
+		setSelectedCount(value);
 	};
 
 	const addRoomToReservation = () => {
@@ -659,7 +671,7 @@ const ZReservationForm2 = ({
 											<input
 												value={paidAmount}
 												onChange={(e) => setPaidAmount(e.target.value)}
-												type='number'
+												type='text'
 												placeholder={
 													chosenLanguage === "Arabic"
 														? "المبلغ المودع"
@@ -941,7 +953,7 @@ const ZReservationForm2 = ({
 										</label>
 										<input
 											background='red'
-											type='number'
+											type='text'
 											value={selectedCount}
 											onChange={handleRoomCountChange}
 										/>
