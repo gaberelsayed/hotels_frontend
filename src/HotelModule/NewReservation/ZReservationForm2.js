@@ -920,7 +920,7 @@ const ZReservationForm2 = ({
 												Enter Custom Price
 											</label>
 											<input
-												type='number'
+												type='text'
 												value={updatedRoomPrice}
 												onChange={(e) => setUpdatedRoomPrice(e.target.value)}
 												style={{

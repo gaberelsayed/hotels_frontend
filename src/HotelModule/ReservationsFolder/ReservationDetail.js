@@ -774,7 +774,7 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 											? "عدد الزوار"
 											: "Count Of Visitors"}
 										<div className='mx-1'>
-											{reservation && reservation.pickedRoomsType.length}
+											{reservation && reservation.total_guests}
 										</div>
 									</div>
 
