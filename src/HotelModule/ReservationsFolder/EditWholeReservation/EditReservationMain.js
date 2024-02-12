@@ -681,7 +681,11 @@ export const EditReservationMain = ({
 											borderRadius: "10px",
 										}}
 									>
-										<option value=''>Please Select</option>
+										{reservation && reservation.payment ? (
+											<option value=''>{reservation.payment}</option>
+										) : (
+											<option value=''>Please Select</option>
+										)}
 										<option value='not paid'>Not Paid</option>
 										<option value='credit/ debit'>Credit/ Debit</option>
 										<option value='cash'>Cash</option>

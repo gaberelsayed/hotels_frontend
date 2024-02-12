@@ -49,6 +49,7 @@ const NewReservationMain = () => {
 	const [total_guests, setTotalGuests] = useState("");
 	const [start_date_Map, setStart_date_Map] = useState("");
 	const [end_date_Map, setEnd_date_Map] = useState("");
+	const [paidAmount, setPaidAmount] = useState("");
 	const [allReservationsHeatMap, setAllReservationsHeatMap] = useState("");
 	const [customer_details, setCustomer_details] = useState({
 		name: "",
@@ -329,8 +330,19 @@ const NewReservationMain = () => {
 			return toast.error("Booking Source is required");
 		}
 
-		if (total_amount === 0 && calculateTotalAmountWithRooms() === 0) {
+		if (
+			total_amount === 0 &&
+			calculateTotalAmountWithRooms() === 0 &&
+			activeTab === "reserveARoom"
+		) {
 			return toast.error("Please pick up the correct price");
+		}
+
+		const invalidRoomCount = pickedRoomsType.some(
+			(room) => Number(room.count) <= 0
+		);
+		if (invalidRoomCount && activeTab === "newReservation") {
+			return toast.error("Room count must be greater than 0");
 		}
 
 		const calculatedPickedRoomsType = calculatePickedRoomsType();
@@ -377,6 +389,11 @@ const NewReservationMain = () => {
 			booking_comment: booking_comment,
 			comment: booking_comment,
 			hotelName: hotelDetails.hotelName,
+			paid_amount: paidAmount
+				? Number(paidAmount)
+				: searchedReservation.paid_amount
+				  ? searchedReservation.paid_amount
+				  : 0,
 			housedBy:
 				searchQuery &&
 				searchedReservation &&
@@ -650,6 +667,9 @@ const NewReservationMain = () => {
 									setTotalGuests={setTotalGuests}
 									setSendEmail={setSendEmail}
 									sendEmail={sendEmail}
+									paymentStatus={payment_status}
+									paidAmount={paidAmount}
+									setPaidAmount={setPaidAmount}
 								/>
 							</>
 						)}

@@ -667,6 +667,46 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 												{chosenLanguage === "Arabic" ? "ريال" : "SAR"}
 											</h2>
 										</div>
+										{reservation && reservation.paid_amount !== 0 ? (
+											<div className='col-md-5 mx-auto'>
+												<h4>
+													{chosenLanguage === "Arabic"
+														? "المبلغ المودع"
+														: "Deposited Amount"}
+												</h4>
+											</div>
+										) : null}
+
+										{reservation && reservation.paid_amount !== 0 ? (
+											<div className='col-md-5 mx-auto'>
+												<h3>
+													{reservation.paid_amount.toLocaleString()}{" "}
+													{chosenLanguage === "Arabic" ? "ريال" : "SAR"}
+												</h3>
+											</div>
+										) : null}
+
+										{reservation && reservation.paid_amount !== 0 ? (
+											<div className='col-md-5 mx-auto'>
+												<h4>
+													{chosenLanguage === "Arabic"
+														? "المبلغ المستحق"
+														: "Amount Due"}
+												</h4>
+											</div>
+										) : null}
+
+										{reservation && reservation.paid_amount !== 0 ? (
+											<div className='col-md-5 mx-auto'>
+												<h3 style={{ color: "darkgreen" }}>
+													{Number(
+														Number(reservation.total_amount) -
+															Number(reservation.paid_amount)
+													).toLocaleString()}{" "}
+													{chosenLanguage === "Arabic" ? "ريال" : "SAR"}
+												</h3>
+											</div>
+										) : null}
 									</div>
 									<div className='my-3'>
 										<div className='row'>
@@ -782,7 +822,7 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 											? "عدد الزوار"
 											: "Count Of Visitors"}
 										<div className='mx-1'>
-											{reservation && reservation.pickedRoomsType.length}
+											{reservation && reservation.total_guests}
 										</div>
 									</div>
 

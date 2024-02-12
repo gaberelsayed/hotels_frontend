@@ -705,6 +705,34 @@ const ZReservationForm = ({
 									  : 0}{" "}
 								{chosenLanguage === "Arabic" ? "ريال سعودي" : "SAR"}
 							</h4>
+							{searchedReservation &&
+							Number(searchedReservation.paid_amount) > 0 ? (
+								<h4 className='my-4 text-center' style={{ color: "#006ad1" }}>
+									{chosenLanguage === "Arabic"
+										? "المبلغ المودع"
+										: "Deposited Amount:"}{" "}
+									{searchedReservation &&
+										Number(
+											searchedReservation.paid_amount
+										).toLocaleString()}{" "}
+									{chosenLanguage === "Arabic" ? "ريال سعودي" : "SAR"}
+								</h4>
+							) : null}
+							{searchedReservation &&
+							Number(searchedReservation.paid_amount) > 0 &&
+							searchedReservation.confirmation_number &&
+							searchedReservation.total_amount ? (
+								<h4 className='my-4 text-center' style={{ color: "darkgreen" }}>
+									{chosenLanguage === "Arabic"
+										? "المبلغ المستحق"
+										: "Amount Due:"}{" "}
+									{Number(
+										Number(searchedReservation.total_amount) -
+											Number(searchedReservation.paid_amount)
+									).toLocaleString()}{" "}
+									{chosenLanguage === "Arabic" ? "ريال سعودي" : "SAR"}
+								</h4>
+							) : null}
 							<div className='text-center mx-auto'>
 								<button
 									className='btn btn-info'

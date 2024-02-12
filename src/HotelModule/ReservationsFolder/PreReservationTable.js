@@ -181,18 +181,28 @@ const PreReservationTable = ({
 		},
 		{
 			title: chosenLanguage === "Arabic" ? "رقم الغرفة" : "Room Number",
-			dataIndex: "roomDetails",
 			key: "roomDetails",
-			render: (roomDetails) => {
-				if (!roomDetails || roomDetails.length === 0) {
-					return "No Room";
+			render: (record) => {
+				// First, check if 'roomDetails' is available and has entries
+				if (record.roomDetails && record.roomDetails.length > 0) {
+					return record.roomDetails.map((room, index) => (
+						<div key={index}>
+							{room.room_number ? room.room_number : "No Room"}
+						</div>
+					));
 				}
 
-				return roomDetails.map((room, index) => (
-					<div key={index}>
-						{room.room_number ? room.room_number : "No Room"}
-					</div>
-				));
+				// If 'roomDetails' is not available, check 'roomId'
+				else if (record.roomId && record.roomId.length > 0) {
+					return record.roomId.map((room, index) => (
+						<div key={index}>
+							{room.room_number ? room.room_number : "No Room"}
+						</div>
+					));
+				}
+
+				// If neither is available, return "No Room"
+				return "No Room";
 			},
 		},
 

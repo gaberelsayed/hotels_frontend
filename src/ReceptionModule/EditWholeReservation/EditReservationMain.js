@@ -279,16 +279,23 @@ export const EditReservationMain = ({
 		setIsModalVisible(false);
 	};
 
+	// This function calculates the total number of nights between check-in and check-out dates
+	const calculateNightsOfResidence = () => {
+		const checkinDate = moment(reservation.checkin_date);
+		const checkoutDate = moment(reservation.checkout_date);
+		return checkoutDate.diff(checkinDate, "days");
+	};
+
 	const UpdateReservation = () => {
 		const confirmationMessage = `Are you sure you want to update this reservation?`;
 		if (window.confirm(confirmationMessage)) {
 			const updateData = {
 				...reservation,
 				total_amount:
-					calculateTotalAmountPerDay() * Number(reservation.days_of_residence),
+					calculateTotalAmountPerDay() * Number(calculateNightsOfResidence()),
 
 				sub_total:
-					calculateTotalAmountPerDay() * Number(reservation.days_of_residence),
+					calculateTotalAmountPerDay() * Number(calculateNightsOfResidence()),
 				hotelName: hotelDetails.hotelName,
 				sendEmail: sendEmail,
 			};
@@ -672,14 +679,39 @@ export const EditReservationMain = ({
 											padding: "10px",
 											boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
 											borderRadius: "10px",
+											textTransform: "capitalize",
 										}}
 									>
-										<option value=''>{reservation.payment}</option>
+										{reservation && reservation.payment ? (
+											<option value=''>{reservation.payment}</option>
+										) : (
+											<option value=''>Please Select</option>
+										)}
 										<option value='not paid'>Not Paid</option>
 										<option value='credit/ debit'>Credit/ Debit</option>
 										<option value='cash'>Cash</option>
+										<option value='deposit'>Deposit</option>
 									</select>
 								</div>
+								{reservation.payment === "deposit" && (
+									<div className='mt-4'>
+										<input
+											value={reservation.paid_amount}
+											onChange={(e) =>
+												setReservation({
+													...reservation,
+													paid_amount: e.target.value,
+												})
+											}
+											type='text'
+											placeholder={
+												chosenLanguage === "Arabic"
+													? "المبلغ المودع"
+													: "Deposited amount"
+											}
+										/>
+									</div>
+								)}
 							</div>
 
 							<div className='col-md-6 mx-auto my-2'>
@@ -693,7 +725,7 @@ export const EditReservationMain = ({
 											: "Total Guests"}
 									</label>
 									<input
-										type='number'
+										type='text'
 										min={1} // Assuming at least 1 guest must be selected
 										value={reservation.total_guests}
 										onChange={(e) =>
@@ -815,10 +847,18 @@ export const EditReservationMain = ({
 								: "Total Amount:"}{" "}
 							{(
 								calculateTotalAmountPerDay() *
-								Number(reservation.days_of_residence)
+								Number(calculateNightsOfResidence())
 							).toLocaleString()}{" "}
 							SAR
 						</h4>
+
+						{reservation.paid_amount > 0 &&
+							reservation.payment === "deposit" && (
+								<h4 className='my-4 text-center' style={{ color: "darkgreen" }}>
+									Paid Amount:{" "}
+									{Number(reservation.paid_amount).toLocaleString()} SAR
+								</h4>
+							)}
 					</div>
 				</div>
 				<div
@@ -924,7 +964,7 @@ export const EditReservationMain = ({
 											Enter Custom Price
 										</label>
 										<input
-											type='number'
+											type='text'
 											value={updatedRoomPrice}
 											onChange={(e) => setUpdatedRoomPrice(e.target.value)}
 											style={{
@@ -955,7 +995,7 @@ export const EditReservationMain = ({
 									<label style={{ fontWeight: "bold" }}>How Many Rooms?</label>
 									<input
 										background='red'
-										type='number'
+										type='text'
 										value={selectedCount}
 										onChange={handleRoomCountChange}
 									/>
@@ -1024,7 +1064,7 @@ export const EditReservationMain = ({
 									Total Amount:{" "}
 									{(
 										calculateTotalAmountPerDay() *
-										Number(reservation.days_of_residence)
+										Number(calculateNightsOfResidence())
 									).toLocaleString()}{" "}
 									SAR
 								</h3>

@@ -397,7 +397,11 @@ const NewReservationMain = () => {
 			booking_comment: booking_comment,
 			comment: booking_comment,
 			hotelName: hotelDetails.hotelName,
-			paid_amount: paidAmount ? Number(paidAmount) : 0,
+			paid_amount: paidAmount
+				? Number(paidAmount)
+				: searchedReservation.paid_amount
+				  ? searchedReservation.paid_amount
+				  : 0,
 			housedBy:
 				searchQuery &&
 				searchedReservation &&
