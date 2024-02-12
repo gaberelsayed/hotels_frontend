@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 // eslint-disable-next-line
-import { Link, useHistory } from "react-router-dom";
+import { Link, useHistory, Redirect } from "react-router-dom";
 import { useCartContext } from "../cart_context";
 import moment from "moment";
 import ZReservationForm from "./ZReservationForm";
@@ -16,12 +16,18 @@ import {
 	updateSingleReservation,
 	gettingRoomInventory,
 } from "../HotelModule/apiAdmin";
-import { isAuthenticated } from "../auth";
+import { isAuthenticated, signout } from "../auth";
 import { toast } from "react-toastify";
 import ZReservationForm2 from "./ZReservationForm2";
 import { Spin } from "antd";
 import HotelRunnerReservationList from "./HotelRunnerReservationList";
 import HotelHeatMap from "./HotelHeatMap";
+
+const handleSignout = (history) => {
+	signout(() => {
+		history.push("/");
+	});
+};
 
 const NewReservationMain = () => {
 	const [loading, setLoading] = useState(false);
@@ -70,6 +76,7 @@ const NewReservationMain = () => {
 
 	// Inside your functional component
 	const history = useHistory(); // Initialize the history object
+	const history2 = useHistory(); // Initialize the history object
 
 	useEffect(() => {
 		if (window.location.search.includes("reserveARoom")) {
@@ -479,6 +486,23 @@ const NewReservationMain = () => {
 			dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}
 			showList={window.location.search.includes("list")}
 		>
+			<div className='mx-2 mb-2'>
+				<button
+					className='signout-button'
+					onClick={() => handleSignout(history2)}
+					style={{
+						color: "red",
+						fontWeight: "bold",
+						textDecoration: "underline",
+						cursor: "pointer",
+						border: "none",
+						background: "transparent",
+					}}
+				>
+					Signout
+				</button>
+			</div>
+
 			<div className='grid-container-main'>
 				<div className='navcontent'></div>
 
@@ -685,7 +709,7 @@ export default NewReservationMain;
 const NewReservationMainWrapper = styled.div`
 	overflow-x: hidden;
 	/* background: #ededed; */
-	margin-top: 40px;
+	margin-top: 20px;
 	min-height: 750px;
 	/* background-color: #f0f0f0; */
 
