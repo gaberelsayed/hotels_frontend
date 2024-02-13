@@ -314,7 +314,7 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 							<Select.Option value='cancelled'>Cancelled</Select.Option>
 							<Select.Option value='no_show'>No Show</Select.Option>
 							<Select.Option value='confirmed'>Confirmed</Select.Option>
-							<Select.Option value='inhouse'>InHouse</Select.Option>
+							{/* <Select.Option value='inhouse'>InHouse</Select.Option> */}
 							<Select.Option value='checked_out'>Checked Out</Select.Option>
 							<Select.Option value='early_checked_out'>
 								Early Check Out
