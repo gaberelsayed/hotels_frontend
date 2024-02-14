@@ -358,8 +358,10 @@ export default PreReservationTable;
 const PreReservationTableWrapper = styled.div`
 	text-align: ${(props) => (props.isArabic ? "right" : "")};
 
-	td {
-		text-transform: capitalize;
+	td,
+	tr,
+	tbody {
+		text-transform: capitalize !important;
 	}
 
 	.table thead th {

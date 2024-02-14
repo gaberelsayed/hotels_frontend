@@ -29,6 +29,11 @@ import PaymentMain from "./HotelModule/Payment/PaymentMain";
 import ReceptionRoute from "./auth/ReceptionRoute";
 import NewReservationMainReception from "./ReceptionModule/NewReservationMain";
 import JanatWebsiteMain from "./AdminModule/JanatWebsite/JanatWebsiteMain";
+import HouseKeepingMain from "./HotelModule/HouseKeeping/HouseKeepingMain";
+import HouseKeepingManagerRoute from "./auth/HouseKeepingManagerRoute";
+import HouseKeepingMainManagement from "./HouseKeepingManager/HouseKeepingMain";
+import HouseKeepingEmployeeMain from "./HouseKeepingEmployee/HouseKeepingEmployeeMain";
+import HouseKeepingEmployeeRoute from "./auth/HouseKeepingEmployeeRoute";
 
 function App() {
 	const { languageToggle, chosenLanguage } = useCartContext();
@@ -116,11 +121,28 @@ function App() {
 						exact
 						component={PaymentMain}
 					/>
+					<HotelRoute
+						path='/hotel-management/house-keeping'
+						exact
+						component={HouseKeepingMain}
+					/>
+
+					<HouseKeepingManagerRoute
+						path='/house-keeping-management/house-keeping'
+						exact
+						component={HouseKeepingMainManagement}
+					/>
 
 					<ReceptionRoute
 						path='/reception-management/new-reservation'
 						exact
 						component={NewReservationMainReception}
+					/>
+
+					<HouseKeepingEmployeeRoute
+						path='/house-keeping-employee/house-keeping'
+						exact
+						component={HouseKeepingEmployeeMain}
 					/>
 				</Switch>
 			</>

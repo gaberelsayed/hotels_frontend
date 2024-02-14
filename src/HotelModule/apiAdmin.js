@@ -223,6 +223,19 @@ export const reservationsList = (page, records, filters, hotelId, date) => {
 		.catch((err) => console.log(err));
 };
 
+export const getCheckedOutReservations = (page, records, hotelId) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/checkedout-reservations/list/${page}/${records}/${hotelId}`,
+		{
+			method: "GET",
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
 export const getReservationSummary = (hotelId, date) => {
 	return fetch(
 		`${process.env.REACT_APP_API_URL}/reservations-summary/${hotelId}/${date}`,
@@ -677,6 +690,109 @@ export const getSubscriptionData = (userId, token, subscriptionId) => {
 			headers: {
 				Accept: "application/json",
 				Authorization: `Bearer ${token}`,
+			},
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
+export const createNewHouseKeepingTask = (hotelId, housekeeping) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/house-keeping/create/${hotelId}`,
+		{
+			method: "POST",
+			headers: {
+				Accept: "application/json",
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(housekeeping),
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => {
+			console.log(err);
+		});
+};
+
+export const getAllHouseKeepingTasks = (page, records, hotelId) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/house-keeping-list/${page}/${records}/${hotelId}`,
+		{
+			method: "GET",
+			headers: {
+				Accept: "application/json",
+			},
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
+export const getAllHouseKeepingTotalRecords = (hotelId) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/house-keeping-total-records/${hotelId}`,
+		{
+			method: "GET",
+			headers: {
+				Accept: "application/json",
+			},
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
+export const getHouseKeepingStaff = (hotelId) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/house-keeping-staff/${hotelId}`,
+		{
+			method: "GET",
+			headers: {
+				Accept: "application/json",
+			},
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
+export const updatingHouseKeepingTask = (taskId, task) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/house-keeping-update-document/${taskId}`,
+		{
+			method: "PUT",
+			headers: {
+				// content type?
+				"Content-Type": "application/json",
+				Accept: "application/json",
+			},
+			body: JSON.stringify(task),
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
+export const getEmployeeWorkLoad = (userId) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/house-keeping-employee/${userId}`,
+		{
+			method: "GET",
+			headers: {
+				Accept: "application/json",
 			},
 		}
 	)

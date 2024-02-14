@@ -77,6 +77,11 @@ const Signin = ({ history }) => {
 				return (window.location.href = "/hotel-management/dashboard");
 			} else if (user && user.role === 3000) {
 				return (window.location.href = "/reception-management/new-reservation");
+			} else if (user && user.role === 4000) {
+				return (window.location.href =
+					"/house-keeping-management/house-keeping");
+			} else if (user && user.role === 5000) {
+				return (window.location.href = "/house-keeping-employee/house-keeping");
 			} else {
 				return (window.location.href = "/");
 			}
@@ -104,6 +109,22 @@ const Signin = ({ history }) => {
 			isAuthenticated().user.role === 3000
 		) {
 			return (window.location.href = "/reception-management/new-reservation");
+		}
+
+		if (
+			isAuthenticated() &&
+			isAuthenticated().user &&
+			isAuthenticated().user.role === 4000
+		) {
+			return (window.location.href = "/house-keeping-management/house-keeping");
+		}
+
+		if (
+			isAuthenticated() &&
+			isAuthenticated().user &&
+			isAuthenticated().user.role === 5000
+		) {
+			return (window.location.href = "/house-keeping-employee/house-keeping");
 		}
 	};
 

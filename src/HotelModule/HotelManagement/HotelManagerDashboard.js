@@ -16,6 +16,7 @@ import GeneralOverview from "./GeneralOverview";
 import PasscodeModal from "./PasscodeModal";
 import { RoomStockReport } from "./RoomStockReport";
 import { Spin } from "antd";
+import WorldClocks from "../../ReceptionModule/WorldClocks";
 
 const HotelManagerDashboard = () => {
 	const history = useHistory();
@@ -171,6 +172,7 @@ const HotelManagerDashboard = () => {
 				</div>
 
 				<div className='otherContentWrapper'>
+					<WorldClocks />
 					<div
 						style={{
 							textAlign: chosenLanguage === "Arabic" ? "left" : "right",
@@ -195,7 +197,7 @@ const HotelManagerDashboard = () => {
 						className='mx-2'
 						style={{
 							position: "absolute",
-							top: 50,
+							top: 230,
 							right: chosenLanguage === "Arabic" ? "96%" : "",
 							padding: "2px",
 							color: "#8a8a8a",

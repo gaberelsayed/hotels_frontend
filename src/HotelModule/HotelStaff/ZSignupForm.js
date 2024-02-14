@@ -75,7 +75,10 @@ const ZSignupForm = ({
 								<select onChange={(e) => setRoleDescription(e.target.value)}>
 									<option value=''>Please Select</option>
 									<option value='reception'>Reception</option>
-									<option value='housekeeping'>House Keeping</option>
+									<option value='housekeepingmanager'>
+										House Keeping Manager
+									</option>
+									<option value='housekeeping'>House Keeping Staff</option>
 									<option value='hotelmanager'>Hotel Manager</option>
 								</select>
 							</div>
@@ -193,7 +196,10 @@ const ZSignupForm = ({
 								<select>
 									<option value=''>Please Select</option>
 									<option value='reception'>Reception</option>
-									<option value='housekeeping'>House Keeping</option>
+									<option value='housekeepingmanager'>
+										House Keeping Manager
+									</option>
+									<option value='housekeeping'>House Keeping Staff</option>
 									<option value='hotelmanager'>Hotel Manager</option>
 								</select>
 							</div>
