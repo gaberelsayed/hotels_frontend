@@ -27,6 +27,7 @@ const WorldClocks = () => {
 								)
 							}
 							renderNumbers={true}
+							size={100}
 						/>
 					</div>
 				</div>
@@ -42,6 +43,7 @@ const WorldClocks = () => {
 								)
 							}
 							renderNumbers={true}
+							size={100}
 						/>
 					</div>
 				</div>
@@ -55,6 +57,7 @@ const WorldClocks = () => {
 								)
 							}
 							renderNumbers={true}
+							size={100}
 						/>
 					</div>
 				</div>
@@ -71,10 +74,15 @@ const WorldClocksWrapper = styled.div`
 	h5 {
 		text-align: center;
 		font-weight: bold;
+		font-size: 1rem;
 	}
 
 	.clock-border-egypt {
 		text-align: center;
 		margin: auto;
+	}
+
+	.react-clock__mark__number {
+		font-size: 11px !important; /* Adjust the font size of the numbers */
 	}
 `;
