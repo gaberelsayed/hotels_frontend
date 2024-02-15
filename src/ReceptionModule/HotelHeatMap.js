@@ -77,11 +77,6 @@ const HotelHeatMap = ({
 		setSelectedRoomType(null); // Reset room type filter
 	};
 
-	console.log(
-		allReservations.map((room) => room.roomId),
-		"allResrvatiosn"
-	);
-
 	return (
 		<HotelOverviewWrapper fixIt={fixIt}>
 			<div className='canvas-grid'>

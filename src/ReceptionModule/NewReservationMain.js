@@ -147,9 +147,9 @@ const NewReservationMain = () => {
 							if (start_date && end_date) {
 								getHotelReservations(
 									data2[0]._id,
-									data.belongsToId,
-									moment(heatMapStartDate),
-									moment(heatMapEndDate)
+									user._id,
+									heatMapStartDate,
+									heatMapEndDate
 								).then((data3) => {
 									if (data3 && data3.error) {
 										console.log(data3.error);
@@ -595,45 +595,52 @@ const NewReservationMain = () => {
 									</>
 								) : (
 									<>
-										<ZReservationForm
-											customer_details={customer_details}
-											setCustomer_details={setCustomer_details}
-											start_date={start_date}
-											setStart_date={setStart_date}
-											end_date={end_date}
-											setEnd_date={setEnd_date}
-											disabledDate={disabledDate}
-											days_of_residence={days_of_residence}
-											setDays_of_residence={setDays_of_residence}
-											chosenLanguage={chosenLanguage}
-											hotelDetails={hotelDetails}
-											hotelRooms={hotelRooms}
-											values={values}
-											clickSubmit={clickSubmit}
-											pickedHotelRooms={pickedHotelRooms}
-											setPickedHotelRooms={setPickedHotelRooms}
-											payment_status={payment_status}
-											setPaymentStatus={setPaymentStatus}
-											total_amount={total_amount}
-											setTotal_Amount={setTotal_Amount}
-											setPickedRoomPricing={setPickedRoomPricing}
-											pickedRoomPricing={pickedRoomPricing}
-											allReservations={allReservations}
-											setBookingComment={setBookingComment}
-											booking_comment={booking_comment}
-											setBookingSource={setBookingSource}
-											booking_source={booking_source}
-											setConfirmationNumber={setConfirmationNumber}
-											confirmation_number={confirmation_number}
-											searchQuery={searchQuery}
-											setSearchQuery={setSearchQuery}
-											searchClicked={searchClicked}
-											setSearchClicked={setSearchClicked}
-											searchedReservation={searchedReservation}
-											pickedRoomsType={pickedRoomsType}
-											setPickedRoomsType={setPickedRoomsType}
-											finalTotalByRoom={calculateTotalAmountWithRooms}
-										/>
+										{allReservationsHeatMap &&
+										allReservationsHeatMap.length > 0 &&
+										start_date_Map &&
+										end_date_Map ? (
+											<ZReservationForm
+												customer_details={customer_details}
+												setCustomer_details={setCustomer_details}
+												start_date={start_date}
+												setStart_date={setStart_date}
+												end_date={end_date}
+												setEnd_date={setEnd_date}
+												disabledDate={disabledDate}
+												days_of_residence={days_of_residence}
+												setDays_of_residence={setDays_of_residence}
+												chosenLanguage={chosenLanguage}
+												hotelDetails={hotelDetails}
+												hotelRooms={hotelRooms}
+												values={values}
+												clickSubmit={clickSubmit}
+												pickedHotelRooms={pickedHotelRooms}
+												setPickedHotelRooms={setPickedHotelRooms}
+												payment_status={payment_status}
+												setPaymentStatus={setPaymentStatus}
+												total_amount={total_amount}
+												setTotal_Amount={setTotal_Amount}
+												setPickedRoomPricing={setPickedRoomPricing}
+												pickedRoomPricing={pickedRoomPricing}
+												allReservations={allReservationsHeatMap}
+												setBookingComment={setBookingComment}
+												booking_comment={booking_comment}
+												setBookingSource={setBookingSource}
+												booking_source={booking_source}
+												setConfirmationNumber={setConfirmationNumber}
+												confirmation_number={confirmation_number}
+												searchQuery={searchQuery}
+												setSearchQuery={setSearchQuery}
+												searchClicked={searchClicked}
+												setSearchClicked={setSearchClicked}
+												searchedReservation={searchedReservation}
+												pickedRoomsType={pickedRoomsType}
+												setPickedRoomsType={setPickedRoomsType}
+												finalTotalByRoom={calculateTotalAmountWithRooms}
+												start_date_Map={start_date_Map}
+												end_date_Map={end_date_Map}
+											/>
+										) : null}
 									</>
 								)}
 							</>

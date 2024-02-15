@@ -23,6 +23,8 @@ const HotelOverviewReservation = ({
 	allReservations,
 	chosenLanguage,
 	searchedReservation,
+	start_date_Map,
+	end_date_Map,
 }) => {
 	const [selectedRoomType, setSelectedRoomType] = useState(null);
 	const [isModalVisible, setIsModalVisible] = useState(false);
@@ -191,10 +193,10 @@ const HotelOverviewReservation = ({
 	};
 
 	const isRoomBooked = (roomId) => {
-		if (!start_date || !end_date) return false;
+		if (!start_date_Map || !end_date_Map) return false;
 
-		const startDate = moment(start_date);
-		const endDate = moment(end_date);
+		const startDate = moment(start_date_Map);
+		const endDate = moment(end_date_Map);
 
 		return allReservations.some((reservation) => {
 			const reservationStart = moment(reservation.checkin_date);

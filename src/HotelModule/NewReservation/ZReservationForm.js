@@ -46,6 +46,8 @@ const ZReservationForm = ({
 	setPickedRoomsType,
 	finalTotalByRoom,
 	isBoss,
+	start_date_Map,
+	end_date_Map,
 }) => {
 	// eslint-disable-next-line
 	const [loading, setLoading] = useState(false);
@@ -1139,6 +1141,8 @@ const ZReservationForm = ({
 								pickedRoomsType={pickedRoomsType}
 								setPickedRoomsType={setPickedRoomsType}
 								searchedReservation={searchedReservation}
+								start_date_Map={start_date_Map}
+								end_date_Map={end_date_Map}
 							/>
 						</>
 					) : null}
