@@ -6,6 +6,7 @@ import FilterComponent from "./FilterComponent";
 import { Modal, Pagination, Table } from "antd";
 import { getReservationSearchAllMatches } from "../apiAdmin";
 import ReservationDetail from "./ReservationDetail";
+import DownloadExcel from "./DownloadExcel";
 
 const PreReservationTable = ({
 	allPreReservations,
@@ -183,8 +184,8 @@ const PreReservationTable = ({
 			title: chosenLanguage === "Arabic" ? "رقم الغرفة" : "Room Number",
 			key: "roomDetails",
 			render: (record) => {
-				// First, check if 'roomDetails' is available and has entries
-				if (record.roomDetails && record.roomDetails.length > 0) {
+				// Check if 'record' and 'roomDetails' are available and have entries
+				if (record && record.roomDetails && record.roomDetails.length > 0) {
 					return record.roomDetails.map((room, index) => (
 						<div key={index}>
 							{room.room_number ? room.room_number : "No Room"}
@@ -193,7 +194,7 @@ const PreReservationTable = ({
 				}
 
 				// If 'roomDetails' is not available, check 'roomId'
-				else if (record.roomId && record.roomId.length > 0) {
+				else if (record && record.roomId && record.roomId.length > 0) {
 					return record.roomId.map((room, index) => (
 						<div key={index}>
 							{room.room_number ? room.room_number : "No Room"}
@@ -212,6 +213,162 @@ const PreReservationTable = ({
 			key: "total_amount",
 			render: (total_amount) =>
 				`${total_amount && total_amount.toLocaleString()} SAR`,
+		},
+		{
+			title: chosenLanguage === "Arabic" ? "تفاصيل" : "DETAILS...",
+			key: "details",
+			render: (text, record) => (
+				<button
+					style={{
+						color: "blue",
+						cursor: "pointer",
+						border: "none",
+						backgroundColor: "transparent",
+					}}
+					onClick={() => showDetailsModal(record)}
+				>
+					{chosenLanguage === "Arabic" ? "التفاصيل..." : "Details..."}
+				</button>
+			),
+		},
+	];
+
+	const columns2 = [
+		{
+			title: "#",
+			dataIndex: "index",
+			key: "index",
+			render: (text, record, index) =>
+				(currentPage - 1) * recordsPerPage + index + 1,
+		},
+		{
+			title: chosenLanguage === "Arabic" ? "اسم الزائر" : "Client Name",
+			dataIndex: "customer_details",
+			key: "name",
+			render: (customer_details) => customer_details.name,
+		},
+
+		{
+			title: chosenLanguage === "Arabic" ? "رقم التأكيد" : "Confirmation",
+			dataIndex: "confirmation_number",
+			key: "confirmation_number",
+		},
+		{
+			title: chosenLanguage === "Arabic" ? "مصدر الحجز" : "Source",
+			dataIndex: "booking_source",
+			key: "booking_source",
+		},
+		{
+			title: chosenLanguage === "Arabic" ? "تاريخ الحجز" : "Booked On",
+			dataIndex: "booked_at",
+			key: "booked_at",
+			render: (booked_at) => new Date(booked_at).toDateString(),
+		},
+		{
+			title: chosenLanguage === "Arabic" ? "تاريخ الوصول" : "Check In",
+			dataIndex: "checkin_date",
+			key: "checkin_date",
+			render: (checkin_date) => moment(checkin_date).format("YYYY-MM-DD"),
+		},
+		{
+			title: chosenLanguage === "Arabic" ? "تاريخ المغادرة" : "Check Out",
+			dataIndex: "checkout_date",
+			key: "checkout_date",
+			render: (checkout_date) => moment(checkout_date).format("YYYY-MM-DD"),
+		},
+
+		{
+			title: chosenLanguage === "Arabic" ? "حالة الحجز" : "Status",
+			dataIndex: "reservation_status",
+			key: "reservation_status",
+			render: (reservation_status) => {
+				let style = {};
+				switch (reservation_status.toLowerCase()) {
+					case "cancelled_by_guest":
+					case "cancelled by guest":
+					case "canceled":
+					case "cancelled":
+						style = {
+							background: "red",
+							color: "white",
+							padding: "4px",
+							textAlign: "center",
+						};
+						break;
+					case "inhouse":
+						style = {
+							background: "#FFFACD",
+							color: "black",
+							padding: "4px",
+							textAlign: "center",
+						}; // Light yellow background
+						break;
+					case "closed":
+					case "checked_out":
+					case "early_checked_out":
+						style = {
+							background: "#90EE90",
+							color: "green",
+							padding: "4px",
+							textAlign: "center",
+						}; // Light green background
+						break;
+					case "confirmed":
+						style = {
+							background: "",
+							color: "black",
+							padding: "4px",
+							textAlign: "center",
+						};
+						break;
+					default:
+						style = { padding: "4px", textAlign: "center" };
+				}
+				return <div style={style}>{reservation_status}</div>;
+			},
+		},
+		{
+			title: chosenLanguage === "Arabic" ? "أنواع الغرف" : "Room Types",
+			dataIndex: "pickedRoomsType",
+			key: "pickedRoomsType",
+			render: (pickedRoomsType) =>
+				pickedRoomsType.map((room, index) => (
+					<div key={index}>{`${room.room_type}`}</div>
+				)),
+		},
+		{
+			title: chosenLanguage === "Arabic" ? "رقم الغرفة" : "Room Number",
+			key: "roomDetails",
+			render: (record) => {
+				// Check if 'record' and 'roomDetails' are available and have entries
+				if (record && record.roomDetails && record.roomDetails.length > 0) {
+					return record.roomDetails.map((room, index) => (
+						<div key={index}>
+							{room.room_number ? room.room_number : "No Room"}
+						</div>
+					));
+				}
+
+				// If 'roomDetails' is not available, check 'roomId'
+				else if (record && record.roomId && record.roomId.length > 0) {
+					return record.roomId.map((room, index) => (
+						<div key={index}>
+							{room.room_number ? room.room_number : "No Room"}
+						</div>
+					));
+				}
+
+				// If neither is available, return "No Room"
+				return "No Room";
+			},
+		},
+
+		{
+			title: chosenLanguage === "Arabic" ? "المبلغ الإجمالي" : "Total Amount",
+			dataIndex: "total_amount",
+			key: "total_amount",
+			render: (total_amount) =>
+				`${total_amount && total_amount.toLocaleString()}`,
 		},
 		{
 			title: chosenLanguage === "Arabic" ? "تفاصيل" : "DETAILS...",
@@ -279,6 +436,13 @@ const PreReservationTable = ({
 						</button>
 					</form>
 				</div>
+				<DownloadExcel
+					data={allPreReservations}
+					columns={columns2}
+					title={"Reservations Report"}
+					currentPage={currentPage}
+					recordsPerPage={recordsPerPage}
+				/>
 				<div
 					className='my-4'
 					onClick={() => window.scrollTo({ top: 20, behavior: "smooth" })}
