@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import styled from "styled-components";
 import { useCartContext } from "../cart_context";
 import { isAuthenticated } from "../auth";
@@ -14,6 +14,10 @@ import {
 } from "../HotelModule/apiAdmin";
 import { toast } from "react-toastify";
 import { EditReservationMain } from "./EditWholeReservation/EditReservationMain";
+import ReceiptPDF from "../HotelModule/NewReservation/ReceiptPDF"; // Adjust the path as needed
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import "jspdf-autotable";
 
 const Wrapper = styled.div`
 	min-height: 750px;
@@ -79,10 +83,13 @@ const ContentSection = styled.div`
 // ... other styled components
 
 const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
+	const pdfRef = useRef(null);
+
 	// eslint-disable-next-line
 	const [loading, setLoading] = useState(false);
 	const [isModalVisible, setIsModalVisible] = useState(false);
 	const [isModalVisible2, setIsModalVisible2] = useState(false);
+	const [isModalVisible3, setIsModalVisible3] = useState(false);
 	const [linkModalVisible, setLinkModalVisible] = useState(false);
 	const [chosenRooms, setChosenRooms] = useState([]);
 
@@ -259,6 +266,42 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 		// eslint-disable-next-line
 	}, []);
 
+	const downloadPDF = () => {
+		html2canvas(pdfRef.current, { scale: 1 }).then((canvas) => {
+			const imgData = canvas.toDataURL("image/png");
+
+			// Let's create a PDF and add our image into it
+			const pdf = new jsPDF({
+				orientation: "p",
+				unit: "pt",
+				format: "a4",
+			});
+
+			const pdfWidth = pdf.internal.pageSize.getWidth();
+			const pdfHeight = pdf.internal.pageSize.getHeight();
+
+			// Calculate the number of pages.
+			const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+			let heightLeft = imgHeight;
+
+			let position = 0;
+
+			// Add image to the first page
+			pdf.addImage(imgData, "PNG", 0, position, pdfWidth, imgHeight);
+			heightLeft -= pdfHeight;
+
+			// Add new pages if the content overflows
+			while (heightLeft >= 0) {
+				position = heightLeft - imgHeight;
+				pdf.addPage();
+				pdf.addImage(imgData, "PNG", 0, position, pdfWidth, imgHeight);
+				heightLeft -= pdfHeight;
+			}
+
+			pdf.save("receipt.pdf");
+		});
+	};
+
 	return (
 		<Wrapper
 			dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}
@@ -391,6 +434,44 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 							<EditOutlined />
 							{chosenLanguage === "Arabic" ? "تعديل الحجز" : "Edit Reservation"}
 						</h5>
+
+						<Modal
+							title='Receipt Download'
+							open={isModalVisible3}
+							onCancel={() => setIsModalVisible3(false)}
+							onOk={() => setIsModalVisible3(false)}
+							footer={null}
+							width='84.5%' // Set the width to 80%
+							style={{
+								// If Arabic, align to the left, else align to the right
+								position: "absolute",
+								left: chosenLanguage === "Arabic" ? "1%" : "auto",
+								right: chosenLanguage === "Arabic" ? "auto" : "5%",
+								top: "1%",
+							}}
+						>
+							<div className='text-center my-3 '>
+								<button
+									className='btn btn-info w-50'
+									style={{ fontWeight: "bold", fontSize: "1.1rem" }}
+									onClick={downloadPDF}
+								>
+									Print To PDF
+								</button>
+							</div>
+
+							{reservation && (
+								<div dir='ltr'>
+									<ReceiptPDF
+										ref={pdfRef}
+										reservation={reservation}
+										hotelDetails={hotelDetails}
+										calculateReservationPeriod={calculateReservationPeriod}
+										getTotalAmountPerDay={getTotalAmountPerDay}
+									/>
+								</div>
+							)}
+						</Modal>
 						<Header>
 							<Section>
 								{/* Left side of the header */}
@@ -410,7 +491,12 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 									</div>
 									{chosenLanguage === "Arabic" ? (
 										<div className='col-md-6 mx-auto text-center'>
-											<button className='my-2'>فاتورة رسمية</button>
+											<button
+												className='my-2'
+												onClick={() => setIsModalVisible3(true)}
+											>
+												فاتورة رسمية
+											</button>
 											<button className='mx-2'>كشف حساب</button>
 											{linkGenerate ? (
 												<>

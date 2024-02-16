@@ -34,6 +34,7 @@ import HouseKeepingManagerRoute from "./auth/HouseKeepingManagerRoute";
 import HouseKeepingMainManagement from "./HouseKeepingManager/HouseKeepingMain";
 import HouseKeepingEmployeeMain from "./HouseKeepingEmployee/HouseKeepingEmployeeMain";
 import HouseKeepingEmployeeRoute from "./auth/HouseKeepingEmployeeRoute";
+import ReceiptPDF from "./HotelModule/NewReservation/ReceiptPDF";
 
 function App() {
 	const { languageToggle, chosenLanguage } = useCartContext();
@@ -126,6 +127,7 @@ function App() {
 						exact
 						component={HouseKeepingMain}
 					/>
+					<HotelRoute path='/receipt' exact component={ReceiptPDF} />
 
 					<HouseKeepingManagerRoute
 						path='/house-keeping-management/house-keeping'
