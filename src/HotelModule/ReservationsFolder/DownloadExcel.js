@@ -37,6 +37,11 @@ const DownloadExcel = ({ data, columns, currentPage, recordsPerPage }) => {
 					cellValue = moment(cellValue).format("YYYY-MM-DD");
 				}
 
+				// Ensure "Total Amount" is formatted as a number
+				if (col.dataIndex === "total_amount") {
+					cellValue = parseFloat(cellValue);
+				}
+
 				formattedRow[col.title] = cellValue;
 			});
 
