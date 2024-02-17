@@ -365,10 +365,18 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 							<Select.Option value='cancelled'>Cancelled</Select.Option>
 							<Select.Option value='no_show'>No Show</Select.Option>
 							<Select.Option value='confirmed'>Confirmed</Select.Option>
-							<Select.Option value='checked_out'>Checked Out</Select.Option>
-							<Select.Option value='early_checked_out'>
-								Early Check Out
-							</Select.Option>
+							{reservation &&
+							reservation.roomId &&
+							reservation.roomId.length > 0 ? (
+								<Select.Option value='checked_out'>Checked Out</Select.Option>
+							) : null}
+							{reservation &&
+							reservation.roomId &&
+							reservation.roomId.length > 0 ? (
+								<Select.Option value='early_checked_out'>
+									Early Check Out
+								</Select.Option>
+							) : null}
 						</Select>
 					</Modal>
 
