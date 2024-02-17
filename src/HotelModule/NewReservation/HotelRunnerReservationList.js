@@ -5,6 +5,7 @@ import {
 	bookingData,
 	expediaData,
 	getReservationSummary,
+	janatData,
 	reservationsList,
 	reservationsTotalRecords,
 } from "../apiAdmin";
@@ -190,6 +191,15 @@ const HotelRunnerReservationList = ({
 								{chosenLanguage === "Arabic"
 									? "رفع بيانات Airbnb"
 									: "Airbnb Upload"}
+							</button>
+							<button
+								className='btn btn-primary mx-2'
+								style={{ fontWeight: "bold" }}
+								onClick={() => handleFileUpload(janatData)}
+							>
+								{chosenLanguage === "Arabic"
+									? "رفع بيانات Janat"
+									: "Janat Upload"}
 							</button>
 						</div>
 					) : null}

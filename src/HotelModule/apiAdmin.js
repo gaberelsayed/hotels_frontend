@@ -460,6 +460,21 @@ export const bookingData = (accountId, belongsTo, file) => {
 		.catch((err) => console.log(err));
 };
 
+export const janatData = (accountId, belongsTo, file) => {
+	let formData = new FormData();
+	formData.append("file", file);
+
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/reservations/janat-data-dump/${accountId}/${belongsTo}`,
+		{
+			method: "POST",
+			body: formData, // send the file as FormData
+		}
+	)
+		.then((response) => response.json())
+		.catch((err) => console.log(err));
+};
+
 export const cloudinaryUpload1 = (userId, token, image) => {
 	return fetch(
 		`${process.env.REACT_APP_API_URL}/admin/uploadimages/${userId}`,

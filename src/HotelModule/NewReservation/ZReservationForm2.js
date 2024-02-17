@@ -3,7 +3,13 @@ import styled from "styled-components";
 import { DatePicker, Spin } from "antd";
 import moment from "moment";
 import { Modal, InputNumber } from "antd";
-import { agodaData, airbnbData, bookingData, expediaData } from "../apiAdmin";
+import {
+	agodaData,
+	airbnbData,
+	bookingData,
+	expediaData,
+	janatData,
+} from "../apiAdmin";
 import { toast } from "react-toastify";
 import { isAuthenticated } from "../../auth";
 
@@ -351,6 +357,15 @@ const ZReservationForm2 = ({
 								{chosenLanguage === "Arabic"
 									? "رفع بيانات Airbnb"
 									: "Airbnb Upload"}
+							</button>
+							<button
+								className='btn btn-primary mx-2'
+								style={{ fontWeight: "bold" }}
+								onClick={() => handleFileUpload(janatData)}
+							>
+								{chosenLanguage === "Arabic"
+									? "رفع بيانات Janat"
+									: "Janat Upload"}
 							</button>
 						</div>
 					) : null}
