@@ -24,17 +24,18 @@ import SignupNew from "./HotelModule/HotelStaff/SignupNew";
 import ReservationDetail from "./HotelModule/ReservationsFolder/ReservationDetail";
 import ClientPayMain from "./HotelModule/ClientPay/ClientPayMain";
 import PaymentMain from "./HotelModule/Payment/PaymentMain";
+import ReceiptPDF from "./HotelModule/NewReservation/ReceiptPDF";
+import HouseKeepingMain from "./HotelModule/HouseKeeping/HouseKeepingMain";
+import HotelReportsMain from "./HotelModule/HotelReports/HotelReportsMain";
 
 //Reception Routes
 import ReceptionRoute from "./auth/ReceptionRoute";
 import NewReservationMainReception from "./ReceptionModule/NewReservationMain";
 import JanatWebsiteMain from "./AdminModule/JanatWebsite/JanatWebsiteMain";
-import HouseKeepingMain from "./HotelModule/HouseKeeping/HouseKeepingMain";
 import HouseKeepingManagerRoute from "./auth/HouseKeepingManagerRoute";
 import HouseKeepingMainManagement from "./HouseKeepingManager/HouseKeepingMain";
 import HouseKeepingEmployeeMain from "./HouseKeepingEmployee/HouseKeepingEmployeeMain";
 import HouseKeepingEmployeeRoute from "./auth/HouseKeepingEmployeeRoute";
-import ReceiptPDF from "./HotelModule/NewReservation/ReceiptPDF";
 
 function App() {
 	const { languageToggle, chosenLanguage } = useCartContext();
@@ -128,6 +129,11 @@ function App() {
 						component={HouseKeepingMain}
 					/>
 					<HotelRoute path='/receipt' exact component={ReceiptPDF} />
+					<HotelRoute
+						path='/hotel-management/hotel-reports'
+						exact
+						component={HotelReportsMain}
+					/>
 
 					<HouseKeepingManagerRoute
 						path='/house-keeping-management/house-keeping'

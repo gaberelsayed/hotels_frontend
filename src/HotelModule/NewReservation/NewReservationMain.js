@@ -117,7 +117,6 @@ const NewReservationMain = () => {
 		return [year, month, day].join("-");
 	};
 
-	//4264981432
 	const gettingHotelData = () => {
 		hotelAccount(user._id, token, user._id).then((data) => {
 			if (data && data.error) {

@@ -74,7 +74,11 @@ const items = [
 		"sub3",
 		<ShopOutlined />
 	),
-	getItem(<Link to='#'>تقارير الفندق</Link>, "sub4", <AreaChartOutlined />),
+	getItem(
+		<Link to='/hotel-management/hotel-reports'>تقارير الفندق</Link>,
+		"sub4",
+		<AreaChartOutlined />
+	),
 
 	getItem(
 		<Link to='/hotel-management/settings'>إعدادات الفندق</Link>,
@@ -205,7 +209,7 @@ const AdminNavbarArabic = ({
 						  ? "sub2"
 						  : fromPage === "NewReservation"
 						    ? "sub3"
-						    : fromPage === "AddCategories"
+						    : fromPage === "HotelReports"
 						      ? "sub4"
 						      : fromPage === "StoreBilling"
 						        ? "sub5"

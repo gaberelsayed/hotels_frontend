@@ -50,7 +50,6 @@ const HotelRunnerReservationList = ({
 	const getAllPreReservation = () => {
 		setLoading(true); // Set loading to true when fetching data
 		const dateToUse = selectedDates ? selectedDates : formatDate(new Date());
-
 		reservationsList(
 			currentPage,
 			recordsPerPage,
@@ -67,7 +66,6 @@ const HotelRunnerReservationList = ({
 						if (data2 && data2.error) {
 							console.log("Error summary");
 						} else {
-							console.log(data2, "data2");
 							setReservationObject(data2);
 						}
 					});

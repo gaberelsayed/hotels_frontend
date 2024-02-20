@@ -223,6 +223,25 @@ export const reservationsList = (page, records, filters, hotelId, date) => {
 		.catch((err) => console.log(err));
 };
 
+export const checkedoutReservationsList = (
+	page,
+	records,
+	startDate,
+	endDate,
+	hotelId
+) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/reservations-checkedout/${page}/${records}/${hotelId}/${startDate}/${endDate}`,
+		{
+			method: "GET",
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
 export const getCheckedOutReservations = (page, records, hotelId) => {
 	return fetch(
 		`${process.env.REACT_APP_API_URL}/checkedout-reservations/list/${page}/${records}/${hotelId}`,
@@ -268,9 +287,13 @@ export const reservationsTotalRecords = (
 		.catch((err) => console.log(err));
 };
 
-export const prerservationAuto = (page, hotelId, belongsTo) => {
+export const checkedoutReservationsTotalRecords = (
+	startDate,
+	endDate,
+	hotelId
+) => {
 	return fetch(
-		`${process.env.REACT_APP_API_URL}/reservations/save/hotel-runner/${page}/${hotelId}/${belongsTo}`,
+		`${process.env.REACT_APP_API_URL}/reservations-summary-checkedout/${hotelId}/${startDate}/${endDate}`,
 		{
 			method: "GET",
 		}
@@ -307,32 +330,6 @@ export const singlePreReservationById = (reservationId) => {
 		.catch((err) => console.log(err));
 };
 
-export const singlePreReservationHotelRunner = (reservationNumber) => {
-	return fetch(
-		`${process.env.REACT_APP_API_URL}/reservations/single-reservation/hotel-runner/${reservationNumber}`,
-		{
-			method: "GET",
-		}
-	)
-		.then((response) => {
-			return response.json();
-		})
-		.catch((err) => console.log(err));
-};
-
-export const getPaginatedListHotelRunner = (page, per_page) => {
-	return fetch(
-		`${process.env.REACT_APP_API_URL}/reservations/list/paginated/${page}/${per_page}`,
-		{
-			method: "GET",
-		}
-	)
-		.then((response) => {
-			return response.json();
-		})
-		.catch((err) => console.log(err));
-};
-
 export const updateSingleReservation = (reservationId, reservation) => {
 	return fetch(
 		`${process.env.REACT_APP_API_URL}/reservation-update/${reservationId}`,
@@ -347,23 +344,6 @@ export const updateSingleReservation = (reservationId, reservation) => {
 			body: JSON.stringify(reservation),
 		}
 	)
-		.then((response) => {
-			return response.json();
-		})
-		.catch((err) => console.log(err));
-};
-
-export const updateRoomInventoryInHotelRunner = (room) => {
-	return fetch(`${process.env.REACT_APP_API_URL}/room-inventory-update`, {
-		method: "PUT",
-		headers: {
-			// content type?
-			"Content-Type": "application/json",
-			Accept: "application/json",
-			// Authorization: `Bearer ${token}`,
-		},
-		body: JSON.stringify(room),
-	})
 		.then((response) => {
 			return response.json();
 		})
