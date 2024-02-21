@@ -45,6 +45,7 @@ export const EditReservationMain = ({
 		return [year, month, day].join("-");
 	};
 
+	// eslint-disable-next-line
 	const disabledDate = (current) => {
 		// Can not select days before today and today
 		return current < moment();
@@ -567,7 +568,7 @@ export const EditReservationMain = ({
 								<br />
 								<DatePicker
 									className='inputFields'
-									disabledDate={disabledDate}
+									// disabledDate={disabledDate}
 									inputReadOnly
 									size='small'
 									showToday={true}
