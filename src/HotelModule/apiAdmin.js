@@ -263,10 +263,13 @@ export const generalReportReservationsList = (
 	endDate,
 	hotelId,
 	channel,
-	dateBy
+	dateBy,
+	noshow,
+	cancel,
+	inhouse
 ) => {
 	return fetch(
-		`${process.env.REACT_APP_API_URL}/reservations-general-report/${page}/${records}/${hotelId}/${channel}/${startDate}/${endDate}/${dateBy}`,
+		`${process.env.REACT_APP_API_URL}/reservations-general-report/${page}/${records}/${hotelId}/${channel}/${startDate}/${endDate}/${dateBy}/${noshow}/${cancel}/${inhouse}`,
 		{
 			method: "GET",
 		}
@@ -282,10 +285,13 @@ export const getGeneralReportReservations = (
 	endDate,
 	hotelId,
 	channel,
-	dateBy
+	dateBy,
+	noshow,
+	cancel,
+	inhouse
 ) => {
 	return fetch(
-		`${process.env.REACT_APP_API_URL}/general-report-reservations/list/${hotelId}/${channel}/${startDate}/${endDate}/${dateBy}`,
+		`${process.env.REACT_APP_API_URL}/general-report-reservations/list/${hotelId}/${channel}/${startDate}/${endDate}/${dateBy}/${noshow}/${cancel}/${inhouse}`,
 		{
 			method: "GET",
 		}

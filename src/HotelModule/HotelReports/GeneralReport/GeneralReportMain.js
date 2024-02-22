@@ -31,6 +31,10 @@ const GeneralReportMain = ({ hotelDetails, chosenLanguage }) => {
 		moment().subtract(7, "days"),
 		moment(),
 	]);
+	const [cancelFilter, setCancelFilter] = useState(0);
+	const [inhouseFilter, setInhouseFilter] = useState(0);
+	const [noshowFilter, setNoshowFilter] = useState(0);
+	const [selectedFilter, setSelectedFilter] = useState("selectAll");
 
 	const { RangePicker } = DatePicker;
 
@@ -47,7 +51,10 @@ const GeneralReportMain = ({ hotelDetails, chosenLanguage }) => {
 			formattedEndDate,
 			hotelDetails._id, // Replace with your actual hotelId
 			channel,
-			dateBy
+			dateBy,
+			noshowFilter,
+			cancelFilter,
+			inhouseFilter
 		).then((data) => {
 			if (data.error) {
 				console.log(data.error);
@@ -59,7 +66,10 @@ const GeneralReportMain = ({ hotelDetails, chosenLanguage }) => {
 					formattedEndDate,
 					hotelDetails._id,
 					selectedChannel,
-					dateBy
+					dateBy,
+					noshowFilter,
+					cancelFilter,
+					inhouseFilter
 				).then((data4) => {
 					if (data4 && data4.error) {
 						console.log(data4.error, "data4.error");
@@ -215,16 +225,8 @@ const GeneralReportMain = ({ hotelDetails, chosenLanguage }) => {
 
 		{
 			title: chosenLanguage === "Arabic" ? "عدد الغرف" : "Room Count",
-			dataIndex: "pickedRoomsType",
+			dataIndex: "roomCount",
 			key: "roomCount",
-			render: (pickedRoomsType) => {
-				// Calculate the total count of rooms
-				const totalCount = pickedRoomsType.reduce((total, room) => {
-					return total + room.count;
-				}, 0);
-
-				return totalCount;
-			},
 		},
 
 		{
@@ -262,6 +264,45 @@ const GeneralReportMain = ({ hotelDetails, chosenLanguage }) => {
 
 	const handleChannelSelection = (channel) => {
 		setSelectedChannel(channel === "All" ? undefined : channel);
+	};
+
+	const handleFilterSelection = (filterType) => {
+		setSelectedFilter(filterType);
+		if (filterType === "excludeCancelNoShow") {
+			setCancelFilter(1);
+			setNoshowFilter(1);
+			setInhouseFilter(0);
+		} else if (filterType === "showInhouse") {
+			setCancelFilter(0);
+			setNoshowFilter(0);
+			setInhouseFilter(1);
+		} else if (filterType === "selectAll") {
+			setCancelFilter(0);
+			setNoshowFilter(0);
+			setInhouseFilter(0);
+		} else if (filterType === "showCancelNoShow") {
+			setCancelFilter(2);
+			setNoshowFilter(2);
+		}
+	};
+
+	const generateTableTitle = () => {
+		let title = "General Report | ";
+		title += `Date Range: ${dateRange[0].format(
+			"YYYY-MM-DD"
+		)} to ${dateRange[1].format("YYYY-MM-DD")} | `;
+		title += `Channel: ${selectedChannel || "All"} | `;
+		title += `Date By: ${dateBy.charAt(0).toUpperCase() + dateBy.slice(1)} | `;
+
+		if (selectedFilter === "excludeCancelNoShow") {
+			title += "Excluding Cancel & No Show";
+		} else if (selectedFilter === "showInhouse") {
+			title += "Showing Inhouse Only";
+		} else {
+			title += "Including All Reservations";
+		}
+
+		return title;
 	};
 
 	return (
@@ -303,6 +344,63 @@ const GeneralReportMain = ({ hotelDetails, chosenLanguage }) => {
 						</Button>
 					))}
 				</div>
+				<div className='filter-buttons mt-2'>
+					<Button
+						type={selectedFilter === "selectAll" ? "primary" : "default"}
+						style={{
+							backgroundColor:
+								selectedFilter === "selectAll" ? "#500000" : undefined,
+							borderColor:
+								selectedFilter === "selectAll" ? "#500000" : undefined,
+						}}
+						onClick={() => handleFilterSelection("selectAll")}
+					>
+						All
+					</Button>
+					<Button
+						type={
+							selectedFilter === "excludeCancelNoShow" ? "primary" : "default"
+						}
+						style={{
+							backgroundColor:
+								selectedFilter === "excludeCancelNoShow"
+									? "#500000"
+									: undefined,
+							borderColor:
+								selectedFilter === "excludeCancelNoShow"
+									? "#500000"
+									: undefined,
+						}}
+						onClick={() => handleFilterSelection("excludeCancelNoShow")}
+					>
+						Exclude Cancel & No Show
+					</Button>
+
+					<Button
+						type={selectedFilter === "showCancelNoShow" ? "primary" : "default"}
+						style={{
+							backgroundColor:
+								selectedFilter === "showCancelNoShow" ? "#500000" : undefined,
+							borderColor:
+								selectedFilter === "showCancelNoShow" ? "#500000" : undefined,
+						}}
+						onClick={() => handleFilterSelection("showCancelNoShow")}
+					>
+						Show Cancel & No Show
+					</Button>
+					<Button
+						type={selectedFilter === "showInhouse" ? "primary" : "default"}
+						style={{
+							backgroundColor:
+								selectedFilter === "showInhouse" ? "#500000" : undefined,
+							borderColor:
+								selectedFilter === "showInhouse" ? "#500000" : undefined,
+						}}
+						onClick={() => handleFilterSelection("showInhouse")}
+					>
+						Show Inhouse
+					</Button>
+				</div>
 				<Button onClick={applyFilter}>Apply Now</Button>
 			</div>
 
@@ -316,6 +414,18 @@ const GeneralReportMain = ({ hotelDetails, chosenLanguage }) => {
 				/>
 			</div>
 			<Table
+				title={() => (
+					<div
+						className='text-center'
+						style={{
+							fontWeight: "bold",
+							fontSize: "1.1rem",
+							textDecoration: "underline",
+						}}
+					>
+						{generateTableTitle()}
+					</div>
+				)}
 				columns={columns}
 				dataSource={allReservations}
 				rowKey='id'
@@ -347,6 +457,14 @@ const GeneralReportMainWrapper = styled.div`
 	}
 
 	.channel-buttons {
+		margin-bottom: 20px;
+
+		button {
+			margin-right: 10px;
+		}
+	}
+
+	.filter-buttons {
 		margin-bottom: 20px;
 
 		button {
