@@ -228,10 +228,11 @@ export const checkedoutReservationsList = (
 	records,
 	startDate,
 	endDate,
-	hotelId
+	hotelId,
+	channel
 ) => {
 	return fetch(
-		`${process.env.REACT_APP_API_URL}/reservations-checkedout/${page}/${records}/${hotelId}/${startDate}/${endDate}`,
+		`${process.env.REACT_APP_API_URL}/reservations-checkedout/${page}/${records}/${hotelId}/${channel}/${startDate}/${endDate}`,
 		{
 			method: "GET",
 		}
@@ -290,10 +291,11 @@ export const reservationsTotalRecords = (
 export const checkedoutReservationsTotalRecords = (
 	startDate,
 	endDate,
-	hotelId
+	hotelId,
+	channel
 ) => {
 	return fetch(
-		`${process.env.REACT_APP_API_URL}/reservations-summary-checkedout/${hotelId}/${startDate}/${endDate}`,
+		`${process.env.REACT_APP_API_URL}/reservations-summary-checkedout/${hotelId}/${channel}/${startDate}/${endDate}`,
 		{
 			method: "GET",
 		}

@@ -29,7 +29,7 @@ const Header = styled.div`
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	height: 120px;
+	height: 170px;
 	background-color: #f2f2f2;
 	padding: 0 16px;
 	h4,
@@ -344,7 +344,7 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 					<Modal
 						title={
 							chosenLanguage === "Arabic"
-								? "تعدين الحجز"
+								? "تعديل الحجز"
 								: "Update Reservation Status"
 						}
 						open={isModalVisible}
@@ -365,6 +365,7 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 							<Select.Option value='cancelled'>Cancelled</Select.Option>
 							<Select.Option value='no_show'>No Show</Select.Option>
 							<Select.Option value='confirmed'>Confirmed</Select.Option>
+							{/* <Select.Option value='inhouse'>InHouse</Select.Option> */}
 							{reservation &&
 							reservation.roomId &&
 							reservation.roomId.length > 0 ? (
@@ -434,6 +435,7 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 								fontWeight: "bold",
 								textDecoration: "underline",
 								cursor: "pointer",
+								color: "darkgoldenrod",
 							}}
 							onClick={() => {
 								setIsModalVisible2(true);
@@ -480,32 +482,49 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 								</div>
 							)}
 						</Modal>
+
 						<Header>
 							<Section>
 								{/* Left side of the header */}
 								<div className='row'>
-									<div className='col-md-6'>
-										<div>
-											{chosenLanguage === "Arabic"
-												? "المبلغ الإجمالي"
-												: "Total Amount"}
+									<div className='col-md-6 my-auto'>
+										<div className='col-md-6 my-auto'>
+											<div>
+												{chosenLanguage === "Arabic"
+													? "المبلغ الإجمالي"
+													: "Total Amount"}
+											</div>
+											<h4 className='mx-2'>
+												{reservation
+													? reservation.total_amount.toLocaleString()
+													: 0}{" "}
+												{chosenLanguage === "Arabic" ? "ريال" : "SAR"}
+											</h4>
 										</div>
-										<h4 className='mx-2'>
-											{reservation
-												? reservation.total_amount.toLocaleString()
-												: 0}{" "}
-											{chosenLanguage === "Arabic" ? "ريال" : "SAR"}
-										</h4>
+										<div className='col-md-12'>
+											<h3 style={{ fontSize: "1.5rem", color: "black" }}>
+												Confirmation #:{" "}
+												{reservation &&
+													reservation.customer_details &&
+													reservation.confirmation_number}
+											</h3>
+										</div>
 									</div>
+
 									{chosenLanguage === "Arabic" ? (
-										<div className='col-md-6 mx-auto text-center'>
+										<div className='col-md-5 text-center my-auto'>
 											<button
 												className='my-2'
 												onClick={() => setIsModalVisible3(true)}
 											>
 												فاتورة رسمية
 											</button>
-											<button className='mx-2'>كشف حساب</button>
+											<button
+												className='mx-2 my-2'
+												onClick={() => setIsModalVisible3(true)}
+											>
+												كشف حساب
+											</button>
 											{linkGenerate ? (
 												<>
 													<button
@@ -568,9 +587,19 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 											)}
 										</div>
 									) : (
-										<div className='col-md-6 mx-auto text-center'>
-											<button className='my-2'>Invoice</button>
-											<button className='mx-2'>Account Statement</button>
+										<div className='col-md-4 mx-auto text-center'>
+											<button
+												className='my-2'
+												onClick={() => setIsModalVisible3(true)}
+											>
+												Invoice
+											</button>
+											<button
+												className='mx-2'
+												onClick={() => setIsModalVisible3(true)}
+											>
+												Account Statement
+											</button>
 											{linkGenerate ? (
 												<>
 													<button
@@ -633,13 +662,66 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 											)}
 										</div>
 									)}
+
+									<div className='col-md-8'></div>
+									<div
+										className='col-md-3 mx-auto text-center'
+										style={{
+											// border: "1px solid black",
+											textAlign: chosenLanguage === "Arabic" ? "center" : "",
+											fontSize: "1.1rem",
+											fontWeight: "bold",
+										}}
+									>
+										{chosenLanguage === "Arabic"
+											? "حالة الحجز"
+											: "Reservation Status"}
+										<EditOutlined
+											onClick={() => setIsModalVisible(true)}
+											style={{
+												marginLeft: "5px",
+												marginRight: "5px",
+												cursor: "pointer",
+											}}
+										/>
+										<div
+											className=''
+											style={{
+												background:
+													reservation &&
+													reservation.reservation_status.includes("cancelled")
+														? "red"
+														: reservation.reservation_status.includes(
+																	"checked_out"
+														    )
+														  ? "darkgreen"
+														  : reservation.reservation_status === "inhouse"
+														    ? "#c4d3e2"
+														    : "yellow",
+												color:
+													reservation &&
+													reservation.reservation_status.includes("cancelled")
+														? "white"
+														: reservation.reservation_status.includes(
+																	"checked_out"
+														    )
+														  ? "white"
+														  : "black",
+												textAlign: "center",
+												textTransform: "uppercase",
+											}}
+										>
+											{reservation && reservation.reservation_status}
+										</div>
+									</div>
 								</div>
 							</Section>
+
 							<Section>
 								{/* Right side of the header */}
 								<div className='row'>
-									<div className='col-md-9'>
-										<h3>
+									<div className='col-md-12'>
+										<h3 style={{ fontSize: "2.5rem" }}>
 											{reservation &&
 												reservation.customer_details &&
 												reservation.customer_details.name}
@@ -667,23 +749,6 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 											<button className='col-md-5'>SMS</button>
 										</div>
 									</div>
-
-									<div
-										className={
-											reservation && reservation.confirmation_number.length <= 8
-												? "col-md-3"
-												: "col-md-8 mt-1"
-										}
-									>
-										<div style={{ fontSize: "11px", fontWeight: "bold" }}>
-											{chosenLanguage === "Arabic"
-												? "رقم التأكيد"
-												: "Confirmation"}
-										</div>
-										<div className='mt-2 ml-2' style={{ fontWeight: "bold" }}>
-											{reservation && reservation.confirmation_number}
-										</div>
-									</div>
 								</div>
 							</Section>
 						</Header>
@@ -692,140 +757,95 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 							<ContentSection>
 								<div
 									className='row'
-									style={{ maxHeight: "350px", overflow: "auto" }}
+									style={{ fontSize: "17px", fontWeight: "bold" }}
 								>
-									{reservation &&
-										reservation.pickedRoomsType.map((room, index) => (
-											<React.Fragment key={index}>
-												{/* You can add a date here if available */}
-												<div className='col-md-4 mt-2'>{/* Date */}</div>
-												<div className='col-md-4 mt-2'>{room.room_type}</div>
-												<div className='col-md-4 mt-2'>
-													{room.chosenPrice.toLocaleString() * room.count}{" "}
-													{chosenLanguage === "Arabic" ? "ريال" : "SAR"}
-												</div>
-											</React.Fragment>
-										))}
-									<div className='col-md-4 mt-2'></div>
-									<div className='col-md-4 mt-2'></div>
-									<div className='col-md-4 mt-2 text-center pb-3'>
-										<div style={{ fontWeight: "bold", fontSize: "13px" }}>
-											{chosenLanguage === "Arabic"
-												? "المبلغ الإجمالي"
-												: "Total Amount"}
-										</div>
-										<div style={{ fontWeight: "bold" }}>
-											{/* Calculation of total amount */}
-											{reservation &&
-												reservation.total_amount.toLocaleString()}{" "}
-											{chosenLanguage === "Arabic" ? "ريال" : "SAR"}
+									<div className='col-md-5'>
+										{chosenLanguage === "Arabic" ? "تاريخ الوصول" : "Arrival"}
+										<div style={{ border: "1px solid black", padding: "3px" }}>
+											{moment(reservation && reservation.checkin_date)
+												.locale(chosenLanguage === "Arabic" ? "ar" : "en")
+												.format("DD/MM/YYYY")}
 										</div>
 									</div>
-								</div>
-								<div className='mt-5'>
-									<div className='row' style={{ fontWeight: "bold" }}>
-										<div className='col-md-5 mx-auto text-center my-2'>
-											{chosenLanguage === "Arabic"
-												? "الضرائب والرسوم "
-												: "Taxes & Extra Fees"}
+									<div className='col-md-5'>
+										{chosenLanguage === "Arabic"
+											? "تاريخ المغادرة"
+											: "Check-out"}
+										<div style={{ border: "1px solid black", padding: "3px" }}>
+											{moment(reservation && reservation.checkout_date)
+												.locale(chosenLanguage === "Arabic" ? "ar" : "en")
+												.format("DD/MM/YYYY")}
 										</div>
-										<div className='col-md-5 mx-auto text-center my-2'>
-											{0} {chosenLanguage === "Arabic" ? "ريال" : "SAR"}
-										</div>
-
-										<div className='col-md-5 mx-auto text-center my-2'>
-											{chosenLanguage === "Arabic" ? "عمولة" : "Commision"}
-										</div>
-										<div className='col-md-5 mx-auto text-center my-2'>
-											{reservation &&
-												reservation.commission &&
-												reservation.commission.toLocaleString()}{" "}
-											{chosenLanguage === "Arabic" ? "ريال" : "SAR"}
+									</div>
+									<div className='col-md-5 mx-auto mt-3'>
+										{chosenLanguage === "Arabic"
+											? "فترة الحجز"
+											: "Reservation Period"}
+										<div>
+											{reservation
+												? calculateReservationPeriod(
+														reservation.checkin_date,
+														reservation.checkout_date,
+														chosenLanguage
+												  )
+												: ""}
 										</div>
 									</div>
 								</div>
 
-								<div className='my-5'>
-									<div className='row my-auto'>
-										<div className='col-md-5 mx-auto'>
-											<h4>
-												{chosenLanguage === "Arabic"
-													? "حصة الفندق"
-													: "Hotel Share"}
-											</h4>
+								<div
+									className='row mt-5'
+									style={{ fontSize: "18px", fontWeight: "bold" }}
+								>
+									<div className='col-md-5 mx-auto my-2'>
+										{chosenLanguage === "Arabic" ? "الجنسية" : "Nationality"}
+										<div className='mx-2'>
+											{reservation &&
+											reservation.customer_details &&
+											reservation.customer_details.nationality
+												? reservation.customer_details.nationality
+												: "N/A"}
 										</div>
-										<div className='col-md-5 mx-auto'>
-											<h2>
-												{reservation.total_amount.toLocaleString()}{" "}
-												{chosenLanguage === "Arabic" ? "ريال" : "SAR"}
-											</h2>
-										</div>
-										{reservation && reservation.paid_amount !== 0 ? (
-											<div className='col-md-5 mx-auto'>
-												<h4>
-													{chosenLanguage === "Arabic"
-														? "المبلغ المودع"
-														: "Deposited Amount"}
-												</h4>
-											</div>
-										) : null}
-
-										{reservation && reservation.paid_amount !== 0 ? (
-											<div className='col-md-5 mx-auto'>
-												<h3>
-													{reservation.paid_amount.toLocaleString()}{" "}
-													{chosenLanguage === "Arabic" ? "ريال" : "SAR"}
-												</h3>
-											</div>
-										) : null}
-
-										{reservation && reservation.paid_amount !== 0 ? (
-											<div className='col-md-5 mx-auto'>
-												<h4>
-													{chosenLanguage === "Arabic"
-														? "المبلغ المستحق"
-														: "Amount Due"}
-												</h4>
-											</div>
-										) : null}
-
-										{reservation && reservation.paid_amount !== 0 ? (
-											<div className='col-md-5 mx-auto'>
-												<h3 style={{ color: "darkgreen" }}>
-													{Number(
-														Number(reservation.total_amount) -
-															Number(reservation.paid_amount)
-													).toLocaleString()}{" "}
-													{chosenLanguage === "Arabic" ? "ريال" : "SAR"}
-												</h3>
-											</div>
-										) : null}
 									</div>
-									<div className='my-3'>
-										<div className='row'>
-											<div className='col-md-5 mx-auto'>
-												<h6>
-													{chosenLanguage === "Arabic"
-														? "معدل السعر اليومي"
-														: "Daily Rate"}
-												</h6>
-											</div>
-
-											<div className='col-md-5 mx-auto'>
-												<h5>
-													{getTotalAmountPerDay(reservation.pickedRoomsType) &&
-														getTotalAmountPerDay(
-															reservation.pickedRoomsType
-														).toLocaleString()}{" "}
-													{chosenLanguage === "Arabic" ? "ريال" : "SAR"}
-												</h5>
-											</div>
+									<div className='col-md-5 mx-auto my-2'>
+										{chosenLanguage === "Arabic"
+											? "رقم جواز السفر"
+											: "Passport #"}
+										<div className='mx-2'>
+											{(reservation && reservation.customer_details.passport) ||
+												"N/A"}
+										</div>
+									</div>
+									<div className='col-md-5 mx-auto my-2'>
+										{chosenLanguage === "Arabic" ? "الهاتف" : "Phone"}
+										<div className='mx-2'>
+											{(reservation && reservation.customer_details.phone) ||
+												"N/A"}
+										</div>
+									</div>
+									<div className='col-md-5 mx-auto my-2'>
+										{chosenLanguage === "Arabic" ? "البريد" : "Email"}
+										<div className='mx-2'>
+											{(reservation && reservation.customer_details.email) ||
+												"N/A"}
+										</div>
+									</div>
+									<div className='col-md-5 mx-auto my-2'>
+										{chosenLanguage === "Arabic" ? "العنوان" : "Address"}
+										<div className='mx-2'>
+											{(reservation &&
+												reservation.customer_details &&
+												reservation.customer_details.nationality) ||
+												"N/A"}
 										</div>
 									</div>
 								</div>
 							</ContentSection>
 							<ContentSection>
-								<div className='row mt-5' style={{ fontWeight: "bold" }}>
+								<div
+									className='row mt-5'
+									style={{ fontWeight: "bold", fontSize: "16px" }}
+								>
 									<div className='col-md-4'>
 										{chosenLanguage === "Arabic"
 											? "مصدر الحجز"
@@ -853,49 +873,6 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 														}
 												  ).format(new Date(reservation.booked_at))
 												: "N/A"}
-										</div>
-									</div>
-
-									<div className='col-md-4'>
-										{chosenLanguage === "Arabic"
-											? "حالة الحجز"
-											: "Reservation Status"}
-										<EditOutlined
-											onClick={() => setIsModalVisible(true)}
-											style={{
-												marginLeft: "5px",
-												marginRight: "5px",
-												cursor: "pointer",
-											}}
-										/>
-										<div
-											className='mx-1'
-											style={{
-												background:
-													reservation &&
-													reservation.reservation_status.includes("cancelled")
-														? "red"
-														: reservation.reservation_status.includes(
-																	"checked_out"
-														    )
-														  ? "darkgreen"
-														  : reservation.reservation_status === "inhouse"
-														    ? "#c4d3e2"
-														    : "yellow",
-												color:
-													reservation &&
-													reservation.reservation_status.includes("cancelled")
-														? "white"
-														: reservation.reservation_status.includes(
-																	"checked_out"
-														    )
-														  ? "white"
-														  : "black",
-												textAlign: "center",
-												textTransform: "uppercase",
-											}}
-										>
-											{reservation && reservation.reservation_status}
 										</div>
 									</div>
 
@@ -968,81 +945,139 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 							<ContentSection>
 								<div
 									className='row'
-									style={{ fontSize: "13px", fontWeight: "bold" }}
+									style={{
+										maxHeight: "350px",
+										overflow: "auto",
+										fontSize: "16px",
+									}}
 								>
-									<div className='col-md-4'>
-										{chosenLanguage === "Arabic" ? "الوصول" : "Arrival"}
-										<div style={{ border: "1px solid black", padding: "3px" }}>
-											{moment(reservation && reservation.checkin_date)
-												.locale(chosenLanguage === "Arabic" ? "ar" : "en")
-												.format("DD/MM/YYYY")}
+									{reservation &&
+										reservation.pickedRoomsType.map((room, index) => (
+											<React.Fragment key={index}>
+												{/* You can add a date here if available */}
+												<div className='col-md-4 mt-2'>{/* Date */}</div>
+												<div className='col-md-4 mt-2'>{room.room_type}</div>
+												<div className='col-md-4 mt-2'>
+													{room.chosenPrice.toLocaleString() * room.count}{" "}
+													{chosenLanguage === "Arabic" ? "ريال" : "SAR"}
+												</div>
+											</React.Fragment>
+										))}
+									<div className='col-md-4 mt-2'></div>
+									<div className='col-md-4 mt-2'></div>
+									<div className='col-md-4 mt-2 text-center pb-3'>
+										<div style={{ fontWeight: "bold", fontSize: "13px" }}>
+											{chosenLanguage === "Arabic"
+												? "المبلغ الإجمالي"
+												: "Total Amount"}
+										</div>
+										<div style={{ fontWeight: "bold" }}>
+											{/* Calculation of total amount */}
+											{reservation &&
+												reservation.total_amount.toLocaleString()}{" "}
+											{chosenLanguage === "Arabic" ? "ريال" : "SAR"}
 										</div>
 									</div>
-									<div className='col-md-4'>
-										{chosenLanguage === "Arabic"
-											? "تاريخ المغادرة"
-											: "Check-out"}
-										<div style={{ border: "1px solid black", padding: "3px" }}>
-											{moment(reservation && reservation.checkout_date)
-												.locale(chosenLanguage === "Arabic" ? "ar" : "en")
-												.format("DD/MM/YYYY")}
+								</div>
+								<div className='mt-5'>
+									<div className='row' style={{ fontWeight: "bold" }}>
+										<div className='col-md-5 mx-auto text-center my-2'>
+											{chosenLanguage === "Arabic"
+												? "الضرائب والرسوم "
+												: "Taxes & Extra Fees"}
 										</div>
-									</div>
-									<div className='col-md-4 my-auto'>
-										{chosenLanguage === "Arabic"
-											? "فترة الحجز"
-											: "Reservation Period"}
-										<div>
-											{reservation
-												? calculateReservationPeriod(
-														reservation.checkin_date,
-														reservation.checkout_date,
-														chosenLanguage
-												  )
-												: ""}
+										<div className='col-md-5 mx-auto text-center my-2'>
+											{0} {chosenLanguage === "Arabic" ? "ريال" : "SAR"}
+										</div>
+
+										<div className='col-md-5 mx-auto text-center my-2'>
+											{chosenLanguage === "Arabic" ? "عمولة" : "Commision"}
+										</div>
+										<div className='col-md-5 mx-auto text-center my-2'>
+											{reservation &&
+												reservation.commission &&
+												reservation.commission.toLocaleString()}{" "}
+											{chosenLanguage === "Arabic" ? "ريال" : "SAR"}
 										</div>
 									</div>
 								</div>
 
-								<div
-									className='row mt-5'
-									style={{ fontSize: "13px", fontWeight: "bold" }}
-								>
-									<div className='col-md-5 mx-auto my-2'>
-										{chosenLanguage === "Arabic" ? "الجنسية" : "Nationality"}
-										<div className='mx-2'>
-											{reservation &&
-												reservation.customer_details &&
-												reservation.customer_details.nationality}
+								<div className='my-5'>
+									<div className='row my-auto'>
+										<div className='col-md-5 mx-auto'>
+											<h4>
+												{chosenLanguage === "Arabic"
+													? "الإجمالى"
+													: "Total Amount"}
+											</h4>
 										</div>
-									</div>
-									<div className='col-md-5 mx-auto my-2'>
-										{chosenLanguage === "Arabic"
-											? "رقم جواز السفر"
-											: "Passport #"}
-										<div className='mx-2'>
-											{(reservation && reservation.customer_details.passport) ||
-												"N/A"}
+										<div className='col-md-5 mx-auto'>
+											<h3>
+												{reservation.total_amount.toLocaleString()}{" "}
+												{chosenLanguage === "Arabic" ? "ريال" : "SAR"}
+											</h3>
 										</div>
+
+										{reservation && reservation.paid_amount !== 0 ? (
+											<div className='col-md-5 mx-auto'>
+												<h4>
+													{chosenLanguage === "Arabic"
+														? "المبلغ المودع"
+														: "Deposited Amount"}
+												</h4>
+											</div>
+										) : null}
+
+										{reservation && reservation.paid_amount !== 0 ? (
+											<div className='col-md-5 mx-auto'>
+												<h3>
+													{reservation.paid_amount.toLocaleString()}{" "}
+													{chosenLanguage === "Arabic" ? "ريال" : "SAR"}
+												</h3>
+											</div>
+										) : null}
+
+										{reservation && reservation.paid_amount !== 0 ? (
+											<div className='col-md-5 mx-auto'>
+												<h4>
+													{chosenLanguage === "Arabic"
+														? "المبلغ المستحق"
+														: "Amount Due"}
+												</h4>
+											</div>
+										) : null}
+
+										{reservation && reservation.paid_amount !== 0 ? (
+											<div className='col-md-5 mx-auto'>
+												<h3 style={{ color: "darkgreen" }}>
+													{Number(
+														Number(reservation.total_amount) -
+															Number(reservation.paid_amount)
+													).toLocaleString()}{" "}
+													{chosenLanguage === "Arabic" ? "ريال" : "SAR"}
+												</h3>
+											</div>
+										) : null}
 									</div>
-									<div className='col-md-5 mx-auto my-2'>
-										{chosenLanguage === "Arabic" ? "الهاتف" : "Phone"}
-										<div className='mx-2'>
-											{reservation && reservation.customer_details.phone}
-										</div>
-									</div>
-									<div className='col-md-5 mx-auto my-2'>
-										{chosenLanguage === "Arabic" ? "البريد" : "Email"}
-										<div className='mx-2'>
-											{reservation && reservation.customer_details.email}
-										</div>
-									</div>
-									<div className='col-md-5 mx-auto my-2'>
-										{chosenLanguage === "Arabic" ? "العنوان" : "Address"}
-										<div className='mx-2'>
-											{reservation &&
-												reservation.customer_details &&
-												reservation.customer_details.nationality}
+									<div className='my-3'>
+										<div className='row'>
+											<div className='col-md-5 mx-auto'>
+												<h6>
+													{chosenLanguage === "Arabic"
+														? "معدل السعر اليومي"
+														: "Daily Rate"}
+												</h6>
+											</div>
+
+											<div className='col-md-5 mx-auto'>
+												<h5>
+													{getTotalAmountPerDay(reservation.pickedRoomsType) &&
+														getTotalAmountPerDay(
+															reservation.pickedRoomsType
+														).toLocaleString()}{" "}
+													{chosenLanguage === "Arabic" ? "ريال" : "SAR"}
+												</h5>
+											</div>
 										</div>
 									</div>
 								</div>

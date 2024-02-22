@@ -1,8 +1,9 @@
 import React from "react";
-import { Table, Pagination } from "antd";
+import { Table, Pagination, Button } from "antd";
 import styled from "styled-components";
 import moment from "moment";
 import DownloadExcel from "./DownloadExcel";
+import ScoreCards from "./ScoreCards";
 
 const TableViewReport = ({
 	allReservations,
@@ -12,6 +13,10 @@ const TableViewReport = ({
 	chosenLanguage,
 	hotelDetails,
 	recordsPerPage,
+	selectedChannel,
+	setSelectedChannel,
+	allChannels,
+	scoreCardObject,
 }) => {
 	// Define the table columns
 
@@ -108,7 +113,8 @@ const TableViewReport = ({
 			render: (commission, record) => {
 				let displayCommission = commission;
 				if (record.payment === "expedia collect") {
-					displayCommission = record.total_amount;
+					// displayCommission = record.total_amount;
+					displayCommission = 0;
 				} else if (["janat", "affiliate"].includes(record.booking_source)) {
 					displayCommission = record.total_amount * 0.1;
 				} else {
@@ -118,16 +124,25 @@ const TableViewReport = ({
 			},
 		},
 
+		// {
+		// 	title: chosenLanguage === "Arabic" ? "المبلغ الإجمالي" : "Total Amount",
+		// 	dataIndex: "total_amount",
+		// 	key: "total_amount",
+		// 	render: (total_amount, record) => {
+		// 		let displayAmount = total_amount;
+		// 		if (record.payment === "expedia collect") {
+		// 			displayAmount = calculateExpediaTotalAmount(record);
+		// 		}
+		// 		return `${displayAmount.toLocaleString()} SAR`;
+		// 	},
+		// },
+
 		{
 			title: chosenLanguage === "Arabic" ? "المبلغ الإجمالي" : "Total Amount",
 			dataIndex: "total_amount",
 			key: "total_amount",
 			render: (total_amount, record) => {
-				let displayAmount = total_amount;
-				if (record.payment === "expedia collect") {
-					displayAmount = calculateExpediaTotalAmount(record);
-				}
-				return `${displayAmount.toLocaleString()} SAR`;
+				return `${total_amount.toLocaleString()} SAR`;
 			},
 		},
 
@@ -185,13 +200,38 @@ const TableViewReport = ({
 	// Define the pagination config
 	const paginationConfig = {
 		current: currentPage,
-		pageSize: 100, // This should match your state or props
+		pageSize: 300, // This should match your state or props
 		total: totalRecords,
 		onChange: (page) => setCurrentPage(page),
 	};
 
+	const handleChannelSelection = (channel) => {
+		setSelectedChannel(channel === "All" ? undefined : channel);
+	};
+
 	return (
 		<TableViewReportWrapper>
+			<div className='mt-3'>
+				<ScoreCards scoreCardObject={scoreCardObject} />
+			</div>
+			<div className='channel-buttons mt-3'>
+				<Button
+					type={selectedChannel === undefined ? "primary" : "default"}
+					onClick={() => handleChannelSelection("All")}
+				>
+					All
+				</Button>
+				{allChannels.map((channel) => (
+					<Button
+						style={{ textTransform: "capitalize" }}
+						key={channel}
+						type={selectedChannel === channel ? "primary" : "default"}
+						onClick={() => handleChannelSelection(channel)}
+					>
+						{channel}
+					</Button>
+				))}
+			</div>
 			<div className='float-left my-3'>
 				<DownloadExcel
 					data={allReservations}
@@ -225,5 +265,13 @@ const TableViewReportWrapper = styled.div`
 	table {
 		font-size: 12px !important;
 		text-transform: capitalize;
+	}
+
+	.channel-buttons {
+		margin-bottom: 20px;
+
+		button {
+			margin-right: 10px;
+		}
 	}
 `;

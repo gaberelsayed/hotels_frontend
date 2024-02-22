@@ -334,13 +334,13 @@ const PreReservationTable = ({
 				open={isModalVisible}
 				onOk={handleOk}
 				onCancel={handleCancel}
-				width='84.5%' // Set the width to 80%
+				width='96%' // Set the width to 80%
 				style={{
 					// If Arabic, align to the left, else align to the right
 					position: "absolute",
-					left: chosenLanguage === "Arabic" ? "1%" : "auto",
-					right: chosenLanguage === "Arabic" ? "auto" : "5%",
 					top: "1%",
+					left: "1%",
+					right: "1%",
 				}}
 			>
 				{selectedReservation && (

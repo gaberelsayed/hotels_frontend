@@ -20,14 +20,24 @@ const { RangePicker } = DatePicker;
 const HotelReportsMain = () => {
 	const [AdminMenuStatus, setAdminMenuStatus] = useState(false);
 	const [collapsed, setCollapsed] = useState(false);
-	const [recordsPerPage] = useState(400);
+	const [recordsPerPage] = useState(300);
 	const [currentPage, setCurrentPage] = useState(1);
 	const [totalRecords, setTotalRecords] = useState(0);
 	const [allReservations, setAllReservations] = useState([]);
+	const [scoreCardObject, setScoreCardObject] = useState("");
+	const [allChannels, setAllChannels] = useState([
+		"agoda",
+		"expedia",
+		"booking.com",
+		"janat",
+		"affiliate",
+		"manual",
+	]);
+	const [selectedChannel, setSelectedChannel] = useState(undefined);
 	const [hotelDetails, setHotelDetails] = useState(0);
 	const [dateRange, setDateRange] = useState([
-		moment().subtract(50, "days"),
-		moment().add(60, "days"),
+		moment().subtract(45, "days"),
+		moment().add(10, "days"),
 	]);
 
 	const { user, token } = isAuthenticated();
@@ -74,7 +84,8 @@ const HotelReportsMain = () => {
 							recordsPerPage,
 							formattedStartDate,
 							formattedEndDate,
-							data2[0]._id
+							data2[0]._id,
+							selectedChannel
 						).then((data3) => {
 							if (data3 && data3.error) {
 								console.log(data3.error);
@@ -88,12 +99,14 @@ const HotelReportsMain = () => {
 						checkedoutReservationsTotalRecords(
 							formattedStartDate,
 							formattedEndDate,
-							data2[0]._id
+							data2[0]._id,
+							selectedChannel
 						).then((data4) => {
 							if (data4 && data4.error) {
 								console.log(data4.error, "data4.error");
 							} else {
 								setTotalRecords(data4.total);
+								setScoreCardObject(data4);
 							}
 						});
 					}
@@ -102,13 +115,11 @@ const HotelReportsMain = () => {
 		});
 	};
 
-	console.log(totalRecords, "totalRecords");
-
 	// Call gettingHotelData whenever the date range or other relevant states change
 	useEffect(() => {
 		gettingHotelData();
 		// eslint-disable-next-line
-	}, [currentPage, recordsPerPage, dateRange]);
+	}, [currentPage, recordsPerPage, dateRange, selectedChannel]);
 
 	const handleDateChange = (dates, dateStrings) => {
 		if (!dates) {
@@ -166,16 +177,16 @@ const HotelReportsMain = () => {
 					</div>
 
 					<div className='container-wrapper'>
-						{allReservations &&
-						allReservations.length > 0 &&
-						hotelDetails &&
-						hotelDetails._id ? (
+						{allReservations && hotelDetails && hotelDetails._id ? (
 							<div
-								className='my-3'
+								className='my-3 text-center mx-auto'
 								style={{
 									textAlign: chosenLanguage === "Arabic" ? "right" : "",
 								}}
 							>
+								<h5 style={{ fontSize: "1.1rem", fontWeight: "bold" }}>
+									Checkout Date Range
+								</h5>
 								<Space
 									direction='vertical'
 									size={12}
@@ -192,6 +203,11 @@ const HotelReportsMain = () => {
 									setCurrentPage={setCurrentPage}
 									currentPage={currentPage}
 									recordsPerPage={recordsPerPage}
+									selectedChannel={selectedChannel}
+									setSelectedChannel={setSelectedChannel}
+									allChannels={allChannels}
+									setAllChannels={setAllChannels}
+									scoreCardObject={scoreCardObject}
 								/>
 							</div>
 						) : null}
