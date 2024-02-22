@@ -1,24 +1,77 @@
-import React from "react";
-import { Table, Pagination, Button } from "antd";
-import styled from "styled-components";
+import React, { useState } from "react";
+import { DatePicker, Radio, Button, Table, Pagination } from "antd";
 import moment from "moment";
-import DownloadExcel from "./DownloadExcel";
-import ScoreCards from "./ScoreCards";
+import styled from "styled-components";
+import {
+	generalReportReservationsList,
+	getGeneralReportReservations,
+} from "../../apiAdmin"; // Adjust the import path according to your project structure
+import ScoreCards from "../ScoreCards";
+import DownloadExcel from "../DownloadExcel";
 
-const TableViewReport = ({
-	allReservations,
-	setCurrentPage,
-	currentPage,
-	totalRecords,
-	chosenLanguage,
-	hotelDetails,
-	recordsPerPage,
-	selectedChannel,
-	setSelectedChannel,
-	allChannels,
-	scoreCardObject,
-}) => {
-	// Define the table columns
+const GeneralReportMain = ({ hotelDetails, chosenLanguage }) => {
+	const [allReservations, setAllReservations] = useState([]);
+	const [recordsPerPage] = useState(400);
+	const [currentPage, setCurrentPage] = useState(1);
+	const [scoreCardObject, setScoreCardObject] = useState("");
+	// eslint-disable-next-line
+	const [allChannels, setAllChannels] = useState([
+		"agoda",
+		"expedia",
+		"booking.com",
+		"janat",
+		"affiliate",
+		"manual",
+	]);
+	const [totalRecords, setTotalRecords] = useState(0);
+
+	const [selectedChannel, setSelectedChannel] = useState(undefined);
+	const [dateBy, setDateBy] = useState("checkin");
+	const [dateRange, setDateRange] = useState([
+		moment().subtract(7, "days"),
+		moment(),
+	]);
+
+	const { RangePicker } = DatePicker;
+
+	const applyFilter = () => {
+		const [startDate, endDate] = dateRange;
+		const formattedStartDate = startDate.format("YYYY-MM-DD");
+		const formattedEndDate = endDate.format("YYYY-MM-DD");
+		const channel = selectedChannel || "undefined";
+
+		generalReportReservationsList(
+			currentPage, // Assuming page is 1 for now
+			recordsPerPage, // Assuming records per page is 10 for now
+			formattedStartDate,
+			formattedEndDate,
+			hotelDetails._id, // Replace with your actual hotelId
+			channel,
+			dateBy
+		).then((data) => {
+			if (data.error) {
+				console.log(data.error);
+			} else {
+				setAllReservations(data);
+
+				getGeneralReportReservations(
+					formattedStartDate,
+					formattedEndDate,
+					hotelDetails._id,
+					selectedChannel,
+					dateBy
+				).then((data4) => {
+					if (data4 && data4.error) {
+						console.log(data4.error, "data4.error");
+					} else {
+						console.log(data4.total, "data4.total");
+						setTotalRecords(data4.total);
+						setScoreCardObject(data4);
+					}
+				});
+			}
+		});
+	};
 
 	const calculateExpediaTotalAmount = (reservation) => {
 		let totalAmount = 0;
@@ -37,6 +90,7 @@ const TableViewReport = ({
 
 		return totalAmount;
 	};
+
 	const columns = [
 		{
 			title: "#",
@@ -124,19 +178,6 @@ const TableViewReport = ({
 			},
 		},
 
-		// {
-		// 	title: chosenLanguage === "Arabic" ? "المبلغ الإجمالي" : "Total Amount",
-		// 	dataIndex: "total_amount",
-		// 	key: "total_amount",
-		// 	render: (total_amount, record) => {
-		// 		let displayAmount = total_amount;
-		// 		if (record.payment === "expedia collect") {
-		// 			displayAmount = calculateExpediaTotalAmount(record);
-		// 		}
-		// 		return `${displayAmount.toLocaleString()} SAR`;
-		// 	},
-		// },
-
 		{
 			title: chosenLanguage === "Arabic" ? "المبلغ الإجمالي" : "Total Amount",
 			dataIndex: "total_amount",
@@ -170,6 +211,20 @@ const TableViewReport = ({
 			dataIndex: "checkout_date",
 			key: "checkout_date",
 			render: (checkout_date) => moment(checkout_date).format("YYYY-MM-DD"),
+		},
+
+		{
+			title: chosenLanguage === "Arabic" ? "عدد الغرف" : "Room Count",
+			dataIndex: "pickedRoomsType",
+			key: "roomCount",
+			render: (pickedRoomsType) => {
+				// Calculate the total count of rooms
+				const totalCount = pickedRoomsType.reduce((total, room) => {
+					return total + room.count;
+				}, 0);
+
+				return totalCount;
+			},
 		},
 
 		{
@@ -210,58 +265,82 @@ const TableViewReport = ({
 	};
 
 	return (
-		<TableViewReportWrapper>
-			<div className='mt-3'>
+		<GeneralReportMainWrapper>
+			<div className='my-4'>
 				<ScoreCards scoreCardObject={scoreCardObject} />
 			</div>
-			<div className='channel-buttons mt-3'>
-				<Button
-					type={selectedChannel === undefined ? "primary" : "default"}
-					onClick={() => handleChannelSelection("All")}
-				>
-					All
-				</Button>
-				{allChannels.map((channel) => (
-					<Button
-						style={{ textTransform: "capitalize" }}
-						key={channel}
-						type={selectedChannel === channel ? "primary" : "default"}
-						onClick={() => handleChannelSelection(channel)}
+			<div className='filters text-center'>
+				<div className='mt-2'>
+					<Radio.Group
+						onChange={(e) => setDateBy(e.target.value)}
+						value={dateBy}
 					>
-						{channel}
+						<Radio value='checkin'>Check-In</Radio>
+						<Radio value='checkout'>Check-Out</Radio>
+						<Radio value='bookat'>Booked At</Radio>
+					</Radio.Group>
+				</div>
+
+				<div className='mt-2'>
+					<RangePicker onChange={setDateRange} />
+				</div>
+
+				<div className='channel-buttons mt-2'>
+					<Button
+						type={selectedChannel === undefined ? "primary" : "default"}
+						onClick={() => handleChannelSelection("All")}
+					>
+						All
 					</Button>
-				))}
+					{allChannels.map((channel) => (
+						<Button
+							style={{ textTransform: "capitalize" }}
+							key={channel}
+							type={selectedChannel === channel ? "primary" : "default"}
+							onClick={() => handleChannelSelection(channel)}
+						>
+							{channel}
+						</Button>
+					))}
+				</div>
+				<Button onClick={applyFilter}>Apply Now</Button>
 			</div>
+
 			<div className='float-left my-3'>
 				<DownloadExcel
 					data={allReservations}
 					columns={columns}
-					title={"Financial Report"}
+					title={"General Report"}
 					currentPage={currentPage}
 					recordsPerPage={recordsPerPage}
 				/>
 			</div>
-
 			<Table
 				columns={columns}
 				dataSource={allReservations}
+				rowKey='id'
 				pagination={false}
 				scroll={{ y: 1060 }}
 				sticky
 			/>
+
 			<div
 				className='my-3'
 				onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
 			>
 				<Pagination {...paginationConfig} />
 			</div>
-		</TableViewReportWrapper>
+		</GeneralReportMainWrapper>
 	);
 };
 
-export default TableViewReport;
+export default GeneralReportMain;
 
-const TableViewReportWrapper = styled.div`
+const GeneralReportMainWrapper = styled.div`
+	.filters {
+		margin-bottom: 20px;
+	}
+
 	table {
 		font-size: 12px !important;
 		text-transform: capitalize;

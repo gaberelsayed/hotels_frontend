@@ -14,6 +14,8 @@ import { isAuthenticated } from "../../auth";
 import TableViewReport from "./TableViewReport";
 import { DatePicker, Space } from "antd";
 import moment from "moment";
+import { useHistory } from "react-router-dom";
+import GeneralReportMain from "./GeneralReport/GeneralReportMain";
 
 const { RangePicker } = DatePicker;
 
@@ -39,6 +41,9 @@ const HotelReportsMain = () => {
 		moment().subtract(45, "days"),
 		moment().add(10, "days"),
 	]);
+	const history = useHistory(); // Initialize the history object
+
+	const [activeTab, setActiveTab] = useState("finance");
 
 	const { user, token } = isAuthenticated();
 	const { languageToggle, chosenLanguage } = useCartContext();
@@ -46,8 +51,16 @@ const HotelReportsMain = () => {
 		if (window.innerWidth <= 1000) {
 			setCollapsed(true);
 		}
+
+		if (window.location.search.includes("finance")) {
+			setActiveTab("finance");
+		} else if (window.location.search.includes("general")) {
+			setActiveTab("general");
+		} else {
+			setActiveTab("finance");
+		}
 		// eslint-disable-next-line
-	}, []);
+	}, [activeTab]);
 
 	const formatDate = (date) => {
 		if (!date) return "";
@@ -176,40 +189,84 @@ const HotelReportsMain = () => {
 						{chosenLanguage === "English" ? "ARABIC" : "English"}
 					</div>
 
-					<div className='container-wrapper'>
-						{allReservations && hotelDetails && hotelDetails._id ? (
-							<div
-								className='my-3 text-center mx-auto'
-								style={{
-									textAlign: chosenLanguage === "Arabic" ? "right" : "",
+					<div style={{ background: "#8a8a8a", padding: "1px" }}>
+						<div className='my-2 tab-grid col-md-8'>
+							<Tab
+								isActive={activeTab === "finance"}
+								onClick={() => {
+									setActiveTab("finance");
+									history.push("/hotel-management/hotel-reports?finance"); // Programmatically navigate
 								}}
 							>
-								<h5 style={{ fontSize: "1.1rem", fontWeight: "bold" }}>
-									Checkout Date Range
-								</h5>
-								<Space
-									direction='vertical'
-									size={12}
-									className='w-25'
-									style={{ margin: "10px" }}
-								>
-									<RangePicker className='w-100' onChange={handleDateChange} />
-								</Space>
-								<TableViewReport
-									allReservations={allReservations}
-									totalRecords={totalRecords}
+								{chosenLanguage === "Arabic"
+									? "التقرير المالي"
+									: "Finance (Checkedout)"}
+							</Tab>
+
+							<Tab
+								isActive={activeTab === "general"}
+								onClick={() => {
+									setActiveTab("general");
+									history.push("/hotel-management/hotel-reports?general"); // Programmatically navigate
+								}}
+							>
+								{chosenLanguage === "Arabic"
+									? "التقرير العام"
+									: "General Report"}
+							</Tab>
+						</div>
+					</div>
+
+					<div className='container-wrapper'>
+						{activeTab === "finance" ? (
+							<>
+								{allReservations && hotelDetails && hotelDetails._id ? (
+									<div
+										className='my-3 text-center mx-auto'
+										style={{
+											textAlign: chosenLanguage === "Arabic" ? "right" : "",
+										}}
+									>
+										<h5 style={{ fontSize: "1.1rem", fontWeight: "bold" }}>
+											Checkout Date Range
+										</h5>
+										<Space
+											direction='vertical'
+											size={12}
+											className='w-25'
+											style={{ margin: "10px" }}
+										>
+											<RangePicker
+												className='w-100'
+												onChange={handleDateChange}
+											/>
+										</Space>
+										<TableViewReport
+											allReservations={allReservations}
+											totalRecords={totalRecords}
+											hotelDetails={hotelDetails}
+											chosenLanguage={chosenLanguage}
+											setCurrentPage={setCurrentPage}
+											currentPage={currentPage}
+											recordsPerPage={recordsPerPage}
+											selectedChannel={selectedChannel}
+											setSelectedChannel={setSelectedChannel}
+											allChannels={allChannels}
+											setAllChannels={setAllChannels}
+											scoreCardObject={scoreCardObject}
+										/>
+									</div>
+								) : null}
+							</>
+						) : null}
+
+						{activeTab === "general" ? (
+							<>
+								<GeneralReportMain
 									hotelDetails={hotelDetails}
 									chosenLanguage={chosenLanguage}
-									setCurrentPage={setCurrentPage}
-									currentPage={currentPage}
-									recordsPerPage={recordsPerPage}
-									selectedChannel={selectedChannel}
-									setSelectedChannel={setSelectedChannel}
-									allChannels={allChannels}
-									setAllChannels={setAllChannels}
-									scoreCardObject={scoreCardObject}
 								/>
-							</div>
+							</>
 						) : null}
 					</div>
 				</div>
@@ -242,4 +299,30 @@ const HotelReportsMainWrapper = styled.div`
 	@media (max-width: 1400px) {
 		background: white;
 	}
+
+	.tab-grid {
+		display: flex;
+		/* Additional styling for grid layout */
+	}
+`;
+
+const Tab = styled.div`
+	cursor: pointer;
+	margin: 0 3px; /* 3px margin between tabs */
+	padding: 15px 5px; /* Adjust padding as needed */
+	font-weight: ${(props) => (props.isActive ? "bold" : "bold")};
+	background-color: ${(props) =>
+		props.isActive
+			? "transparent"
+			: "#bbbbbb"}; /* Light grey for unselected tabs */
+	box-shadow: ${(props) =>
+		props.isActive ? "inset 5px 5px 5px rgba(0, 0, 0, 0.3)" : "none"};
+	transition: all 0.3s ease; /* Smooth transition for changes */
+	min-width: 25px; /* Minimum width of the tab */
+	width: 100%; /* Full width within the container */
+	text-align: center; /* Center the text inside the tab */
+	/* Additional styling for tabs */
+	z-index: 100;
+	font-size: 1.2rem;
+	color: ${(props) => (props.isActive ? "white" : "black")};
 `;

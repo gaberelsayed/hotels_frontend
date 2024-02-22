@@ -256,6 +256,46 @@ export const getCheckedOutReservations = (page, records, hotelId) => {
 		.catch((err) => console.log(err));
 };
 
+export const generalReportReservationsList = (
+	page,
+	records,
+	startDate,
+	endDate,
+	hotelId,
+	channel,
+	dateBy
+) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/reservations-general-report/${page}/${records}/${hotelId}/${channel}/${startDate}/${endDate}/${dateBy}`,
+		{
+			method: "GET",
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
+export const getGeneralReportReservations = (
+	startDate,
+	endDate,
+	hotelId,
+	channel,
+	dateBy
+) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/general-report-reservations/list/${hotelId}/${channel}/${startDate}/${endDate}/${dateBy}`,
+		{
+			method: "GET",
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
 export const getReservationSummary = (hotelId, date) => {
 	return fetch(
 		`${process.env.REACT_APP_API_URL}/reservations-summary/${hotelId}/${date}`,

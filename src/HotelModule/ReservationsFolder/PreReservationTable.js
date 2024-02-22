@@ -367,25 +367,9 @@ const PreReservationTable = ({
 			title: chosenLanguage === "Arabic" ? "المبلغ الإجمالي" : "Total Amount",
 			dataIndex: "total_amount",
 			key: "total_amount",
-			render: (total_amount) =>
-				`${total_amount && total_amount.toLocaleString()}`,
-		},
-		{
-			title: chosenLanguage === "Arabic" ? "تفاصيل" : "DETAILS...",
-			key: "details",
-			render: (text, record) => (
-				<button
-					style={{
-						color: "blue",
-						cursor: "pointer",
-						border: "none",
-						backgroundColor: "transparent",
-					}}
-					onClick={() => showDetailsModal(record)}
-				>
-					{chosenLanguage === "Arabic" ? "التفاصيل..." : "Details..."}
-				</button>
-			),
+			render: (total_amount, record) => {
+				return `${total_amount}`;
+			},
 		},
 	];
 
