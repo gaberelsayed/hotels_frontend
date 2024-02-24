@@ -80,7 +80,7 @@ const DownloadExcel = ({ data, columns, currentPage, recordsPerPage }) => {
 
 				// Ensure "Total Amount" is formatted as a number
 				if (col.dataIndex === "total_amount") {
-					cellValue = parseFloat(cellValue);
+					cellValue = parseFloat(cellValue.replace(/[^\d.-]/g, ""));
 				}
 
 				if (["sub_total", "commission"].includes(col.dataIndex)) {

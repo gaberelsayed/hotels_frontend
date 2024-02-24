@@ -39,7 +39,7 @@ const DownloadExcel = ({ data, columns, currentPage, recordsPerPage }) => {
 
 				// Ensure "Total Amount" is formatted as a number
 				if (col.dataIndex === "total_amount") {
-					cellValue = parseFloat(cellValue);
+					cellValue = parseFloat(cellValue.replace(/[^\d.-]/g, ""));
 				}
 
 				formattedRow[col.title] = cellValue;

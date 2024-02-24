@@ -786,9 +786,9 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 
 								<div
 									className='row mt-5'
-									style={{ fontSize: "18px", fontWeight: "bold" }}
+									style={{ fontSize: "15px", fontWeight: "bold" }}
 								>
-									<div className='col-md-5 mx-auto my-2'>
+									<div className='col-md-4 mx-auto text-center mx-auto my-2'>
 										{chosenLanguage === "Arabic" ? "الجنسية" : "Nationality"}
 										<div className='mx-2'>
 											{reservation &&
@@ -798,7 +798,7 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 												: "N/A"}
 										</div>
 									</div>
-									<div className='col-md-5 mx-auto my-2'>
+									<div className='col-md-4 mx-auto text-center mx-auto my-2'>
 										{chosenLanguage === "Arabic"
 											? "رقم جواز السفر"
 											: "Passport #"}
@@ -807,21 +807,17 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 												"N/A"}
 										</div>
 									</div>
-									<div className='col-md-5 mx-auto my-2'>
-										{chosenLanguage === "Arabic" ? "الهاتف" : "Phone"}
+									<div className='col-md-4 mx-auto text-center mx-auto my-2'>
+										{chosenLanguage === "Arabic"
+											? "نسخة جواز السفر"
+											: "Passport Copy #"}
 										<div className='mx-2'>
-											{(reservation && reservation.customer_details.phone) ||
+											{(reservation &&
+												reservation.customer_details.copyNumber) ||
 												"N/A"}
 										</div>
 									</div>
-									<div className='col-md-5 mx-auto my-2'>
-										{chosenLanguage === "Arabic" ? "البريد" : "Email"}
-										<div className='mx-2'>
-											{(reservation && reservation.customer_details.email) ||
-												"N/A"}
-										</div>
-									</div>
-									<div className='col-md-5 mx-auto my-2'>
+									<div className='col-md-4 mx-auto text-center mx-auto my-2'>
 										{chosenLanguage === "Arabic" ? "العنوان" : "Address"}
 										<div className='mx-2'>
 											{(reservation &&
@@ -830,7 +826,80 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 												"N/A"}
 										</div>
 									</div>
+									<div className='col-md-4 mx-auto text-center mx-auto my-2'>
+										{chosenLanguage === "Arabic" ? "الهاتف" : "Phone"}
+										<div className='mx-2'>
+											{(reservation && reservation.customer_details.phone) ||
+												"N/A"}
+										</div>
+									</div>
+									<div className='col-md-4 mx-auto text-center mx-auto my-2'>
+										{chosenLanguage === "Arabic" ? "البريد" : "Email"}
+										<div className='mx-2'>
+											{(reservation && reservation.customer_details.email) ||
+												"N/A"}
+										</div>
+									</div>
+									{/* <div className='col-md-4 mx-auto text-center mx-auto my-2'>
+										{chosenLanguage === "Arabic" ? "العنوان" : "Address"}
+										<div className='mx-2'>
+											{(reservation &&
+												reservation.customer_details &&
+												reservation.customer_details.nationality) ||
+												"N/A"}
+										</div>
+									</div> */}
 								</div>
+								{reservation &&
+								reservation.customer_details &&
+								reservation.customer_details.carLicensePlate ? (
+									<div
+										className='row mt-2'
+										style={{ fontSize: "15px", fontWeight: "bold" }}
+									>
+										<div className='col-md-4 mx-auto text-center mx-auto my-2'>
+											{chosenLanguage === "Arabic"
+												? "رقم لوحة السيارة"
+												: "License Plate"}
+											<div className='mx-2'>
+												{(reservation &&
+													reservation.customer_details.carLicensePlate) ||
+													"N/A"}
+											</div>
+										</div>
+										<div className='col-md-4 mx-auto text-center mx-auto my-2'>
+											{chosenLanguage === "Arabic"
+												? "رقم لوحة السيارة"
+												: "License Plate"}
+											<div className='mx-2'>
+												{(reservation &&
+													reservation.customer_details.carColor) ||
+													"N/A"}
+											</div>
+										</div>
+										<div className='col-md-4 mx-auto text-center mx-auto my-2'>
+											{chosenLanguage === "Arabic"
+												? "رقم لوحة السيارة"
+												: "License Plate"}
+											<div className='mx-2'>
+												{(reservation &&
+													reservation.customer_details.carModel) ||
+													"N/A"}
+											</div>
+										</div>
+									</div>
+								) : (
+									<div
+										className='mt-3'
+										style={{
+											fontSize: "15px",
+											fontWeight: "bold",
+											textAlign: "center",
+										}}
+									>
+										Guest Doesn't Have A Car!
+									</div>
+								)}
 							</ContentSection>
 							<ContentSection>
 								<div

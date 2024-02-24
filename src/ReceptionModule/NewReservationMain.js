@@ -65,6 +65,12 @@ const NewReservationMain = () => {
 		passport: "",
 		passportExpiry: "",
 		nationality: "",
+		copyNumber: "",
+		hasACar: "no",
+		carLicensePlate: "",
+		carColor: "",
+		carModel: "",
+		carYear: "",
 	});
 
 	const [start_date, setStart_date] = useState("");

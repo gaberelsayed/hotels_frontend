@@ -386,7 +386,7 @@ const ZReservationForm = ({
 									</div>
 								</div>
 
-								<div className='col-md-4'>
+								<div className='col-md-3'>
 									<div
 										className='form-group'
 										style={{ marginTop: "10px", marginBottom: "10px" }}
@@ -411,7 +411,32 @@ const ZReservationForm = ({
 									</div>
 								</div>
 
-								<div className='col-md-4'>
+								<div className='col-md-3'>
+									<div
+										className='form-group'
+										style={{ marginTop: "10px", marginBottom: "10px" }}
+									>
+										<label style={{ fontWeight: "bold" }}>
+											{" "}
+											{chosenLanguage === "Arabic"
+												? "نسخة جواز السفر   "
+												: "Passport Copy #"}
+										</label>
+										<input
+											background='red'
+											type='text'
+											value={customer_details.copyNumber}
+											onChange={(e) =>
+												setCustomer_details({
+													...customer_details,
+													copyNumber: e.target.value,
+												})
+											}
+										/>
+									</div>
+								</div>
+
+								<div className='col-md-3'>
 									<div
 										className='form-group'
 										style={{ marginTop: "10px", marginBottom: "10px" }}
@@ -435,7 +460,7 @@ const ZReservationForm = ({
 									</div>
 								</div>
 
-								<div className='col-md-4'>
+								<div className='col-md-3'>
 									<div
 										className='form-group'
 										style={{ marginTop: "10px", marginBottom: "10px" }}
@@ -456,6 +481,130 @@ const ZReservationForm = ({
 										/>
 									</div>
 								</div>
+
+								<div
+									className={
+										customer_details.hasCar === "yes"
+											? "col-md-4"
+											: "col-md-8 mx-auto"
+									}
+								>
+									<div
+										className='form-group'
+										style={{ marginTop: "10px", marginBottom: "10px" }}
+									>
+										<label style={{ fontWeight: "bold" }}>
+											{chosenLanguage === "Arabic"
+												? "هل لدى الضيف سيارة؟"
+												: "Does The Guest Have A Car?"}
+										</label>
+										<div>
+											<div
+												className='mx-3'
+												style={{ display: "inline-block", marginRight: "10px" }}
+											>
+												<input
+													type='radio'
+													name='hasCar'
+													value='yes'
+													checked={customer_details.hasCar === "yes"}
+													onChange={(e) =>
+														setCustomer_details({
+															...customer_details,
+															hasCar: e.target.value,
+														})
+													}
+												/>
+												{chosenLanguage === "Arabic" ? "نعم" : "Yes"}
+											</div>
+											<div style={{ display: "inline-block" }}>
+												<input
+													type='radio'
+													name='hasCar'
+													value='no'
+													checked={customer_details.hasCar === "no"}
+													onChange={(e) =>
+														setCustomer_details({
+															...customer_details,
+															hasCar: e.target.value,
+														})
+													}
+												/>
+												{chosenLanguage === "Arabic" ? "لا" : "No"}
+											</div>
+										</div>
+									</div>
+								</div>
+								{customer_details.hasCar === "yes" && (
+									<>
+										<div className='col-md-2'>
+											<div
+												className='form-group'
+												style={{ marginTop: "10px", marginBottom: "10px" }}
+											>
+												<label style={{ fontWeight: "bold" }}>
+													{chosenLanguage === "Arabic"
+														? "رقم لوحة السيارة"
+														: "License Plate"}
+												</label>
+												<input
+													type='text'
+													value={customer_details.carLicensePlate}
+													onChange={(e) =>
+														setCustomer_details({
+															...customer_details,
+															carLicensePlate: e.target.value,
+														})
+													}
+												/>
+											</div>
+										</div>
+										<div className='col-md-2'>
+											<div
+												className='form-group'
+												style={{ marginTop: "10px", marginBottom: "10px" }}
+											>
+												<label style={{ fontWeight: "bold" }}>
+													{chosenLanguage === "Arabic"
+														? "لون السيارة"
+														: "Car Color"}
+												</label>
+												<input
+													type='text'
+													value={customer_details.carColor}
+													onChange={(e) =>
+														setCustomer_details({
+															...customer_details,
+															carColor: e.target.value,
+														})
+													}
+												/>
+											</div>
+										</div>
+										<div className='col-md-2'>
+											<div
+												className='form-group'
+												style={{ marginTop: "10px", marginBottom: "10px" }}
+											>
+												<label style={{ fontWeight: "bold" }}>
+													{chosenLanguage === "Arabic"
+														? "موديل/نوع السيارة"
+														: "Car Model"}
+												</label>
+												<input
+													type='text'
+													value={customer_details.carModel}
+													onChange={(e) =>
+														setCustomer_details({
+															...customer_details,
+															carModel: e.target.value,
+														})
+													}
+												/>
+											</div>
+										</div>
+									</>
+								)}
 
 								<div className='col-md-6'>
 									<label
