@@ -23,6 +23,7 @@ import { Spin } from "antd";
 import HotelRunnerReservationList from "./HotelRunnerReservationList";
 import HotelHeatMap from "./HotelHeatMap";
 import WorldClocks from "./WorldClocks";
+import InHouseReport from "../HotelModule/NewReservation/InHouseReport";
 
 const handleSignout = (history) => {
 	signout(() => {
@@ -96,6 +97,8 @@ const NewReservationMain = () => {
 			setActiveTab("inventory");
 		} else if (window.location.search.includes("heatmap")) {
 			setActiveTab("heatmap");
+		} else if (window.location.search.includes("housingreport")) {
+			setActiveTab("housingreport");
 		} else {
 			setActiveTab("reserveARoom");
 		}
@@ -586,6 +589,19 @@ const NewReservationMain = () => {
 									? "خريطة الفندق"
 									: "Hotel Heat Map"}
 							</Tab>
+							<Tab
+								isActive={activeTab === "housingreport"}
+								onClick={() => {
+									setActiveTab("housingreport");
+									history.push(
+										"/reception-management/new-reservation?housingreport"
+									); // Programmatically navigate
+								}}
+							>
+								{chosenLanguage === "Arabic"
+									? "تقرير التسكين"
+									: "In House Report"}
+							</Tab>
 						</div>
 					</div>
 
@@ -649,6 +665,13 @@ const NewReservationMain = () => {
 										) : null}
 									</>
 								)}
+							</>
+						) : activeTab === "housingreport" ? (
+							<>
+								<InHouseReport
+									hotelDetails={hotelDetails}
+									chosenLanguage={chosenLanguage}
+								/>
 							</>
 						) : activeTab === "list" ? (
 							<>

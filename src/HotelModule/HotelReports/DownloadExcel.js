@@ -2,7 +2,13 @@ import React from "react";
 import * as XLSX from "xlsx";
 import moment from "moment";
 
-const DownloadExcel = ({ data, columns, currentPage, recordsPerPage }) => {
+const DownloadExcel = ({
+	data,
+	columns,
+	currentPage,
+	recordsPerPage,
+	title,
+}) => {
 	const downloadExcelDocument = () => {
 		const workbook = XLSX.utils.book_new();
 
@@ -24,7 +30,7 @@ const DownloadExcel = ({ data, columns, currentPage, recordsPerPage }) => {
 		); // Adjust the array numbers based on your desired column widths
 
 		// Write the workbook and trigger the download
-		XLSX.writeFile(workbook, "Financials.xlsx");
+		XLSX.writeFile(workbook, title ? `${title}.xlsx` : "Financials.xlsx");
 	};
 
 	// Helper function to format the detailed data for Excel

@@ -5,15 +5,13 @@ import styled from "styled-components";
 import {
 	generalReportReservationsList,
 	getGeneralReportReservations,
-} from "../../apiAdmin"; // Adjust the import path according to your project structure
-import ScoreCards from "../ScoreCards";
-import DownloadExcel from "../DownloadExcel";
+} from "../apiAdmin"; // Adjust the import path according to your project structure
+import DownloadExcel from "../HotelReports/DownloadExcel";
 
-const GeneralReportMain = ({ hotelDetails, chosenLanguage }) => {
+const InHouseReport = ({ hotelDetails, chosenLanguage }) => {
 	const [allReservations, setAllReservations] = useState([]);
 	const [recordsPerPage] = useState(400);
 	const [currentPage, setCurrentPage] = useState(1);
-	const [scoreCardObject, setScoreCardObject] = useState("");
 	// eslint-disable-next-line
 	const [allChannels, setAllChannels] = useState([
 		"agoda",
@@ -32,9 +30,10 @@ const GeneralReportMain = ({ hotelDetails, chosenLanguage }) => {
 		moment(),
 	]);
 	const [cancelFilter, setCancelFilter] = useState(0);
-	const [inhouseFilter, setInhouseFilter] = useState(0);
+	const [inhouseFilter, setInhouseFilter] = useState(1);
 	const [noshowFilter, setNoshowFilter] = useState(0);
-	const [selectedFilter, setSelectedFilter] = useState("selectAll");
+	const [showCheckedout, setShowCheckedout] = useState(0);
+	const [selectedFilter, setSelectedFilter] = useState("showInhouse");
 
 	const { RangePicker } = DatePicker;
 
@@ -55,7 +54,7 @@ const GeneralReportMain = ({ hotelDetails, chosenLanguage }) => {
 			noshowFilter,
 			cancelFilter,
 			inhouseFilter,
-			0
+			showCheckedout
 		).then((data) => {
 			if (data.error) {
 				console.log(data.error);
@@ -71,36 +70,17 @@ const GeneralReportMain = ({ hotelDetails, chosenLanguage }) => {
 					noshowFilter,
 					cancelFilter,
 					inhouseFilter,
-					0
+					showCheckedout
 				).then((data4) => {
 					if (data4 && data4.error) {
 						console.log(data4.error, "data4.error");
 					} else {
 						console.log(data4.total, "data4.total");
 						setTotalRecords(data4.total);
-						setScoreCardObject(data4);
 					}
 				});
 			}
 		});
-	};
-
-	const calculateExpediaTotalAmount = (reservation) => {
-		let totalAmount = 0;
-		const checkinDate = moment(reservation.checkin_date);
-		const checkoutDate = moment(reservation.checkout_date);
-
-		hotelDetails.pricingCalendar.forEach((pricing) => {
-			const calendarDate = moment(pricing.calendarDate);
-			if (
-				calendarDate.isSameOrAfter(checkinDate) &&
-				calendarDate.isSameOrBefore(checkoutDate)
-			) {
-				totalAmount += Number(pricing.price);
-			}
-		});
-
-		return totalAmount;
 	};
 
 	const columns = [
@@ -160,37 +140,6 @@ const GeneralReportMain = ({ hotelDetails, chosenLanguage }) => {
 		},
 
 		{
-			title: chosenLanguage === "Arabic" ? " صافي البیع" : "Subtotal",
-			dataIndex: "sub_total",
-			key: "sub_total",
-			render: (total_amount, record) => {
-				let displayAmount = total_amount;
-				if (record.payment === "expedia collect") {
-					displayAmount = calculateExpediaTotalAmount(record) - total_amount;
-				}
-				return `${displayAmount.toLocaleString()}`;
-			},
-		},
-
-		{
-			title: chosenLanguage === "Arabic" ? "اجمالي العمولة" : "Commission",
-			dataIndex: "commission",
-			key: "commission",
-			render: (commission, record) => {
-				let displayCommission = commission;
-				if (record.payment === "expedia collect") {
-					// displayCommission = record.total_amount;
-					displayCommission = 0;
-				} else if (["janat", "affiliate"].includes(record.booking_source)) {
-					displayCommission = record.total_amount * 0.1;
-				} else {
-					displayCommission = record.total_amount - record.sub_total;
-				}
-				return `${displayCommission.toLocaleString()}`;
-			},
-		},
-
-		{
 			title: chosenLanguage === "Arabic" ? "المبلغ الإجمالي" : "Total Amount",
 			dataIndex: "total_amount",
 			key: "total_amount",
@@ -205,13 +154,30 @@ const GeneralReportMain = ({ hotelDetails, chosenLanguage }) => {
 			key: "name",
 			render: (customer_details) => customer_details.name,
 		},
+		{
+			title:
+				chosenLanguage === "Arabic" ? "رقم جواز السفر" : "Guest Passport #",
+			dataIndex: "customer_details",
+			key: "name",
+			render: (customer_details) =>
+				customer_details && customer_details.passport,
+		},
+		{
+			title:
+				chosenLanguage === "Arabic" ? "نسخة جواز السفر" : "Passport Copy #",
+			dataIndex: "customer_details",
+			key: "name",
+			render: (customer_details) =>
+				customer_details && customer_details.copyNumber,
+		},
 
 		{
-			title: chosenLanguage === "Arabic" ? "تاريخ الحجز" : "Booked On",
-			dataIndex: "booked_at",
-			key: "booked_at",
-			render: (booked_at) => new Date(booked_at).toDateString(),
+			title: chosenLanguage === "Arabic" ? "الهاتف" : "Phone",
+			dataIndex: "customer_details",
+			key: "name",
+			render: (customer_details) => customer_details && customer_details.phone,
 		},
+
 		{
 			title: chosenLanguage === "Arabic" ? "تاريخ الوصول" : "Check In",
 			dataIndex: "checkin_date",
@@ -232,6 +198,12 @@ const GeneralReportMain = ({ hotelDetails, chosenLanguage }) => {
 		},
 
 		{
+			title: chosenLanguage === "Arabic" ? "إجمالي الضيوف" : "Total Guests",
+			dataIndex: "total_guests",
+			key: "total_guests",
+		},
+
+		{
 			title: chosenLanguage === "Arabic" ? "أنواع الغرف" : "Room Types",
 			dataIndex: "pickedRoomsType",
 			key: "pickedRoomsType",
@@ -245,14 +217,64 @@ const GeneralReportMain = ({ hotelDetails, chosenLanguage }) => {
 		},
 
 		{
+			title: chosenLanguage === "Arabic" ? "رقم الغرفة" : "Room Number",
+			key: "roomDetails",
+			render: (record) => {
+				// Check if 'record' and 'roomDetails' are available and have entries
+				if (record && record.roomDetails && record.roomDetails.length > 0) {
+					return record.roomDetails.map((room, index) => (
+						<div key={index}>
+							{room.room_number ? room.room_number : "No Room"}
+						</div>
+					));
+				}
+
+				// If 'roomDetails' is not available, check 'roomId'
+				else if (record && record.roomId && record.roomId.length > 0) {
+					return record.roomId.map((room, index) => (
+						<div key={index}>
+							{room.room_number ? room.room_number : "No Room"}
+						</div>
+					));
+				}
+
+				// If neither is available, return "No Room"
+				return "No Room";
+			},
+		},
+
+		{
 			title: chosenLanguage === "Arabic" ? "رقم التأكيد" : "Confirmation",
 			dataIndex: "confirmation_number",
 			key: "confirmation_number",
 		},
+
 		{
-			title: chosenLanguage === "Arabic" ? "مصدر الحجز" : "Source",
-			dataIndex: "booking_source",
-			key: "booking_source",
+			title: chosenLanguage === "Arabic" ? "رقم لوحة السيارة" : "License Plate",
+			dataIndex: "customer_details",
+			key: "name",
+			render: (customer_details) =>
+				customer_details && customer_details.carLicensePlate
+					? customer_details.carLicensePlate
+					: "N/A",
+		},
+		{
+			title: chosenLanguage === "Arabic" ? "لون السيارة" : "Car Color",
+			dataIndex: "customer_details",
+			key: "name",
+			render: (customer_details) =>
+				customer_details && customer_details.carColor
+					? customer_details.carColor
+					: "N/A",
+		},
+		{
+			title: chosenLanguage === "Arabic" ? "موديل/نوع السيارة" : "Car Model",
+			dataIndex: "customer_details",
+			key: "name",
+			render: (customer_details) =>
+				customer_details && customer_details.carModel
+					? customer_details.carModel
+					: "N/A",
 		},
 	];
 
@@ -264,6 +286,7 @@ const GeneralReportMain = ({ hotelDetails, chosenLanguage }) => {
 		onChange: (page) => setCurrentPage(page),
 	};
 
+	// eslint-disable-next-line
 	const handleChannelSelection = (channel) => {
 		setSelectedChannel(channel === "All" ? undefined : channel);
 	};
@@ -285,6 +308,8 @@ const GeneralReportMain = ({ hotelDetails, chosenLanguage }) => {
 		} else if (filterType === "showCancelNoShow") {
 			setCancelFilter(2);
 			setNoshowFilter(2);
+		} else if (filterType === "showcheckedout") {
+			setShowCheckedout(1);
 		}
 	};
 
@@ -308,10 +333,7 @@ const GeneralReportMain = ({ hotelDetails, chosenLanguage }) => {
 	};
 
 	return (
-		<GeneralReportMainWrapper>
-			<div className='my-4'>
-				<ScoreCards scoreCardObject={scoreCardObject} />
-			</div>
+		<InHouseReportWrapper>
 			<div className='filters text-center'>
 				<div className='mt-2'>
 					<Radio.Group
@@ -328,24 +350,6 @@ const GeneralReportMain = ({ hotelDetails, chosenLanguage }) => {
 					<RangePicker onChange={setDateRange} />
 				</div>
 
-				<div className='channel-buttons mt-2'>
-					<Button
-						type={selectedChannel === undefined ? "primary" : "default"}
-						onClick={() => handleChannelSelection("All")}
-					>
-						All
-					</Button>
-					{allChannels.map((channel) => (
-						<Button
-							style={{ textTransform: "capitalize" }}
-							key={channel}
-							type={selectedChannel === channel ? "primary" : "default"}
-							onClick={() => handleChannelSelection(channel)}
-						>
-							{channel}
-						</Button>
-					))}
-				</div>
 				<div className='filter-buttons mt-2'>
 					<Button
 						type={selectedFilter === "selectAll" ? "primary" : "default"}
@@ -358,24 +362,6 @@ const GeneralReportMain = ({ hotelDetails, chosenLanguage }) => {
 						onClick={() => handleFilterSelection("selectAll")}
 					>
 						All
-					</Button>
-					<Button
-						type={
-							selectedFilter === "excludeCancelNoShow" ? "primary" : "default"
-						}
-						style={{
-							backgroundColor:
-								selectedFilter === "excludeCancelNoShow"
-									? "#500000"
-									: undefined,
-							borderColor:
-								selectedFilter === "excludeCancelNoShow"
-									? "#500000"
-									: undefined,
-						}}
-						onClick={() => handleFilterSelection("excludeCancelNoShow")}
-					>
-						Exclude Cancel & No Show
 					</Button>
 
 					<Button
@@ -401,6 +387,18 @@ const GeneralReportMain = ({ hotelDetails, chosenLanguage }) => {
 						onClick={() => handleFilterSelection("showInhouse")}
 					>
 						Show Inhouse
+					</Button>
+					<Button
+						type={selectedFilter === "showcheckedout" ? "primary" : "default"}
+						style={{
+							backgroundColor:
+								selectedFilter === "showcheckedout" ? "#500000" : undefined,
+							borderColor:
+								selectedFilter === "showcheckedout" ? "#500000" : undefined,
+						}}
+						onClick={() => handleFilterSelection("showcheckedout")}
+					>
+						Show Checked Out
 					</Button>
 				</div>
 				<Button onClick={applyFilter}>Apply Now</Button>
@@ -442,19 +440,19 @@ const GeneralReportMain = ({ hotelDetails, chosenLanguage }) => {
 			>
 				<Pagination {...paginationConfig} />
 			</div>
-		</GeneralReportMainWrapper>
+		</InHouseReportWrapper>
 	);
 };
 
-export default GeneralReportMain;
+export default InHouseReport;
 
-const GeneralReportMainWrapper = styled.div`
+const InHouseReportWrapper = styled.div`
 	.filters {
 		margin-bottom: 20px;
 	}
 
 	table {
-		font-size: 12px !important;
+		font-size: 11px !important;
 		text-transform: capitalize;
 	}
 

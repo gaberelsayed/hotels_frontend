@@ -25,6 +25,7 @@ import { Spin } from "antd";
 import HotelRunnerReservationList from "./HotelRunnerReservationList";
 import useBoss from "../useBoss";
 import HotelHeatMap from "./HotelHeatMap";
+import InHouseReport from "./InHouseReport";
 
 const NewReservationMain = () => {
 	const [AdminMenuStatus, setAdminMenuStatus] = useState(false);
@@ -64,7 +65,7 @@ const NewReservationMain = () => {
 		passportExpiry: "",
 		nationality: "",
 		copyNumber: "",
-		hasACar: "no",
+		hasCar: "no",
 		carLicensePlate: "",
 		carColor: "",
 		carModel: "",
@@ -98,6 +99,8 @@ const NewReservationMain = () => {
 			setActiveTab("inventory");
 		} else if (window.location.search.includes("heatmap")) {
 			setActiveTab("heatmap");
+		} else if (window.location.search.includes("housingreport")) {
+			setActiveTab("housingreport");
 		} else {
 			setActiveTab("reserveARoom");
 		}
@@ -494,7 +497,10 @@ const NewReservationMain = () => {
 		<NewReservationMainWrapper
 			dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}
 			show={collapsed}
-			showList={window.location.search.includes("list")}
+			showList={
+				window.location.search.includes("list") ||
+				window.location.search.includes("housingreport")
+			}
 		>
 			<div className='grid-container-main'>
 				<div className='navcontent'>
@@ -588,6 +594,19 @@ const NewReservationMain = () => {
 									? "خريطة الفندق"
 									: "Hotel Heat Map"}
 							</Tab>
+							<Tab
+								isActive={activeTab === "housingreport"}
+								onClick={() => {
+									setActiveTab("housingreport");
+									history.push(
+										"/hotel-management/new-reservation?housingreport"
+									); // Programmatically navigate
+								}}
+							>
+								{chosenLanguage === "Arabic"
+									? "تقرير التسكين"
+									: "In House Report"}
+							</Tab>
 						</div>
 					</div>
 
@@ -654,6 +673,14 @@ const NewReservationMain = () => {
 										</>
 									</>
 								)}
+							</>
+						) : activeTab === "housingreport" ? (
+							<>
+								<InHouseReport
+									hotelDetails={hotelDetails}
+									chosenLanguage={chosenLanguage}
+									isBoss={isBoss}
+								/>
 							</>
 						) : activeTab === "list" ? (
 							<>
@@ -741,7 +768,7 @@ const NewReservationMainWrapper = styled.div`
 	.grid-container-main {
 		display: grid;
 		grid-template-columns: ${(props) =>
-			props.show ? "5% 90%" : props.showList ? "13% 87%" : "13.5% 80%"};
+			props.show ? "5% 90%" : props.showList ? "13% 87%" : "15% 80%"};
 	}
 
 	.container-wrapper {
