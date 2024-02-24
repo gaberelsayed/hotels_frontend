@@ -92,6 +92,29 @@ const InHouseReport = ({ hotelDetails, chosenLanguage }) => {
 				(currentPage - 1) * recordsPerPage + index + 1,
 		},
 		{
+			title: chosenLanguage === "Arabic" ? "رقم التأكيد" : "Confirmation",
+			dataIndex: "confirmation_number",
+			key: "confirmation_number",
+		},
+		{
+			title: chosenLanguage === "Arabic" ? "تاريخ الوصول" : "Check In",
+			dataIndex: "checkin_date",
+			key: "checkin_date",
+			render: (checkin_date) => moment(checkin_date).format("YYYY-MM-DD"),
+		},
+		{
+			title: chosenLanguage === "Arabic" ? "تاريخ المغادرة" : "Check Out",
+			dataIndex: "checkout_date",
+			key: "checkout_date",
+			render: (checkout_date) => moment(checkout_date).format("YYYY-MM-DD"),
+		},
+		{
+			title: chosenLanguage === "Arabic" ? "اسم الزائر" : "Client Name",
+			dataIndex: "customer_details",
+			key: "name",
+			render: (customer_details) => customer_details.name,
+		},
+		{
 			title: chosenLanguage === "Arabic" ? "حالة الحجز" : "Status",
 			dataIndex: "reservation_status",
 			key: "reservation_status",
@@ -123,6 +146,14 @@ const InHouseReport = ({ hotelDetails, chosenLanguage }) => {
 			},
 		},
 		{
+			title: chosenLanguage === "Arabic" ? "المبلغ الإجمالي" : "Total Amount",
+			dataIndex: "total_amount",
+			key: "total_amount",
+			render: (total_amount, record) => {
+				return `${total_amount.toLocaleString()}`;
+			},
+		},
+		{
 			title: chosenLanguage === "Arabic" ? "حالة السداد" : "Payment Status",
 			dataIndex: "payment",
 			key: "payment",
@@ -138,71 +169,6 @@ const InHouseReport = ({ hotelDetails, chosenLanguage }) => {
 				return isPaidOnline ? "Paid Online" : "Paid in Cash";
 			},
 		},
-
-		{
-			title: chosenLanguage === "Arabic" ? "المبلغ الإجمالي" : "Total Amount",
-			dataIndex: "total_amount",
-			key: "total_amount",
-			render: (total_amount, record) => {
-				return `${total_amount.toLocaleString()}`;
-			},
-		},
-
-		{
-			title: chosenLanguage === "Arabic" ? "اسم الزائر" : "Client Name",
-			dataIndex: "customer_details",
-			key: "name",
-			render: (customer_details) => customer_details.name,
-		},
-		{
-			title:
-				chosenLanguage === "Arabic" ? "رقم جواز السفر" : "Guest Passport #",
-			dataIndex: "customer_details",
-			key: "name",
-			render: (customer_details) =>
-				customer_details && customer_details.passport,
-		},
-		{
-			title:
-				chosenLanguage === "Arabic" ? "نسخة جواز السفر" : "Passport Copy #",
-			dataIndex: "customer_details",
-			key: "name",
-			render: (customer_details) =>
-				customer_details && customer_details.copyNumber,
-		},
-
-		{
-			title: chosenLanguage === "Arabic" ? "الهاتف" : "Phone",
-			dataIndex: "customer_details",
-			key: "name",
-			render: (customer_details) => customer_details && customer_details.phone,
-		},
-
-		{
-			title: chosenLanguage === "Arabic" ? "تاريخ الوصول" : "Check In",
-			dataIndex: "checkin_date",
-			key: "checkin_date",
-			render: (checkin_date) => moment(checkin_date).format("YYYY-MM-DD"),
-		},
-		{
-			title: chosenLanguage === "Arabic" ? "تاريخ المغادرة" : "Check Out",
-			dataIndex: "checkout_date",
-			key: "checkout_date",
-			render: (checkout_date) => moment(checkout_date).format("YYYY-MM-DD"),
-		},
-
-		{
-			title: chosenLanguage === "Arabic" ? "عدد الغرف" : "Room Count",
-			dataIndex: "roomCount",
-			key: "roomCount",
-		},
-
-		{
-			title: chosenLanguage === "Arabic" ? "إجمالي الضيوف" : "Total Guests",
-			dataIndex: "total_guests",
-			key: "total_guests",
-		},
-
 		{
 			title: chosenLanguage === "Arabic" ? "أنواع الغرف" : "Room Types",
 			dataIndex: "pickedRoomsType",
@@ -215,7 +181,11 @@ const InHouseReport = ({ hotelDetails, chosenLanguage }) => {
 					>{`${room.room_type}`}</div>
 				)),
 		},
-
+		{
+			title: chosenLanguage === "Arabic" ? "عدد الغرف" : "Room Count",
+			dataIndex: "roomCount",
+			key: "roomCount",
+		},
 		{
 			title: chosenLanguage === "Arabic" ? "رقم الغرفة" : "Room Number",
 			key: "roomDetails",
@@ -244,9 +214,41 @@ const InHouseReport = ({ hotelDetails, chosenLanguage }) => {
 		},
 
 		{
-			title: chosenLanguage === "Arabic" ? "رقم التأكيد" : "Confirmation",
-			dataIndex: "confirmation_number",
-			key: "confirmation_number",
+			title: chosenLanguage === "Arabic" ? "إجمالي الضيوف" : "Total Guests",
+			dataIndex: "total_guests",
+			key: "total_guests",
+		},
+
+		{
+			title: chosenLanguage === "Arabic" ? "تاريخ الميلاد" : "Date Of Birth",
+			dataIndex: "customer_details",
+			key: "name",
+			render: (customer_details) =>
+				customer_details && customer_details.passportExpiry,
+		},
+
+		{
+			title:
+				chosenLanguage === "Arabic" ? "رقم جواز السفر" : "Guest Passport #",
+			dataIndex: "customer_details",
+			key: "name",
+			render: (customer_details) =>
+				customer_details && customer_details.passport,
+		},
+		{
+			title:
+				chosenLanguage === "Arabic" ? "نسخة جواز السفر" : "Passport Copy #",
+			dataIndex: "customer_details",
+			key: "name",
+			render: (customer_details) =>
+				customer_details && customer_details.copyNumber,
+		},
+
+		{
+			title: chosenLanguage === "Arabic" ? "الهاتف" : "Phone",
+			dataIndex: "customer_details",
+			key: "name",
+			render: (customer_details) => customer_details && customer_details.phone,
 		},
 
 		{
