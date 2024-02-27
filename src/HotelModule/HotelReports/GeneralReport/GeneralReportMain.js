@@ -20,6 +20,7 @@ const GeneralReportMain = ({ hotelDetails, chosenLanguage }) => {
 		"expedia",
 		"booking.com",
 		"janat",
+		"airbnb",
 		"affiliate",
 		"manual",
 	]);

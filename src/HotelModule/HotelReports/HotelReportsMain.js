@@ -32,6 +32,7 @@ const HotelReportsMain = () => {
 		"expedia",
 		"booking.com",
 		"janat",
+		"airbnb",
 		"affiliate",
 		"manual",
 	]);

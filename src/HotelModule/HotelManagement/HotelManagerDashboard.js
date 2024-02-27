@@ -31,6 +31,7 @@ const HotelManagerDashboard = () => {
 	const [activeTab, setActiveTab] = useState("Today");
 	const { languageToggle, chosenLanguage } = useCartContext();
 	const [dayOverDayInventory, setDayOverDayInventory] = useState([]);
+	const [selectedDates, setSelectedDates] = useState([]);
 
 	// eslint-disable-next-line
 	const { user, token } = isAuthenticated();
@@ -134,9 +135,7 @@ const HotelManagerDashboard = () => {
 	useEffect(() => {
 		gettingHotelData();
 		// eslint-disable-next-line
-	}, []);
-
-	console.log(reservationsYesterday, "reservationsYesterday");
+	}, [selectedDates]);
 
 	return (
 		<HotelManagerDashboardWrapper
@@ -306,6 +305,8 @@ const HotelManagerDashboard = () => {
 									<RoomStockReport
 										dayOverDayInventory={dayOverDayInventory}
 										chosenLanguage={chosenLanguage}
+										setSelectedDates={setSelectedDates}
+										selectedDates={selectedDates}
 										// isBoss={isBoss}
 									/>
 								) : (

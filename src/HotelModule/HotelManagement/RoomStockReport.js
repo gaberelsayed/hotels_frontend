@@ -2,13 +2,18 @@ import React, { useState, useMemo } from "react";
 import { Table, Button, Select } from "antd";
 import styled from "styled-components";
 import moment from "moment";
+import RoomScoreCards from "./RoomScoreCards";
 
 const { Option } = Select;
 
-export const RoomStockReport = ({ dayOverDayInventory, chosenLanguage }) => {
+export const RoomStockReport = ({
+	dayOverDayInventory,
+	chosenLanguage,
+	setSelectedDates,
+	selectedDates,
+}) => {
 	const [selectedRoomTypes, setSelectedRoomTypes] = useState([]);
 	const [showDanger, setShowDanger] = useState(false);
-	const [selectedDates, setSelectedDates] = useState([]);
 
 	const filteredData = useMemo(() => {
 		return dayOverDayInventory.filter((item) => {
@@ -88,8 +93,20 @@ export const RoomStockReport = ({ dayOverDayInventory, chosenLanguage }) => {
 		setShowDanger(false);
 	};
 
+	const totalRoomsSum =
+		filteredData &&
+		filteredData.reduce((acc, curr) => acc + curr.total_rooms, 0);
+	const availableRoomsSum =
+		filteredData &&
+		filteredData.reduce((acc, curr) => acc + curr.total_rooms_available, 0);
+
 	return (
 		<RoomStockReportWrapper>
+			<RoomScoreCards
+				totalRooms={totalRoomsSum}
+				availableRooms={availableRoomsSum}
+				showCards={selectedDates && selectedDates.length > 0}
+			/>
 			<FiltersWrapper>
 				<Select
 					mode='multiple'
