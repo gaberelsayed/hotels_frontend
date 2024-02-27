@@ -379,13 +379,13 @@ const PreReservationTable = ({
 	};
 
 	const handleOk = () => {
-		setIsModalVisible(false);
 		setSelectedReservation(null); // Reset the selected reservation
+		setIsModalVisible(false);
 	};
 
 	const handleCancel = () => {
-		setIsModalVisible(false);
 		setSelectedReservation(null); // Reset the selected reservation
+		setIsModalVisible(false);
 	};
 
 	return (

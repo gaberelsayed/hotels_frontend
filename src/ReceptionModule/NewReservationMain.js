@@ -756,7 +756,7 @@ const NewReservationMainWrapper = styled.div`
 
 	.grid-container-main {
 		display: grid;
-		grid-template-columns: ${(props) => (props.showList ? "1% 98%" : "5% 92%")};
+		grid-template-columns: ${(props) => (props.showList ? "1% 98%" : "1% 99%")};
 	}
 
 	.container-wrapper {

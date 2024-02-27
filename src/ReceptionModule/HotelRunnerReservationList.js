@@ -227,5 +227,4 @@ export default HotelRunnerReservationList;
 const HotelRunnerReservationListWrapper = styled.div`
 	margin-top: 50px;
 	margin-bottom: 50px;
-	margin-right: 20px;
 `;

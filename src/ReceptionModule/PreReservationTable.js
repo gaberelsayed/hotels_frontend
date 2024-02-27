@@ -240,13 +240,13 @@ const PreReservationTable = ({
 	};
 
 	const handleOk = () => {
-		setIsModalVisible(false);
 		setSelectedReservation(null); // Reset the selected reservation
+		setIsModalVisible(false);
 	};
 
 	const handleCancel = () => {
-		setIsModalVisible(false);
 		setSelectedReservation(null); // Reset the selected reservation
+		setIsModalVisible(false);
 	};
 
 	return (
@@ -362,6 +362,11 @@ const PreReservationTableWrapper = styled.div`
 
 	td {
 		text-transform: capitalize;
+		font-size: 12px !important;
+	}
+	th {
+		text-transform: capitalize;
+		font-size: 12px !important;
 	}
 
 	.table thead th {
@@ -373,5 +378,6 @@ const PreReservationTableWrapper = styled.div`
 
 	.table {
 		border-collapse: collapse; // Ensure borders are well aligned
+		font-size: 11px !important;
 	}
 `;
