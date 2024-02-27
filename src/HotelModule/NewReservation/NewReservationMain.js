@@ -154,7 +154,7 @@ const NewReservationMain = () => {
 						console.log(data2.error, "Error rendering");
 					} else {
 						if (data && data.name && data._id && data2 && data2.length > 0) {
-							if (start_date && end_date) {
+							if (heatMapStartDate && heatMapEndDate) {
 								getHotelReservations(
 									data2[0]._id,
 									user._id,
@@ -179,6 +179,7 @@ const NewReservationMain = () => {
 								if (data4 && data4.error) {
 									console.log(data4.error);
 								} else {
+									// console.log(data4, "data4");
 									setAllReservationsHeatMap(
 										data4 && data4.length > 0 ? data4 : []
 									);
@@ -623,10 +624,7 @@ const NewReservationMain = () => {
 								) : (
 									<>
 										<>
-											{allReservationsHeatMap &&
-											allReservationsHeatMap.length > 0 &&
-											start_date_Map &&
-											end_date_Map ? (
+											{start_date_Map && end_date_Map ? (
 												<ZReservationForm
 													customer_details={customer_details}
 													setCustomer_details={setCustomer_details}
@@ -694,7 +692,7 @@ const NewReservationMain = () => {
 							</>
 						) : activeTab === "heatmap" ? (
 							<>
-								{allReservationsHeatMap && allReservationsHeatMap.length > 0 ? (
+								{allReservationsHeatMap ? (
 									<HotelHeatMap
 										hotelRooms={hotelRooms}
 										hotelDetails={hotelDetails}
