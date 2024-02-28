@@ -16,6 +16,7 @@ import { DatePicker, Space } from "antd";
 import moment from "moment";
 import { useHistory } from "react-router-dom";
 import GeneralReportMain from "./GeneralReport/GeneralReportMain";
+import AssignReservations from "./AssignReservations";
 
 const { RangePicker } = DatePicker;
 
@@ -44,7 +45,7 @@ const HotelReportsMain = () => {
 	]);
 	const history = useHistory(); // Initialize the history object
 
-	const [activeTab, setActiveTab] = useState("finance");
+	const [activeTab, setActiveTab] = useState("general");
 
 	const { user, token } = isAuthenticated();
 	const { languageToggle, chosenLanguage } = useCartContext();
@@ -57,8 +58,10 @@ const HotelReportsMain = () => {
 			setActiveTab("finance");
 		} else if (window.location.search.includes("general")) {
 			setActiveTab("general");
+		} else if (window.location.search.includes("assign-financials")) {
+			setActiveTab("assign-financials");
 		} else {
-			setActiveTab("finance");
+			setActiveTab("general");
 		}
 		// eslint-disable-next-line
 	}, [activeTab]);
@@ -193,18 +196,6 @@ const HotelReportsMain = () => {
 					<div style={{ background: "#8a8a8a", padding: "1px" }}>
 						<div className='my-2 tab-grid col-md-8'>
 							<Tab
-								isActive={activeTab === "finance"}
-								onClick={() => {
-									setActiveTab("finance");
-									history.push("/hotel-management/hotel-reports?finance"); // Programmatically navigate
-								}}
-							>
-								{chosenLanguage === "Arabic"
-									? "التقرير المالي"
-									: "Finance (Checkedout)"}
-							</Tab>
-
-							<Tab
 								isActive={activeTab === "general"}
 								onClick={() => {
 									setActiveTab("general");
@@ -214,6 +205,29 @@ const HotelReportsMain = () => {
 								{chosenLanguage === "Arabic"
 									? "التقرير العام"
 									: "General Report"}
+							</Tab>
+							<Tab
+								isActive={activeTab === "finance"}
+								onClick={() => {
+									setActiveTab("finance");
+									history.push("/hotel-management/hotel-reports?finance");
+								}}
+							>
+								{chosenLanguage === "Arabic"
+									? "Checkout Report"
+									: "Checkout Report"}
+							</Tab>
+
+							<Tab
+								isActive={activeTab === "assign-financials"}
+								onClick={() => {
+									setActiveTab("assign-financials");
+									history.push(
+										"/hotel-management/hotel-reports?assign-financials"
+									);
+								}}
+							>
+								{chosenLanguage === "Arabic" ? "Financials" : "Financials"}
 							</Tab>
 						</div>
 					</div>
@@ -264,6 +278,15 @@ const HotelReportsMain = () => {
 						{activeTab === "general" ? (
 							<>
 								<GeneralReportMain
+									hotelDetails={hotelDetails}
+									chosenLanguage={chosenLanguage}
+								/>
+							</>
+						) : null}
+
+						{activeTab === "assign-financials" ? (
+							<>
+								<AssignReservations
 									hotelDetails={hotelDetails}
 									chosenLanguage={chosenLanguage}
 								/>

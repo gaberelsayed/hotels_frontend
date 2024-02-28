@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getSubscriptionData } from "../apiAdmin";
+import { getSubscriptionData } from "../../HotelModule/apiAdmin";
 import styled from "styled-components";
 
 const SubscriptionDataInfo = ({ user, token, hotelDetails }) => {

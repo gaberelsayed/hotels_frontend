@@ -82,6 +82,8 @@ const Signin = ({ history }) => {
 					"/house-keeping-management/house-keeping");
 			} else if (user && user.role === 5000) {
 				return (window.location.href = "/house-keeping-employee/house-keeping");
+			} else if (user && user.role === 6000) {
+				return (window.location.href = "/finance/overview");
 			} else {
 				return (window.location.href = "/");
 			}
@@ -125,6 +127,14 @@ const Signin = ({ history }) => {
 			isAuthenticated().user.role === 5000
 		) {
 			return (window.location.href = "/house-keeping-employee/house-keeping");
+		}
+
+		if (
+			isAuthenticated() &&
+			isAuthenticated().user &&
+			isAuthenticated().user.role === 6000
+		) {
+			return (window.location.href = "/finance/overview");
 		}
 	};
 

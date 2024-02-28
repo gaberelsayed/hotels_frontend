@@ -36,6 +36,8 @@ import HouseKeepingManagerRoute from "./auth/HouseKeepingManagerRoute";
 import HouseKeepingMainManagement from "./HouseKeepingManager/HouseKeepingMain";
 import HouseKeepingEmployeeMain from "./HouseKeepingEmployee/HouseKeepingEmployeeMain";
 import HouseKeepingEmployeeRoute from "./auth/HouseKeepingEmployeeRoute";
+import FinanceRoute from "./auth/FinanceRoute";
+import PaymentMainFinance from "./Finance/Payment/PaymentMainFinance";
 
 function App() {
 	const { languageToggle, chosenLanguage } = useCartContext();
@@ -151,6 +153,12 @@ function App() {
 						path='/house-keeping-employee/house-keeping'
 						exact
 						component={HouseKeepingEmployeeMain}
+					/>
+
+					<FinanceRoute
+						path='/finance/overview'
+						exact
+						component={PaymentMainFinance}
 					/>
 				</Switch>
 			</>

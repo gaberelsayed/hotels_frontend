@@ -662,6 +662,24 @@ export const processPayment = (reservationId, paymentData) => {
 		.catch((err) => console.log(err));
 };
 
+export const processCommissionPayment = (paymentData) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/braintree/commission-payment`,
+		{
+			method: "POST",
+			headers: {
+				Accept: "application/json",
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(paymentData),
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
 export const currecyConversion = (saudimoney) => {
 	return fetch(
 		`${process.env.REACT_APP_API_URL}/currencyapi/${Number(saudimoney).toFixed(
@@ -682,6 +700,7 @@ export const currecyConversion = (saudimoney) => {
 };
 
 export const updateSubscriptionCardFn = (token, paymentData) => {
+	console.log(paymentData, "paymentData");
 	return fetch(
 		`${process.env.REACT_APP_API_URL}/braintree/update-subscription-card`,
 		{
@@ -834,6 +853,22 @@ export const updatingHouseKeepingTask = (taskId, task) => {
 export const getEmployeeWorkLoad = (userId) => {
 	return fetch(
 		`${process.env.REACT_APP_API_URL}/house-keeping-employee/${userId}`,
+		{
+			method: "GET",
+			headers: {
+				Accept: "application/json",
+			},
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
+export const pendingPaymentReservationList = (page, records, hotelId) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/reservations-pending/${page}/${records}/${hotelId}`,
 		{
 			method: "GET",
 			headers: {

@@ -84,7 +84,9 @@ const SignupNew = () => {
 						  ? 4000
 						  : roleDescription === "housekeeping"
 						    ? 5000
-						    : 2000,
+						    : roleDescription === "finance"
+						      ? 6000
+						      : 2000,
 				roleDescription: roleDescription,
 				phone: values.phone,
 				hotelName: hotelDetails.belongsTo.hotelName,

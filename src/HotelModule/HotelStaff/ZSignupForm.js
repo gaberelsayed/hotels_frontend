@@ -80,6 +80,7 @@ const ZSignupForm = ({
 									</option>
 									<option value='housekeeping'>House Keeping Staff</option>
 									<option value='hotelmanager'>Hotel Manager</option>
+									<option value='finance'>Finance</option>
 								</select>
 							</div>
 						</div>

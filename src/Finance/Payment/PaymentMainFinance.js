@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import AdminNavbar from "../AdminNavbar/AdminNavbar";
-import AdminNavbarArabic from "../AdminNavbar/AdminNavbarArabic";
 import styled from "styled-components";
 // import { Link } from "react-router-dom";
 import { useCartContext } from "../../cart_context";
@@ -13,18 +11,16 @@ import {
 	updateSubscriptionCardFn,
 	currecyConversion,
 	processCommissionPayment,
-} from "../apiAdmin";
+} from "../../HotelModule/apiAdmin";
 import { isAuthenticated } from "../../auth";
 import { toast } from "react-toastify";
 import { useHistory } from "react-router-dom";
 import Subscription from "./Subscription";
 import PendingReservationPayments from "./PendingReservationPayments";
 
-const PaymentMain = () => {
-	const [AdminMenuStatus, setAdminMenuStatus] = useState(false);
+const PaymentMainFinance = () => {
 	const [hotelDetails, setHotelDetails] = useState("");
 	const [updateCardClicked, setUpdateCardClicked] = useState(false);
-	const [collapsed, setCollapsed] = useState(false);
 	const [activeTab, setActiveTab] = useState("subscription");
 	const [currentPage, setCurrentPage] = useState(1);
 	const [scoreCardObject, setScoreCardObject] = useState("");
@@ -42,10 +38,6 @@ const PaymentMain = () => {
 	const history = useHistory(); // Initialize the history object
 
 	useEffect(() => {
-		if (window.innerWidth <= 1000) {
-			setCollapsed(true);
-		}
-
 		if (window.location.search.includes("subscription")) {
 			setActiveTab("subscription");
 		} else if (window.location.search.includes("pending")) {
@@ -124,7 +116,7 @@ const PaymentMain = () => {
 			if (data && data.error) {
 				console.log(data.error, "Error rendering");
 			} else {
-				getHotelDetails(data._id).then((data2) => {
+				getHotelDetails(data.belongsToId).then((data2) => {
 					if (data2 && data2.error) {
 						console.log(data2.error, "Error rendering");
 					} else {
@@ -281,34 +273,12 @@ const PaymentMain = () => {
 	};
 
 	return (
-		<PaymentMainWrapper
+		<PaymentMainFinanceWrapper
 			dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}
-			show={collapsed}
 			isArabic={chosenLanguage === "Arabic"}
 		>
 			<div className='grid-container-main'>
-				<div className='navcontent'>
-					{chosenLanguage === "Arabic" ? (
-						<AdminNavbarArabic
-							fromPage='Payment'
-							AdminMenuStatus={AdminMenuStatus}
-							setAdminMenuStatus={setAdminMenuStatus}
-							collapsed={collapsed}
-							setCollapsed={setCollapsed}
-							chosenLanguage={chosenLanguage}
-						/>
-					) : (
-						<AdminNavbar
-							fromPage='Payment'
-							AdminMenuStatus={AdminMenuStatus}
-							setAdminMenuStatus={setAdminMenuStatus}
-							collapsed={collapsed}
-							setCollapsed={setCollapsed}
-							chosenLanguage={chosenLanguage}
-						/>
-					)}
-				</div>
-
+				<div></div>
 				<div className='otherContentWrapper'>
 					<div style={{ background: "#8a8a8a", padding: "1px" }}>
 						<div className='my-2 tab-grid col-md-8'>
@@ -316,7 +286,7 @@ const PaymentMain = () => {
 								isActive={activeTab === "subscription"}
 								onClick={() => {
 									setActiveTab("subscription");
-									history.push("/hotel-management-payment?subscription"); // Programmatically navigate
+									history.push("/finance/overview?subscription"); // Programmatically navigate
 								}}
 							>
 								{chosenLanguage === "Arabic" ? "Subscription" : "Subscription"}
@@ -325,7 +295,7 @@ const PaymentMain = () => {
 								isActive={activeTab === "pending"}
 								onClick={() => {
 									setActiveTab("pending");
-									history.push("/hotel-management-payment?pending");
+									history.push("/finance/overview?pending");
 								}}
 							>
 								{chosenLanguage === "Arabic"
@@ -337,7 +307,7 @@ const PaymentMain = () => {
 								isActive={activeTab === "reports"}
 								onClick={() => {
 									setActiveTab("reports");
-									history.push("/hotel-management-payment?reports");
+									history.push("/finance/overview?reports");
 								}}
 							>
 								{chosenLanguage === "Arabic"
@@ -406,13 +376,13 @@ const PaymentMain = () => {
 					</div>
 				</div>
 			</div>
-		</PaymentMainWrapper>
+		</PaymentMainFinanceWrapper>
 	);
 };
 
-export default PaymentMain;
+export default PaymentMainFinance;
 
-const PaymentMainWrapper = styled.div`
+const PaymentMainFinanceWrapper = styled.div`
 	overflow-x: hidden;
 	/* background: #ededed; */
 	margin-top: 20px;
@@ -420,7 +390,7 @@ const PaymentMainWrapper = styled.div`
 
 	.grid-container-main {
 		display: grid;
-		grid-template-columns: ${(props) => (props.show ? "3% 96%" : "13% 85%")};
+		grid-template-columns: ${(props) => (props.show ? "1% 99%" : "2% 95%")};
 	}
 
 	text-align: ${(props) => (props.isArabic ? "right" : "")};

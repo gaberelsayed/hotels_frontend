@@ -1,11 +1,12 @@
 import React from "react";
-import { Table, Pagination, Button } from "antd";
+import { Table, Pagination } from "antd";
 import styled from "styled-components";
 import moment from "moment";
-import DownloadExcel from "./DownloadExcel";
+import DownloadExcel from "../../HotelModule/HotelReports/DownloadExcel";
 import ScoreCards from "./ScoreCards";
+import DropInPayment from "./DropInPayment";
 
-const TableViewReport = ({
+const TableViewReportPending = ({
 	allReservations,
 	setCurrentPage,
 	currentPage,
@@ -13,10 +14,9 @@ const TableViewReport = ({
 	chosenLanguage,
 	hotelDetails,
 	recordsPerPage,
-	selectedChannel,
-	setSelectedChannel,
-	allChannels,
 	scoreCardObject,
+	data,
+	buy,
 }) => {
 	// Define the table columns
 
@@ -42,7 +42,7 @@ const TableViewReport = ({
 			title: "#",
 			dataIndex: "index",
 			key: "index",
-			width: 40,
+			width: 50,
 			render: (text, record, index) =>
 				(currentPage - 1) * recordsPerPage + index + 1,
 		},
@@ -204,38 +204,28 @@ const TableViewReport = ({
 	// Define the pagination config
 	const paginationConfig = {
 		current: currentPage,
-		pageSize: 300, // This should match your state or props
+		pageSize: 400, // This should match your state or props
 		total: totalRecords,
 		onChange: (page) => setCurrentPage(page),
 	};
 
-	const handleChannelSelection = (channel) => {
-		setSelectedChannel(channel === "All" ? undefined : channel);
-	};
-
 	return (
-		<TableViewReportWrapper>
-			<div className='mt-3'>
-				<ScoreCards scoreCardObject={scoreCardObject} />
+		<TableViewReportPendingWrapper>
+			<div className='my-3'>
+				<ScoreCards
+					scoreCardObject={scoreCardObject}
+					chosenLanguage={chosenLanguage}
+				/>
 			</div>
-			<div className='channel-buttons mt-3'>
-				<Button
-					type={selectedChannel === undefined ? "primary" : "default"}
-					onClick={() => handleChannelSelection("All")}
-				>
-					All
-				</Button>
-				{allChannels.map((channel) => (
-					<Button
-						style={{ textTransform: "capitalize" }}
-						key={channel}
-						type={selectedChannel === channel ? "primary" : "default"}
-						onClick={() => handleChannelSelection(channel)}
-					>
-						{channel}
-					</Button>
-				))}
+			<div className='my-3'>
+				<DropInPayment
+					data={data}
+					chosenLanguage={chosenLanguage}
+					buy={buy}
+					scoreCardObject={scoreCardObject}
+				/>
 			</div>
+			<div className='channel-buttons mt-3'></div>
 			<div className='float-left my-3'>
 				<DownloadExcel
 					data={allReservations}
@@ -259,15 +249,15 @@ const TableViewReport = ({
 			>
 				<Pagination {...paginationConfig} />
 			</div>
-		</TableViewReportWrapper>
+		</TableViewReportPendingWrapper>
 	);
 };
 
-export default TableViewReport;
+export default TableViewReportPending;
 
-const TableViewReportWrapper = styled.div`
+const TableViewReportPendingWrapper = styled.div`
 	table {
-		font-size: 12px !important;
+		font-size: 11px !important;
 		text-transform: capitalize;
 	}
 
