@@ -30,6 +30,7 @@ const PreReservationTable = ({
 }) => {
 	const [isModalVisible, setIsModalVisible] = useState(false);
 	const [selectedReservation, setSelectedReservation] = useState(null);
+	const [modalKey, setModalKey] = useState(0);
 
 	const searchSubmit = (e) => {
 		e.preventDefault();
@@ -379,13 +380,15 @@ const PreReservationTable = ({
 	};
 
 	const handleOk = () => {
-		setSelectedReservation(null); // Reset the selected reservation
+		setSelectedReservation(null);
 		setIsModalVisible(false);
+		setModalKey((prevKey) => prevKey + 1); // Increment the key
 	};
 
 	const handleCancel = () => {
-		setSelectedReservation(null); // Reset the selected reservation
+		setSelectedReservation(null);
 		setIsModalVisible(false);
+		setModalKey((prevKey) => prevKey + 1); // Increment the key
 	};
 
 	return (
@@ -474,6 +477,7 @@ const PreReservationTable = ({
 			</PreReservationTableWrapper>
 
 			<Modal
+				key={modalKey} // Add the key here
 				title={
 					chosenLanguage === "Arabic" ? "تفاصيل الحجز" : "Reservation Details"
 				}
