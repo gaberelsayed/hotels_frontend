@@ -68,6 +68,7 @@ const PreReservationTable = ({
 		{
 			title: "#",
 			dataIndex: "index",
+			width: 70,
 			key: "index",
 			render: (text, record, index) =>
 				(currentPage - 1) * recordsPerPage + index + 1,
@@ -81,6 +82,7 @@ const PreReservationTable = ({
 		{
 			title: chosenLanguage === "Arabic" ? "الهاتف" : "Client Phone",
 			dataIndex: "customer_details",
+			width: 120,
 			key: "phone",
 			render: (customer_details) => customer_details.phone,
 		},
@@ -92,6 +94,7 @@ const PreReservationTable = ({
 		{
 			title: chosenLanguage === "Arabic" ? "مصدر الحجز" : "Source",
 			dataIndex: "booking_source",
+			width: 100,
 			key: "booking_source",
 		},
 		{
@@ -168,11 +171,9 @@ const PreReservationTable = ({
 			},
 		},
 		{
-			title:
-				chosenLanguage === "Arabic"
-					? "أنواع الغرف (السعر × العدد)"
-					: "Room Types (Price x Count)",
+			title: chosenLanguage === "Arabic" ? "أنواع الغرف" : "Room Types",
 			dataIndex: "pickedRoomsType",
+			width: 150,
 			key: "pickedRoomsType",
 			render: (pickedRoomsType) =>
 				pickedRoomsType.map((room, index) => (
@@ -211,6 +212,7 @@ const PreReservationTable = ({
 		{
 			title: chosenLanguage === "Arabic" ? "المبلغ الإجمالي" : "Total Amount",
 			dataIndex: "total_amount",
+			width: 110,
 			key: "total_amount",
 			render: (total_amount) =>
 				`${total_amount && total_amount.toLocaleString()} SAR`,
@@ -218,6 +220,7 @@ const PreReservationTable = ({
 		{
 			title: chosenLanguage === "Arabic" ? "تفاصيل" : "DETAILS...",
 			key: "details",
+			width: 80,
 			render: (text, record) => (
 				<button
 					style={{
@@ -514,6 +517,7 @@ const PreReservationTableWrapper = styled.div`
 	tr,
 	tbody {
 		text-transform: capitalize !important;
+		font-size: 12px;
 	}
 
 	.table thead th {

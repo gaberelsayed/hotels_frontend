@@ -69,6 +69,7 @@ const PreReservationTable = ({
 		{
 			title: "#",
 			dataIndex: "index",
+			width: 70,
 			key: "index",
 			render: (text, record, index) =>
 				(currentPage - 1) * recordsPerPage + index + 1,
@@ -82,6 +83,7 @@ const PreReservationTable = ({
 		{
 			title: chosenLanguage === "Arabic" ? "الهاتف" : "Client Phone",
 			dataIndex: "customer_details",
+			width: 120,
 			key: "phone",
 			render: (customer_details) => customer_details.phone,
 		},
@@ -93,6 +95,7 @@ const PreReservationTable = ({
 		{
 			title: chosenLanguage === "Arabic" ? "مصدر الحجز" : "Source",
 			dataIndex: "booking_source",
+			width: 100,
 			key: "booking_source",
 		},
 		{
@@ -169,11 +172,9 @@ const PreReservationTable = ({
 			},
 		},
 		{
-			title:
-				chosenLanguage === "Arabic"
-					? "أنواع الغرف (السعر × العدد)"
-					: "Room Types (Price x Count)",
+			title: chosenLanguage === "Arabic" ? "أنواع الغرف" : "Room Types",
 			dataIndex: "pickedRoomsType",
+			width: 150,
 			key: "pickedRoomsType",
 			render: (pickedRoomsType) =>
 				pickedRoomsType.map((room, index) => (
@@ -186,8 +187,8 @@ const PreReservationTable = ({
 			title: chosenLanguage === "Arabic" ? "رقم الغرفة" : "Room Number",
 			key: "roomDetails",
 			render: (record) => {
-				// First, check if 'roomDetails' is available and has entries
-				if (record.roomDetails && record.roomDetails.length > 0) {
+				// Check if 'record' and 'roomDetails' are available and have entries
+				if (record && record.roomDetails && record.roomDetails.length > 0) {
 					return record.roomDetails.map((room, index) => (
 						<div key={index}>
 							{room.room_number ? room.room_number : "No Room"}
@@ -196,7 +197,7 @@ const PreReservationTable = ({
 				}
 
 				// If 'roomDetails' is not available, check 'roomId'
-				else if (record.roomId && record.roomId.length > 0) {
+				else if (record && record.roomId && record.roomId.length > 0) {
 					return record.roomId.map((room, index) => (
 						<div key={index}>
 							{room.room_number ? room.room_number : "No Room"}
@@ -212,6 +213,7 @@ const PreReservationTable = ({
 		{
 			title: chosenLanguage === "Arabic" ? "المبلغ الإجمالي" : "Total Amount",
 			dataIndex: "total_amount",
+			width: 110,
 			key: "total_amount",
 			render: (total_amount) =>
 				`${total_amount && total_amount.toLocaleString()} SAR`,
@@ -219,6 +221,7 @@ const PreReservationTable = ({
 		{
 			title: chosenLanguage === "Arabic" ? "تفاصيل" : "DETAILS...",
 			key: "details",
+			width: 80,
 			render: (text, record) => (
 				<button
 					style={{
