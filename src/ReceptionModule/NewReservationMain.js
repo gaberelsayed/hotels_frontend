@@ -618,7 +618,6 @@ const NewReservationMain = () => {
 								) : (
 									<>
 										{allReservationsHeatMap &&
-										allReservationsHeatMap.length > 0 &&
 										start_date_Map &&
 										end_date_Map ? (
 											<ZReservationForm
@@ -684,7 +683,7 @@ const NewReservationMain = () => {
 							</>
 						) : activeTab === "heatmap" ? (
 							<>
-								{allReservationsHeatMap && allReservationsHeatMap.length > 0 ? (
+								{allReservationsHeatMap ? (
 									<HotelHeatMap
 										hotelRooms={hotelRooms}
 										hotelDetails={hotelDetails}
