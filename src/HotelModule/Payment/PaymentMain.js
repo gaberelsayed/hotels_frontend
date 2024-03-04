@@ -267,13 +267,20 @@ const PaymentMain = () => {
 			})
 			.then((response) => {
 				// Directly check for a successful transaction indicator from your backend response
+				setTimeout(function () {
+					window.location.reload(false);
+				}, 4000);
 
-				toast.success("You have successfully subscribed to our platform share");
+				toast.success("You have successfully paid Janat & Affiliate Share");
 			})
 			.catch((error) => {
 				// Handle errors from both requestPaymentMethod and processPayment
 				console.error("Payment processing error: ", error);
 				setData({ loading: false, error: error.message });
+				setTimeout(function () {
+					window.location.reload(false);
+				}, 4000);
+
 				toast.error(
 					"An error occurred during payment processing. Please try again."
 				);

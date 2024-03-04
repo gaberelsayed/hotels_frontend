@@ -17,6 +17,7 @@ import ReceiptPDF from "../NewReservation/ReceiptPDF"; // Adjust the path as nee
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import "jspdf-autotable";
+import { relocationArray1 } from "./ReservationAssets";
 
 const Wrapper = styled.div`
 	min-height: 750px;
@@ -88,8 +89,10 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 	const [isModalVisible, setIsModalVisible] = useState(false);
 	const [isModalVisible2, setIsModalVisible2] = useState(false);
 	const [isModalVisible3, setIsModalVisible3] = useState(false);
+	const [isModalVisible4, setIsModalVisible4] = useState(false);
 	const [linkModalVisible, setLinkModalVisible] = useState(false);
 	const [chosenRooms, setChosenRooms] = useState([]);
+	const [selectedHotelDetails, setSelectedHotelDetails] = useState("");
 
 	// eslint-disable-next-line
 	const [selectedStatus, setSelectedStatus] = useState("");
@@ -236,6 +239,38 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 		}
 	};
 
+	const handleUpdateReservationStatus3 = () => {
+		if (
+			!selectedHotelDetails ||
+			!selectedHotelDetails.belongsTo ||
+			!selectedHotelDetails._id
+		) {
+			return toast.error("Please Select Your Desired Hotel For Relocation");
+		}
+
+		const confirmationMessage = `Are You Sure You want to re-locate this reservation? Once relocated, it will disappear from your reservation list`;
+		if (window.confirm(confirmationMessage)) {
+			const updateData = {
+				belongsTo: selectedHotelDetails.belongsTo,
+				hotelId: selectedHotelDetails._id,
+				state: "relocated",
+			};
+
+			updateSingleReservation(reservation._id, updateData).then((response) => {
+				if (response.error) {
+					console.error(response.error);
+					toast.error("An error occurred while updating the status");
+				} else {
+					toast.success("Reservation was successfully relocated");
+					setIsModalVisible4(false);
+					setTimeout(() => {
+						window.location.reload(false);
+					}, 2000);
+				}
+			});
+		}
+	};
+
 	const getHotelRoomsDetails = () => {
 		getHotelRooms(reservation.hotelId, user._id).then((data3) => {
 			if (data3 && data3.error) {
@@ -373,6 +408,44 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 					</Modal>
 
 					<Modal
+						title={
+							chosenLanguage === "Arabic"
+								? "نقل الحجز؟"
+								: "Relocate Reservation?"
+						}
+						open={isModalVisible4}
+						onCancel={() => setIsModalVisible4(false)}
+						onOk={handleUpdateReservationStatus3}
+						style={{
+							textAlign: chosenLanguage === "Arabic" ? "center" : "",
+						}}
+					>
+						<Select
+							defaultValue={
+								reservation && hotelDetails && hotelDetails.hotelName
+							}
+							style={{
+								width: "100%",
+								textTransform: "capitalize",
+							}}
+							onChange={(value) => setSelectedHotelDetails(JSON.parse(value))}
+						>
+							<Select.Option value=''>Please Select</Select.Option>
+							{relocationArray1.map((hotel) => (
+								<Select.Option
+									style={{
+										textTransform: "capitalize",
+									}}
+									key={hotel._id}
+									value={JSON.stringify(hotel)}
+								>
+									{hotel.hotelName}
+								</Select.Option>
+							))}
+						</Select>
+					</Modal>
+
+					<Modal
 						open={linkModalVisible}
 						onCancel={() => setLinkModalVisible(false)}
 						onOk={() => setLinkModalVisible(false)}
@@ -435,6 +508,31 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 							<EditOutlined />
 							{chosenLanguage === "Arabic" ? "تعديل الحجز" : "Edit Reservation"}
 						</h5>
+
+						{relocationArray1 &&
+							relocationArray1.some(
+								(hotel) =>
+									hotel._id === hotelDetails._id &&
+									hotel.belongsTo === hotelDetails.belongsTo._id
+							) && (
+								<h5
+									className='text-center mx-auto mt-3'
+									style={{
+										fontWeight: "bold",
+										textDecoration: "underline",
+										cursor: "pointer",
+										color: "#67634c",
+									}}
+									onClick={() => {
+										setIsModalVisible4(true);
+									}}
+								>
+									<EditOutlined />
+									{chosenLanguage === "Arabic"
+										? "نقل الحجز؟"
+										: "Relocate Reservation?"}
+								</h5>
+							)}
 
 						<Modal
 							title='Receipt Download'
