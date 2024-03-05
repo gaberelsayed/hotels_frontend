@@ -101,7 +101,7 @@ const Subscription = ({
 										<h3>
 											نظام إدارة الممتلكات (X-Hotel PRO PMS) الخاص بنا
 											<br />
-											<strong style={{ color: "black" }}> $150/ شهرياً</strong>
+											<strong style={{ color: "black" }}> $100/ شهرياً</strong>
 										</h3>
 										<br />
 										<ul
@@ -130,7 +130,7 @@ const Subscription = ({
 									<>
 										<h3>
 											Our PRO PMS (Property Management System) PLAN{" "}
-											<strong style={{ color: "black" }}> $150/ Month</strong>{" "}
+											<strong style={{ color: "black" }}> $100/ Month</strong>{" "}
 										</h3>
 										<ul
 											className='mx-auto col-md-8 ulist'

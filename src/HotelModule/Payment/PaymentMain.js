@@ -217,7 +217,7 @@ const PaymentMain = () => {
 
 				const paymentData = {
 					paymentMethodNonce: nonce,
-					amount: 150,
+					amount: 100,
 					email: user.email,
 					customerId: hotelDetails._id,
 					planId: "monthly_plan",
