@@ -881,3 +881,19 @@ export const pendingPaymentReservationList = (page, records, hotelId) => {
 		})
 		.catch((err) => console.log(err));
 };
+
+export const gettingCommissionPaidReservations = (page, records, hotelId) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/reservations-paid-commission/${page}/${records}/${hotelId}`,
+		{
+			method: "GET",
+			headers: {
+				Accept: "application/json",
+			},
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};

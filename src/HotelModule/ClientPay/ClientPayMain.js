@@ -86,6 +86,7 @@ const ClientPayMain = () => {
 				const paymentData = {
 					paymentMethodNonce: nonce,
 					amount: currency.amountInUSD,
+					amountInSAR: currency.amountInSAR,
 					email: reservation?.customer_details.email,
 					customerId: reservation?._id,
 					planId: "One Time Payment",

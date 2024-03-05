@@ -13,12 +13,14 @@ import {
 	updateSubscriptionCardFn,
 	currecyConversion,
 	processCommissionPayment,
+	gettingCommissionPaidReservations,
 } from "../apiAdmin";
 import { isAuthenticated } from "../../auth";
 import { toast } from "react-toastify";
 import { useHistory } from "react-router-dom";
 import Subscription from "./Subscription";
 import PendingReservationPayments from "./PendingReservationPayments";
+import PaidCommission from "./PaidCommission";
 
 const PaymentMain = () => {
 	const [AdminMenuStatus, setAdminMenuStatus] = useState(false);
@@ -28,6 +30,9 @@ const PaymentMain = () => {
 	const [activeTab, setActiveTab] = useState("subscription");
 	const [currentPage, setCurrentPage] = useState(1);
 	const [scoreCardObject, setScoreCardObject] = useState("");
+	const [scoreCardObject2, setScoreCardObject2] = useState("");
+	const [commissionPaidReservations, setCommissionPaidReservations] =
+		useState("");
 	const [data, setData] = useState({
 		loading: false,
 		success: false,
@@ -142,6 +147,21 @@ const PaymentMain = () => {
 									setPendingReservations(data);
 									aggregateScoreCardData(data).then((aggregatedData) => {
 										setScoreCardObject(aggregatedData);
+									});
+								}
+							});
+
+							gettingCommissionPaidReservations(
+								currentPage,
+								400,
+								data2[0]._id
+							).then((data4) => {
+								if (data4 && data4.error) {
+									console.log(data4.error, "error getting reservations");
+								} else {
+									setCommissionPaidReservations(data4);
+									aggregateScoreCardData(data4).then((aggregatedData) => {
+										setScoreCardObject2(aggregatedData);
 									});
 								}
 							});
@@ -348,8 +368,8 @@ const PaymentMain = () => {
 								}}
 							>
 								{chosenLanguage === "Arabic"
-									? "Financial Reports"
-									: "Financial Reports"}
+									? "Paid Commission"
+									: "Paid Commission"}
 							</Tab>
 						</div>
 					</div>
@@ -387,6 +407,23 @@ const PaymentMain = () => {
 										setData={setData}
 										chosenLanguage={chosenLanguage}
 										hotelDetails={hotelDetails}
+									/>
+								) : null}
+							</>
+						) : null}
+
+						{activeTab === "reports" ? (
+							<>
+								{hotelDetails && hotelDetails._id ? (
+									<PaidCommission
+										allReservations={commissionPaidReservations}
+										setCurrentPage={setCurrentPage}
+										currentPage={currentPage}
+										totalRecords={commissionPaidReservations.length}
+										chosenLanguage={chosenLanguage}
+										hotelDetails={hotelDetails}
+										recordsPerPage={400}
+										scoreCardObject={scoreCardObject2}
 									/>
 								) : null}
 							</>

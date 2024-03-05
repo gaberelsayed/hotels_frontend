@@ -659,15 +659,13 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 														setLinkGenerated(
 															`https://xhotelpro.com/client-payment/${
 																reservation._id
-															}/${reservation.customer_details.name}/${
-																reservation.customer_details.phone
-															}/${hotelDetails.hotelName}/roomTypes/${new Date(
-																reservation.checkin_date
-															).toDateString()}/${new Date(
-																reservation.checkout_date
-															).toDateString()}/${
-																reservation.days_of_residence
-															}/${Number(reservation.total_amount).toFixed(2)}`
+															}/${reservation._id}/${reservation._id}/${
+																hotelDetails.hotelName
+															}/roomTypes/${reservation._id}/${
+																reservation._id
+															}/${reservation.days_of_residence}/${Number(
+																reservation.total_amount
+															).toFixed(2)}`
 														);
 													}}
 												>
