@@ -615,6 +615,17 @@ const NewReservationMain = (props) => {
 					</div>
 
 					<div className='container-wrapper'>
+						<div
+							dir='ltr'
+							style={{
+								textAlign: "center",
+								fontWeight: "bold",
+								textTransform: "capitalize",
+							}}
+						>
+							<h4>HOTEL: "{hotelDetails && hotelDetails.hotelName}"</h4>
+						</div>
+
 						{activeTab === "reserveARoom" ? (
 							<>
 								{loading ? (
