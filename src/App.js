@@ -10,9 +10,18 @@ import Signin from "./pages/Signin";
 
 //Management Routes
 import AdminRoute from "./auth/AdminRoute";
-import AdminDashboard from "./AdminModule/AdminDashboard";
+import AdminDashboard from "./AdminModule/AdminDashboard/AdminDashboard";
 import AddNewHotel from "./AdminModule/NewHotels/AddNewHotel";
 import AddedHotelsMain from "./AdminModule/AddedHotels/AddedHotelsMain";
+import HotelManagerDashboardAdmin from "./AdminModule/HotelModule/HotelManagement/HotelManagerDashboard";
+import ReservationsMainAdmin from "./AdminModule/HotelModule/ReservationsFolder/ReservationsMain";
+import NewReservationMainAdmin from "./AdminModule/HotelModule/NewReservation/NewReservationMain";
+import HotelSettingsMainAdmin from "./AdminModule/HotelModule/HotelSettings/HotelSettingsMain";
+import SignupNewAdmin from "./AdminModule/HotelModule/HotelStaff/SignupNew";
+import PaymentMainAdmin from "./AdminModule/HotelModule/Payment/PaymentMain";
+import ReceiptPDFAdmin from "./AdminModule/HotelModule/NewReservation/ReceiptPDF";
+import HouseKeepingMainAdmin from "./AdminModule/HotelModule/HouseKeeping/HouseKeepingMain";
+import HotelReportsMainAdmin from "./AdminModule/HotelModule/HotelReports/HotelReportsMain";
 
 //Hotel Routes
 import HotelRoute from "./auth/HotelRoute";
@@ -86,6 +95,53 @@ function App() {
 						exact
 						component={AddedHotelsMain}
 					/>
+
+					{/* Admin Routes for Hotels  */}
+					<AdminRoute
+						path='/admin-management/dashboard'
+						exact
+						component={HotelManagerDashboardAdmin}
+					/>
+					<AdminRoute
+						path='/admin-management/reservation-history'
+						exact
+						component={ReservationsMainAdmin}
+					/>
+					<AdminRoute
+						path='/admin-management/new-reservation'
+						exact
+						component={NewReservationMainAdmin}
+					/>
+					<AdminRoute
+						path='/admin-management/settings'
+						exact
+						component={HotelSettingsMainAdmin}
+					/>
+
+					<AdminRoute
+						path='/admin-management/staff'
+						exact
+						component={SignupNewAdmin}
+					/>
+
+					<AdminRoute
+						path='/admin-management-payment'
+						exact
+						component={PaymentMainAdmin}
+					/>
+					<AdminRoute
+						path='/admin-management/house-keeping'
+						exact
+						component={HouseKeepingMainAdmin}
+					/>
+					<AdminRoute path='/admin/receipt' exact component={ReceiptPDFAdmin} />
+					<AdminRoute
+						path='/admin-management/admin-reports'
+						exact
+						component={HotelReportsMainAdmin}
+					/>
+
+					{/*End of Admin Routes for Hotels  */}
 
 					<HotelRoute
 						path='/hotel-management/dashboard'
