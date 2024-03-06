@@ -7,8 +7,9 @@ import { useCartContext } from "../../../cart_context";
 import {
 	checkedoutReservationsList,
 	checkedoutReservationsTotalRecords,
+	getHotelDetails,
 } from "../apiAdmin";
-// import { isAuthenticated } from "../../../auth";
+import { isAuthenticated } from "../../../auth";
 import TableViewReport from "./TableViewReport";
 import { DatePicker, Space } from "antd";
 import moment from "moment";
@@ -18,7 +19,7 @@ import AssignReservations from "./AssignReservations";
 
 const { RangePicker } = DatePicker;
 
-const HotelReportsMain = () => {
+const HotelReportsMain = (props) => {
 	const [AdminMenuStatus, setAdminMenuStatus] = useState(false);
 	const [collapsed, setCollapsed] = useState(false);
 	const [recordsPerPage] = useState(300);
@@ -42,11 +43,15 @@ const HotelReportsMain = () => {
 		moment().add(10, "days"),
 	]);
 	const history = useHistory(); // Initialize the history object
+	const hotelId = props.match.params.hotelId;
+	const userId = props.match.params.userId;
 
 	const [activeTab, setActiveTab] = useState("general");
 
-	// const { user, token } = isAuthenticated();
+	// eslint-disable-next-line
+	const { user, token } = isAuthenticated();
 	const { languageToggle, chosenLanguage } = useCartContext();
+
 	useEffect(() => {
 		if (window.innerWidth <= 1000) {
 			setCollapsed(true);
@@ -78,53 +83,55 @@ const HotelReportsMain = () => {
 		return [year, month, day].join("-");
 	};
 
-	const gettingHotelData = (hotelDetailsPassed) => {
-		if (hotelDetailsPassed && hotelDetailsPassed._id) {
-			const [startDate, endDate] = dateRange;
-			const formattedStartDate = formatDate(startDate);
-			const formattedEndDate = formatDate(endDate);
+	const gettingHotelData = (hotelId, userId) => {
+		const [startDate, endDate] = dateRange;
+		const formattedStartDate = formatDate(startDate);
+		const formattedEndDate = formatDate(endDate);
 
-			checkedoutReservationsList(
-				currentPage,
-				recordsPerPage,
-				formattedStartDate,
-				formattedEndDate,
-				hotelDetailsPassed._id,
-				selectedChannel
-			).then((data3) => {
-				if (data3 && data3.error) {
-					console.log(data3.error);
-				} else {
-					console.log(data3, "data3");
+		getHotelDetails(userId).then((data2) => {
+			if (data2 && data2.error) {
+				console.log(data2.error, "Error rendering");
+			} else {
+				setHotelDetails(data2[0]);
 
-					setAllReservations(data3 && data3.length > 0 ? data3 : []);
-				}
-			});
+				// Use the formatted start and end dates for API calls
+				checkedoutReservationsList(
+					currentPage,
+					recordsPerPage,
+					formattedStartDate,
+					formattedEndDate,
+					data2[0]._id,
+					selectedChannel
+				).then((data3) => {
+					if (data3 && data3.error) {
+						console.log(data3.error);
+					} else {
+						console.log(data3, "data3");
 
-			checkedoutReservationsTotalRecords(
-				formattedStartDate,
-				formattedEndDate,
-				hotelDetailsPassed._id,
-				selectedChannel
-			).then((data4) => {
-				if (data4 && data4.error) {
-					console.log(data4.error, "data4.error");
-				} else {
-					setTotalRecords(data4.total);
-					setScoreCardObject(data4);
-				}
-			});
-		}
+						setAllReservations(data3 && data3.length > 0 ? data3 : []);
+					}
+				});
+
+				checkedoutReservationsTotalRecords(
+					formattedStartDate,
+					formattedEndDate,
+					data2[0]._id,
+					selectedChannel
+				).then((data4) => {
+					if (data4 && data4.error) {
+						console.log(data4.error, "data4.error");
+					} else {
+						setTotalRecords(data4.total);
+						setScoreCardObject(data4);
+					}
+				});
+			}
+		});
 	};
 
 	// Call gettingHotelData whenever the date range or other relevant states change
 	useEffect(() => {
-		// Retrieve the hotel details from local storage when the component mounts
-		const storedHotelDetails = localStorage.getItem("hotel");
-		if (storedHotelDetails) {
-			setHotelDetails(JSON.parse(storedHotelDetails));
-			gettingHotelData(JSON.parse(storedHotelDetails));
-		}
+		gettingHotelData(hotelId, userId);
 		// eslint-disable-next-line
 	}, [currentPage, recordsPerPage, dateRange, selectedChannel]);
 
@@ -189,7 +196,9 @@ const HotelReportsMain = () => {
 								isActive={activeTab === "general"}
 								onClick={() => {
 									setActiveTab("general");
-									history.push("/admin-management/admin-reports?general"); // Programmatically navigate
+									history.push(
+										`/admin-management/admin-reports/${hotelId}/${userId}?general`
+									); // Programmatically navigate
 								}}
 							>
 								{chosenLanguage === "Arabic"
@@ -200,7 +209,9 @@ const HotelReportsMain = () => {
 								isActive={activeTab === "finance"}
 								onClick={() => {
 									setActiveTab("finance");
-									history.push("/admin-management/admin-reports?finance");
+									history.push(
+										`/admin-management/admin-reports/${hotelId}/${userId}?finance`
+									);
 								}}
 							>
 								{chosenLanguage === "Arabic"
@@ -213,7 +224,7 @@ const HotelReportsMain = () => {
 								onClick={() => {
 									setActiveTab("assign-financials");
 									history.push(
-										"/admin-management/admin-reports?assign-financials"
+										`/admin-management/admin-reports/${hotelId}/${userId}?assign-financials`
 									);
 								}}
 							>

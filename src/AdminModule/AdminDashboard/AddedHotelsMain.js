@@ -22,11 +22,11 @@ const AddedHotelsMain = ({ chosenLanguage }) => {
 		// eslint-disable-next-line
 	}, []);
 
-	console.log(allHotelDetailsAdmin, "allHotelAdmin");
-
 	const handleHotelClick = (hotel) => {
 		localStorage.setItem("hotel", JSON.stringify(hotel)); // Store the hotel object in local storage
-		window.open("/admin-management/dashboard", "_blank"); // Open the dashboard in a new tab
+		window.open(
+			`/admin-management/dashboard/${hotel._id}/${hotel.belongsTo._id}`
+		); // Open the dashboard in a new tab
 	};
 
 	return (

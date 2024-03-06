@@ -29,6 +29,7 @@ export const EditReservationMain = ({
 	const [roomsSummary, setRoomsSummary] = useState("");
 	const [roomInventory, setRoomInventory] = useState("");
 
+	// eslint-disable-next-line
 	const { user } = isAuthenticated();
 
 	const formatDate = (date) => {

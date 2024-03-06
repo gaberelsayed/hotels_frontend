@@ -4,7 +4,12 @@ import AdminNavbarArabic from "../AdminNavbar/AdminNavbarArabic";
 import styled from "styled-components";
 import { useHistory } from "react-router-dom";
 import { useCartContext } from "../../../cart_context";
-import { createRooms, getHotelRooms, updateHotelDetails } from "../apiAdmin";
+import {
+	createRooms,
+	getHotelDetails,
+	getHotelRooms,
+	updateHotelDetails,
+} from "../apiAdmin";
 import { isAuthenticated } from "../../../auth";
 import ZHotelDetails from "./ZHotelDetails";
 import ZPricingCalendarForm from "./ZPricingCalendarForm";
@@ -12,12 +17,11 @@ import { toast } from "react-toastify";
 import HotelOverview from "./HotelOverview";
 import { defaultHotelDetails } from "../../NewHotels/Assets";
 
-const HotelSettingsMain = () => {
+const HotelSettingsMain = (props) => {
 	const history = useHistory();
 	const [AdminMenuStatus, setAdminMenuStatus] = useState(false);
 	const [collapsed, setCollapsed] = useState(false);
 	const [hotelDetails, setHotelDetails] = useState("");
-	// eslint-disable-next-line
 	const [values, setValues] = useState("");
 	const { languageToggle, chosenLanguage } = useCartContext();
 
@@ -61,6 +65,8 @@ const HotelSettingsMain = () => {
 	const [inheritModalVisible, setInheritModalVisible] = useState(false);
 	const [baseFloor, setBaseFloor] = useState("");
 	const [roomsAlreadyExists, setRoomsAlreadyExists] = useState(false);
+	const hotelId = props.match.params.hotelId;
+	const userId = props.match.params.userId;
 
 	useEffect(() => {
 		if (window.innerWidth <= 1000) {
@@ -79,42 +85,59 @@ const HotelSettingsMain = () => {
 		// eslint-disable-next-line
 	}, [activeTab]);
 
-	const gettingHotelData = (hotelDetailsPassed) => {
-		if (
-			hotelDetailsPassed &&
-			hotelDetailsPassed._id &&
-			hotelDetailsPassed.belongsTo &&
-			hotelDetailsPassed.belongsTo._id
-		) {
-			getHotelRooms(
-				hotelDetailsPassed._id,
-				hotelDetailsPassed.belongsTo._id
-			).then((data4) => {
-				if (data4 && data4.error) {
-					console.log(data4.error);
-				} else {
-					if (data4.length > 0) {
-						setRoomsAlreadyExists(true);
-					}
-					if (hotelRooms.length === 0) {
-						setHotelRooms(data4);
-					}
-					// setHotelRooms([]);
+	const gettingHotelData = (hotelId, userId) => {
+		getHotelDetails(userId).then((data2) => {
+			if (data2 && data2.error) {
+				console.log(data2.error, "Error rendering");
+			} else {
+				if (userId && data2 && data2.length > 0) {
+					setValues(data2[0].belongsTo);
 
-					if (clickedFloor && modalVisible) {
-						// Aggregate room types for the clicked floor
-						const aggregatedRoomData = aggregateRoomDataForFloor(
-							clickedFloor,
-							data4
-						);
-						setFloorDetails({
-							...defaultHotelDetails,
-							roomCountDetails: aggregatedRoomData,
-						});
-					}
+					setHotelDetails(data2[0]);
+					console.log(data2[0], "data2[0]");
+					// other state updates...
+					setHotelPhotos(
+						data2[0] && data2[0].hotelPhotos && data2[0].hotelPhotos.length > 0
+							? data2[0].hotelPhotos
+							: []
+					);
+
+					setPricingData(
+						data2[0] &&
+							data2[0].pricingCalendar &&
+							data2[0].pricingCalendar.length > 0
+							? data2[0].pricingCalendar
+							: []
+					);
+
+					getHotelRooms(data2[0]._id, userId).then((data4) => {
+						if (data4 && data4.error) {
+							console.log(data4.error);
+						} else {
+							if (data4.length > 0) {
+								setRoomsAlreadyExists(true);
+							}
+							if (hotelRooms.length === 0) {
+								setHotelRooms(data4);
+							}
+							// setHotelRooms([]);
+
+							if (clickedFloor && modalVisible) {
+								// Aggregate room types for the clicked floor
+								const aggregatedRoomData = aggregateRoomDataForFloor(
+									clickedFloor,
+									data4
+								);
+								setFloorDetails({
+									...defaultHotelDetails,
+									roomCountDetails: aggregatedRoomData,
+								});
+							}
+						}
+					});
 				}
-			});
-		}
+			}
+		});
 	};
 
 	const aggregateRoomDataForFloor = (floor, rooms) => {
@@ -132,29 +155,9 @@ const HotelSettingsMain = () => {
 	};
 
 	useEffect(() => {
-		// Retrieve the hotel details from local storage when the component mounts
-		const storedHotelDetails = localStorage.getItem("hotel");
-		if (storedHotelDetails) {
-			setHotelDetails(JSON.parse(storedHotelDetails));
-			setHotelPhotos(
-				JSON.parse(storedHotelDetails) &&
-					JSON.parse(storedHotelDetails).hotelPhotos &&
-					JSON.parse(storedHotelDetails).hotelPhotos.length > 0
-					? JSON.parse(storedHotelDetails).hotelPhotos
-					: []
-			);
-
-			setPricingData(
-				JSON.parse(storedHotelDetails) &&
-					JSON.parse(storedHotelDetails).pricingCalendar &&
-					JSON.parse(storedHotelDetails).pricingCalendar.length > 0
-					? JSON.parse(storedHotelDetails).pricingCalendar
-					: []
-			);
-
-			gettingHotelData(JSON.parse(storedHotelDetails));
+		if (hotelId && userId) {
+			gettingHotelData(hotelId, userId);
 		}
-
 		// eslint-disable-next-line
 	}, [clickedFloor]);
 
@@ -170,12 +173,7 @@ const HotelSettingsMain = () => {
 		const hotelId = hotelDetails._id; // Assuming your hotelDetails object has an _id field
 
 		// Using the API function from your API admin file
-		updateHotelDetails(
-			hotelId,
-			hotelDetails.belongsTo._id,
-			token,
-			updatedDetails
-		)
+		updateHotelDetails(hotelId, userId, token, updatedDetails)
 			.then((response) => {
 				window.scrollTo({ top: 0, behavior: "smooth" });
 				if (response.error) {
@@ -199,8 +197,8 @@ const HotelSettingsMain = () => {
 			new Map(hotelRooms.map((room) => [room["room_number"], room])).values()
 		);
 
-		getHotelRooms(hotelDetails.belongsTo._id, hotelDetails._id).then(
-			(existingRoomsData) => {
+		if (userId && hotelId) {
+			getHotelRooms(userId, hotelId).then((existingRoomsData) => {
 				if (existingRoomsData && existingRoomsData.error) {
 					console.error(existingRoomsData.error, "Error rendering");
 				} else {
@@ -216,26 +214,25 @@ const HotelSettingsMain = () => {
 					roomsToAdd.forEach((room, index) => {
 						setTimeout(() => {
 							setCurrentAddingRoom(room.room_number);
-							createRooms(hotelDetails.belongsTo._id, token, room).then(
-								(data) => {
-									if (data && data.error) {
-										console.error(data.error);
-									} else {
-										if (index === roomsToAdd.length - 1) {
-											// Reset after the last room addition
-											setCurrentAddingRoom(null);
-											window.location.reload(false);
-										}
+							createRooms(userId, token, room).then((data) => {
+								if (data && data.error) {
+									console.error(data.error);
+								} else {
+									if (index === roomsToAdd.length - 1) {
+										// Reset after the last room addition
+										setCurrentAddingRoom(null);
+										window.location.reload(false);
 									}
 								}
-							);
+							});
 						}, 2500 * index); // Delay each creation by 2.5 seconds
 					});
 				}
-			}
-		);
+			});
+		}
 	};
 
+	console.log(hotelRooms, "hotelRooms");
 	return (
 		<HotelSettingsMainWrapper
 			dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}
@@ -290,7 +287,9 @@ const HotelSettingsMain = () => {
 								isActive={activeTab === "HotelDetails"}
 								onClick={() => {
 									setActiveTab("HotelDetails");
-									history.push("/admin-management/settings?hoteldetails"); // Programmatic navigation
+									history.push(
+										`/admin-management/settings/${hotelId}/${userId}?hoteldetails`
+									); // Programmatic navigation
 								}}
 							>
 								{chosenLanguage === "Arabic"
@@ -301,7 +300,9 @@ const HotelSettingsMain = () => {
 								isActive={activeTab === "PricingCalendar"}
 								onClick={() => {
 									setActiveTab("PricingCalendar");
-									history.push("/admin-management/settings?pricing"); // Programmatic navigation
+									history.push(
+										`/admin-management/settings/${hotelId}/${userId}?pricing`
+									); // Programmatic navigation
 								}}
 							>
 								{chosenLanguage === "Arabic"
@@ -313,7 +314,9 @@ const HotelSettingsMain = () => {
 								isActive={activeTab === "RoomDetails"}
 								onClick={() => {
 									setActiveTab("RoomDetails");
-									history.push("/admin-management/settings?roomdetails"); // Programmatic navigation
+									history.push(
+										`/admin-management/settings/${hotelId}/${userId}?roomdetails`
+									); // Programmatic navigation
 								}}
 							>
 								{chosenLanguage === "Arabic"

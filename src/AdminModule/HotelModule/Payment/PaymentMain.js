@@ -6,6 +6,7 @@ import styled from "styled-components";
 import { useCartContext } from "../../../cart_context";
 import {
 	getBraintreeClientToken,
+	getHotelDetails,
 	pendingPaymentReservationList,
 	processPayment_Subscription,
 	updateSubscriptionCardFn,
@@ -20,7 +21,7 @@ import Subscription from "./Subscription";
 import PendingReservationPayments from "./PendingReservationPayments";
 import PaidCommission from "./PaidCommission";
 
-const PaymentMain = () => {
+const PaymentMain = (props) => {
 	const [AdminMenuStatus, setAdminMenuStatus] = useState(false);
 	const [hotelDetails, setHotelDetails] = useState("");
 	const [updateCardClicked, setUpdateCardClicked] = useState(false);
@@ -43,6 +44,9 @@ const PaymentMain = () => {
 	const { user, token } = isAuthenticated();
 	const { languageToggle, chosenLanguage } = useCartContext();
 	const history = useHistory(); // Initialize the history object
+
+	const hotelId = props.match.params.hotelId;
+	const userId = props.match.params.userId;
 
 	useEffect(() => {
 		if (window.innerWidth <= 1000) {
@@ -120,48 +124,50 @@ const PaymentMain = () => {
 		};
 	};
 
-	const gettingHotelData = (hotelDetailsPassed) => {
-		if (hotelDetailsPassed && hotelDetailsPassed._id) {
-			pendingPaymentReservationList(
-				currentPage,
-				400,
-				hotelDetailsPassed._id
-			).then((data) => {
-				if (data && data.error) {
-					console.log(data.error, "error getting reservations");
-				} else {
-					setPendingReservations(data);
-					aggregateScoreCardData(data).then((aggregatedData) => {
-						setScoreCardObject(aggregatedData);
-					});
-				}
-			});
+	const gettingHotelData = (hotelId, userId) => {
+		getHotelDetails(userId).then((data2) => {
+			if (data2 && data2.error) {
+				console.log(data2.error, "Error rendering");
+			} else {
+				if (userId && data2 && data2.length > 0) {
+					setHotelDetails(data2[0]);
 
-			gettingCommissionPaidReservations(
-				currentPage,
-				400,
-				hotelDetailsPassed._id
-			).then((data4) => {
-				if (data4 && data4.error) {
-					console.log(data4.error, "error getting reservations");
-				} else {
-					setCommissionPaidReservations(data4);
-					aggregateScoreCardData(data4).then((aggregatedData) => {
-						setScoreCardObject2(aggregatedData);
+					pendingPaymentReservationList(currentPage, 400, data2[0]._id).then(
+						(data) => {
+							if (data && data.error) {
+								console.log(data.error, "error getting reservations");
+							} else {
+								setPendingReservations(data);
+								aggregateScoreCardData(data).then((aggregatedData) => {
+									setScoreCardObject(aggregatedData);
+								});
+							}
+						}
+					);
+
+					gettingCommissionPaidReservations(
+						currentPage,
+						400,
+						data2[0]._id
+					).then((data4) => {
+						if (data4 && data4.error) {
+							console.log(data4.error, "error getting reservations");
+						} else {
+							setCommissionPaidReservations(data4);
+							aggregateScoreCardData(data4).then((aggregatedData) => {
+								setScoreCardObject2(aggregatedData);
+							});
+						}
 					});
 				}
-			});
-		}
+			}
+		});
 	};
 
 	useEffect(() => {
-		// Retrieve the hotel details from local storage when the component mounts
-		const storedHotelDetails = localStorage.getItem("hotel");
-		if (storedHotelDetails) {
-			setHotelDetails(JSON.parse(storedHotelDetails));
-			gettingHotelData(JSON.parse(storedHotelDetails));
+		if (userId && hotelId) {
+			gettingHotelData(hotelId, userId);
 		}
-
 		// eslint-disable-next-line
 	}, []);
 
@@ -331,7 +337,9 @@ const PaymentMain = () => {
 								isActive={activeTab === "subscription"}
 								onClick={() => {
 									setActiveTab("subscription");
-									history.push("/admin-management-payment?subscription"); // Programmatically navigate
+									history.push(
+										`/admin-management-payment/${hotelId}/${userId}?subscription`
+									); // Programmatically navigate
 								}}
 							>
 								{chosenLanguage === "Arabic" ? "Subscription" : "Subscription"}
@@ -340,7 +348,9 @@ const PaymentMain = () => {
 								isActive={activeTab === "pending"}
 								onClick={() => {
 									setActiveTab("pending");
-									history.push("/admin-management-payment?pending");
+									history.push(
+										`/admin-management-payment/${hotelId}/${userId}?pending`
+									);
 								}}
 							>
 								{chosenLanguage === "Arabic"
@@ -352,7 +362,9 @@ const PaymentMain = () => {
 								isActive={activeTab === "reports"}
 								onClick={() => {
 									setActiveTab("reports");
-									history.push("/admin-management-payment?reports");
+									history.push(
+										`/admin-management-payment/${hotelId}/${userId}?reports`
+									);
 								}}
 							>
 								{chosenLanguage === "Arabic"

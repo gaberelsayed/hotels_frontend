@@ -5,7 +5,11 @@ import styled from "styled-components";
 import { useHistory } from "react-router-dom";
 import { useCartContext } from "../../../cart_context";
 import { isAuthenticated } from "../../../auth";
-import { gettingDateReport, gettingDayOverDayInventory } from "../apiAdmin";
+import {
+	getHotelDetails,
+	gettingDateReport,
+	gettingDayOverDayInventory,
+} from "../apiAdmin";
 import MyReport from "./MyReport";
 import GeneralOverview from "./GeneralOverview";
 import PasscodeModal from "./PasscodeModal";
@@ -13,7 +17,7 @@ import { RoomStockReport } from "./RoomStockReport";
 import { Spin } from "antd";
 import WorldClocks from "../../../ReceptionModule/WorldClocks";
 
-const HotelManagerDashboard = () => {
+const HotelManagerDashboard = (props) => {
 	const history = useHistory();
 
 	const [AdminMenuStatus, setAdminMenuStatus] = useState(false);
@@ -27,7 +31,8 @@ const HotelManagerDashboard = () => {
 	const { languageToggle, chosenLanguage } = useCartContext();
 	const [dayOverDayInventory, setDayOverDayInventory] = useState([]);
 	const [selectedDates, setSelectedDates] = useState([]);
-
+	const hotelId = props.match.params.hotelId;
+	const userId = props.match.params.userId;
 	// eslint-disable-next-line
 	const { user, token } = isAuthenticated();
 
@@ -47,11 +52,8 @@ const HotelManagerDashboard = () => {
 		} else {
 			setActiveTab("Today");
 		}
-
 		// eslint-disable-next-line
 	}, [activeTab]);
-
-	console.log(hotelDetails, "hotelDetails2");
 
 	// Helper function to format a date object into yyyy-mm-dd
 	function formatDate(date) {
@@ -63,67 +65,69 @@ const HotelManagerDashboard = () => {
 		return [year, month.padStart(2, "0"), day.padStart(2, "0")].join("-");
 	}
 
-	const gettingHotelData = (hotelDetailsPassed) => {
-		if (hotelDetailsPassed && hotelDetailsPassed._id) {
-			// Format today's date
-			const today = new Date();
-			const formattedToday = formatDate(today);
+	const gettingHotelData = (hotelId, userId) => {
+		getHotelDetails(userId).then((data2) => {
+			if (data2 && data2.error) {
+				console.log(data2.error, "Error rendering");
+			} else {
+				if (userId && userId && data2 && data2.length > 0) {
+					setHotelDetails(data2[0]);
 
-			// Get yesterday's date
-			const yesterday = new Date(today);
-			yesterday.setDate(yesterday.getDate() - 1);
-			const formattedYesterday = formatDate(yesterday);
+					// Format today's date
+					const today = new Date();
+					const formattedToday = formatDate(today);
 
-			// Get today's report
-			gettingDateReport(
-				formattedToday,
-				hotelDetailsPassed._id,
-				hotelDetailsPassed.belongsTo._id
-			).then((data3) => {
-				if (data3 && data3.error) {
-					console.log(data3.error);
-				} else {
-					setReservationsToday(
-						data3.filter((i) => !i.reservation_status.includes("cancelled"))
+					// Get yesterday's date
+					const yesterday = new Date(today);
+					yesterday.setDate(yesterday.getDate() - 1);
+					const formattedYesterday = formatDate(yesterday);
+
+					// Get today's report
+					gettingDateReport(formattedToday, data2[0]._id, userId).then(
+						(data3) => {
+							if (data3 && data3.error) {
+								console.log(data3.error);
+							} else {
+								setReservationsToday(
+									data3.filter(
+										(i) => !i.reservation_status.includes("cancelled")
+									)
+								);
+							}
+						}
+					);
+
+					// Get yesterday's report
+					gettingDateReport(formattedYesterday, data2[0]._id, userId).then(
+						(data4) => {
+							if (data4 && data4.error) {
+								console.log(data4.error);
+							} else {
+								setReservationsYesterday(
+									data4.filter(
+										(i) => !i.reservation_status.includes("cancelled")
+									)
+								);
+							}
+						}
 					);
 				}
-			});
 
-			// Get yesterday's report
-			gettingDateReport(
-				formattedYesterday,
-				hotelDetailsPassed._id,
-				hotelDetailsPassed.belongsTo._id
-			).then((data4) => {
-				if (data4 && data4.error) {
-					console.log(data4.error);
-				} else {
-					setReservationsYesterday(
-						data4.filter((i) => !i.reservation_status.includes("cancelled"))
-					);
-				}
-			});
-			gettingDayOverDayInventory(
-				hotelDetailsPassed.belongsTo._id,
-				hotelDetailsPassed._id
-			).then((data5) => {
-				if (data5 && data5.error) {
-					console.log("Data not received");
-				} else {
-					setDayOverDayInventory(data5);
-				}
-			});
-		}
+				gettingDayOverDayInventory(userId, data2[0]._id).then((data5) => {
+					if (data5 && data5.error) {
+						console.log("Data not received");
+					} else {
+						setDayOverDayInventory(data5);
+					}
+				});
+			}
+		});
 	};
 
 	useEffect(() => {
-		// Retrieve the hotel details from local storage when the component mounts
-		const storedHotelDetails = localStorage.getItem("hotel");
-		if (storedHotelDetails) {
-			setHotelDetails(JSON.parse(storedHotelDetails));
-			gettingHotelData(JSON.parse(storedHotelDetails));
+		if (props.match.params.hotelId && props.match.params.userId) {
+			gettingHotelData(props.match.params.hotelId, props.match.params.userId);
 		}
-
 		// eslint-disable-next-line
 	}, [selectedDates]);
 
@@ -201,7 +205,9 @@ const HotelManagerDashboard = () => {
 								isActive={activeTab === "Today"}
 								onClick={() => {
 									setActiveTab("Today");
-									history.push("/admin-management/dashboard?today"); // Programmatic navigation
+									history.push(
+										`/admin-management/dashboard/${hotelId}/${userId}?today`
+									); // Programmatic navigation
 								}}
 							>
 								{chosenLanguage === "Arabic"
@@ -213,7 +219,9 @@ const HotelManagerDashboard = () => {
 								isActive={activeTab === "Yesterday"}
 								onClick={() => {
 									setActiveTab("Yesterday");
-									history.push("/admin-management/dashboard?yesterday"); // Programmatic navigation
+									history.push(
+										`/admin-management/dashboard/${hotelId}/${userId}?yesterday`
+									); // Programmatic navigation
 								}}
 							>
 								{chosenLanguage === "Arabic"
@@ -225,7 +233,9 @@ const HotelManagerDashboard = () => {
 								isActive={activeTab === "Overview"}
 								onClick={() => {
 									setActiveTab("Overview");
-									history.push("/admin-management/dashboard?overview"); // Programmatic navigation
+									history.push(
+										`/admin-management/dashboard/${hotelId}/${userId}?overview`
+									); // Programmatic navigation
 								}}
 							>
 								{chosenLanguage === "Arabic"
@@ -236,7 +246,9 @@ const HotelManagerDashboard = () => {
 								isActive={activeTab === "inventory"}
 								onClick={() => {
 									setActiveTab("inventory");
-									history.push("/admin-management/dashboard?inventory"); // Programmatically navigate
+									history.push(
+										`/admin-management/dashboard/${hotelId}/${userId}?inventory`
+									); // Programmatically navigate
 								}}
 							>
 								{chosenLanguage === "Arabic" ? "	تقرير جرد الغرف" : "Inventory"}

@@ -7,6 +7,7 @@ import { useCartContext } from "../../../cart_context";
 import {
 	getAllHouseKeepingTasks,
 	getAllHouseKeepingTotalRecords,
+	getHotelDetails,
 	getHotelRooms,
 	getHouseKeepingStaff,
 } from "../apiAdmin";
@@ -14,7 +15,7 @@ import { isAuthenticated } from "../../../auth";
 import HouseKeepingTable from "./HouseKeepingTable";
 import CreateNewTask from "./CreateNewTask";
 
-const HouseKeepingMain = () => {
+const HouseKeepingMain = (props) => {
 	const [AdminMenuStatus, setAdminMenuStatus] = useState(false);
 	const [collapsed, setCollapsed] = useState(false);
 	const [houseKeepingTasks, setHouseKeepingTasks] = useState([]);
@@ -31,6 +32,9 @@ const HouseKeepingMain = () => {
 
 	// eslint-disable-next-line
 	const { user, token } = isAuthenticated();
+
+	const hotelId = props.match.params.hotelId;
+	const userId = props.match.params.userId;
 
 	useEffect(() => {
 		if (window.innerWidth <= 1000) {
@@ -49,65 +53,61 @@ const HouseKeepingMain = () => {
 		// eslint-disable-next-line
 	}, [activeTab]);
 
-	const gettingOverallHouseKeepingTasks = (hotelDetailsPassed) => {
-		if (
-			hotelDetailsPassed &&
-			hotelDetailsPassed._id &&
-			hotelDetailsPassed.belongsTo &&
-			hotelDetailsPassed.belongsTo._id
-		) {
-			getAllHouseKeepingTasks(
-				currentPage,
-				recordsPerPage,
-				hotelDetailsPassed._id
-			).then((data4) => {
-				if (data4 && data4.error) {
-					console.log(data4.error);
-				} else {
-					setHouseKeepingTasks(data4.data);
-				}
-			});
+	const gettingOverallHouseKeepingTasks = (hotelId, userId) => {
+		getHotelDetails(userId).then((data2) => {
+			if (data2 && data2.error) {
+				console.log(data2.error, "Error rendering");
+			} else {
+				if (userId && data2 && data2.length > 0) {
+					setHotelDetails(data2[0]);
 
-			// Fetch total records
-			getAllHouseKeepingTotalRecords(hotelDetailsPassed._id).then((data5) => {
-				if (data5 && data5.error) {
-					console.log(data5.error);
-				} else {
-					setTotalTasksCount(data5.totalDocuments); // Set total records
-				}
-			});
+					getAllHouseKeepingTasks(
+						currentPage,
+						recordsPerPage,
+						data2[0]._id
+					).then((data4) => {
+						if (data4 && data4.error) {
+							console.log(data4.error);
+						} else {
+							setHouseKeepingTasks(data4.data);
+						}
+					});
 
-			if (!hotelRooms || hotelRooms.length === 0) {
-				getHotelRooms(
-					hotelDetailsPassed._id,
-					hotelDetailsPassed.belongsTo._id
-				).then((data3) => {
-					if (data3 && data3.error) {
-						console.log(data3.error);
-					} else {
-						setHotelRooms(data3);
+					// Fetch total records
+					getAllHouseKeepingTotalRecords(data2[0]._id).then((data5) => {
+						if (data5 && data5.error) {
+							console.log(data5.error);
+						} else {
+							setTotalTasksCount(data5.totalDocuments); // Set total records
+						}
+					});
+
+					if (!hotelRooms || hotelRooms.length === 0) {
+						getHotelRooms(data2[0]._id, userId).then((data3) => {
+							if (data3 && data3.error) {
+								console.log(data3.error);
+							} else {
+								setHotelRooms(data3);
+							}
+						});
 					}
-				});
-			}
 
-			getHouseKeepingStaff(hotelDetailsPassed._id).then((data6) => {
-				if (data6 && data6.error) {
-					console.log(data6.error);
-				} else {
-					setHouseKeepingStaff(data6); // Set total records
+					getHouseKeepingStaff(data2[0]._id).then((data6) => {
+						if (data6 && data6.error) {
+							console.log(data6.error);
+						} else {
+							setHouseKeepingStaff(data6); // Set total records
+						}
+					});
 				}
-			});
-		}
+			}
+		});
 	};
 
 	useEffect(() => {
-		// Retrieve the hotel details from local storage when the component mounts
-		const storedHotelDetails = localStorage.getItem("hotel");
-		if (storedHotelDetails) {
-			setHotelDetails(JSON.parse(storedHotelDetails));
-			gettingOverallHouseKeepingTasks(JSON.parse(storedHotelDetails));
+		if (hotelId && userId) {
+			gettingOverallHouseKeepingTasks(hotelId, userId);
 		}
-
 		// eslint-disable-next-line
 	}, [currentPage]);
 
@@ -168,7 +168,9 @@ const HouseKeepingMain = () => {
 								isActive={activeTab === "overAllTasks"}
 								onClick={() => {
 									setActiveTab("overAllTasks");
-									history.push("/admin-management/house-keeping?overAllTasks"); // Programmatically navigate
+									history.push(
+										`/admin-management/house-keeping/${hotelId}/${userId}?overAllTasks`
+									); // Programmatically navigate
 								}}
 							>
 								{chosenLanguage === "Arabic" ? "نظرة عامة" : "Overall Tasks"}
@@ -178,7 +180,9 @@ const HouseKeepingMain = () => {
 								isActive={activeTab === "createNewTask"}
 								onClick={() => {
 									setActiveTab("createNewTask");
-									history.push("/admin-management/house-keeping?createNewTask"); // Programmatically navigate
+									history.push(
+										`/admin-management/house-keeping/${hotelId}/${userId}?createNewTask`
+									); // Programmatically navigate
 								}}
 							>
 								{chosenLanguage === "Arabic"
@@ -190,7 +194,9 @@ const HouseKeepingMain = () => {
 								isActive={activeTab === "reports"}
 								onClick={() => {
 									setActiveTab("reports");
-									history.push("/admin-management/house-keeping?reports"); // Programmatically navigate
+									history.push(
+										`/admin-management/house-keeping/${hotelId}/${userId}?reports`
+									); // Programmatically navigate
 								}}
 							>
 								{chosenLanguage === "Arabic"

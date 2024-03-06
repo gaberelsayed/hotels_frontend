@@ -8,8 +8,9 @@ import ZSignupForm from "./ZSignupForm";
 import { defaultUserValues } from "../../NewHotels/Assets";
 import { toast } from "react-toastify";
 import { isAuthenticated, signup } from "../../../auth";
+import { getHotelDetails } from "../apiAdmin";
 
-const SignupNew = () => {
+const SignupNew = (props) => {
 	const [AdminMenuStatus, setAdminMenuStatus] = useState(false);
 	const [values, setValues] = useState(defaultUserValues);
 	const [collapsed, setCollapsed] = useState(false);
@@ -20,6 +21,9 @@ const SignupNew = () => {
 
 	// eslint-disable-next-line
 	const { user, token } = isAuthenticated();
+
+	const hotelId = props.match.params.hotelId;
+	const userId = props.match.params.userId;
 	useEffect(() => {
 		if (window.innerWidth <= 1000) {
 			setCollapsed(true);
@@ -27,13 +31,22 @@ const SignupNew = () => {
 		// eslint-disable-next-line
 	}, []);
 
-	useEffect(() => {
-		// Retrieve the hotel details from local storage when the component mounts
-		const storedHotelDetails = localStorage.getItem("hotel");
-		if (storedHotelDetails) {
-			setHotelDetails(JSON.parse(storedHotelDetails));
-		}
+	const gettingHotelData = (hotelId, userId) => {
+		getHotelDetails(userId).then((data2) => {
+			if (data2 && data2.error) {
+				console.log(data2.error, "Error rendering");
+			} else {
+				if (userId && data2 && data2.length > 0) {
+					setHotelDetails(data2[0]);
+				}
+			}
+		});
+	};
 
+	useEffect(() => {
+		if (hotelId && userId) {
+			gettingHotelData(hotelId, userId);
+		}
 		// eslint-disable-next-line
 	}, []);
 
@@ -55,6 +68,8 @@ const SignupNew = () => {
 				misMatch: true,
 			});
 			return <>{toast.error("Error! Passwords are not matching")}</>;
+		} else if (!hotelDetails) {
+			return <>{toast.error("Hotel Details Were NOT Successfully Loaded")}</>;
 		} else {
 			setValues({ ...values, error: false, misMatch: false });
 			signup({
@@ -103,74 +118,70 @@ const SignupNew = () => {
 			dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}
 			show={collapsed}
 		>
-			{hotelDetails && hotelDetails._id ? (
-				<div className='grid-container-main'>
-					<div className='navcontent'>
-						{chosenLanguage === "Arabic" ? (
-							<AdminNavbarArabic
-								fromPage='HotelStaff'
-								AdminMenuStatus={AdminMenuStatus}
-								setAdminMenuStatus={setAdminMenuStatus}
-								collapsed={collapsed}
-								setCollapsed={setCollapsed}
-								chosenLanguage={chosenLanguage}
-							/>
-						) : (
-							<AdminNavbar
-								fromPage='HotelStaff'
-								AdminMenuStatus={AdminMenuStatus}
-								setAdminMenuStatus={setAdminMenuStatus}
-								collapsed={collapsed}
-								setCollapsed={setCollapsed}
-								chosenLanguage={chosenLanguage}
-							/>
-						)}
+			<div className='grid-container-main'>
+				<div className='navcontent'>
+					{chosenLanguage === "Arabic" ? (
+						<AdminNavbarArabic
+							fromPage='HotelStaff'
+							AdminMenuStatus={AdminMenuStatus}
+							setAdminMenuStatus={setAdminMenuStatus}
+							collapsed={collapsed}
+							setCollapsed={setCollapsed}
+							chosenLanguage={chosenLanguage}
+						/>
+					) : (
+						<AdminNavbar
+							fromPage='HotelStaff'
+							AdminMenuStatus={AdminMenuStatus}
+							setAdminMenuStatus={setAdminMenuStatus}
+							collapsed={collapsed}
+							setCollapsed={setCollapsed}
+							chosenLanguage={chosenLanguage}
+						/>
+					)}
+				</div>
+
+				<div className='otherContentWrapper'>
+					<div
+						style={{
+							textAlign: chosenLanguage === "Arabic" ? "left" : "right",
+							fontWeight: "bold",
+							textDecoration: "underline",
+							cursor: "pointer",
+						}}
+						onClick={() => {
+							if (chosenLanguage === "English") {
+								languageToggle("Arabic");
+							} else {
+								languageToggle("English");
+							}
+						}}
+					>
+						{chosenLanguage === "English" ? "ARABIC" : "English"}
 					</div>
 
-					<div className='otherContentWrapper'>
-						<div
-							style={{
-								textAlign: chosenLanguage === "Arabic" ? "left" : "right",
-								fontWeight: "bold",
-								textDecoration: "underline",
-								cursor: "pointer",
-							}}
-							onClick={() => {
-								if (chosenLanguage === "English") {
-									languageToggle("Arabic");
-								} else {
-									languageToggle("English");
-								}
-							}}
-						>
-							{chosenLanguage === "English" ? "ARABIC" : "English"}
-						</div>
-
-						<div className='container-wrapper'>
-							{chosenLanguage === "Arabic" ? (
-								<h1>
-									مرحبًا، يرجى التأكد من عدم إعطاء كلمة مرور الحساب لموظفيك
-								</h1>
-							) : (
-								<h1>
-									Hi There, Please ensure not to give this password to any of
-									your staff
-								</h1>
-							)}
-							<div className='py-3'>
-								<ZSignupForm
-									chosenLanguage={chosenLanguage}
-									values={values}
-									clickSubmit={clickSubmit}
-									handleChange={handleChange}
-									roleDescription={roleDescription}
-									setRoleDescription={setRoleDescription}
-								/>
-							</div>
+					<div className='container-wrapper'>
+						{chosenLanguage === "Arabic" ? (
+							<h1>مرحبًا، يرجى التأكد من عدم إعطاء كلمة مرور الحساب لموظفيك</h1>
+						) : (
+							<h1>
+								Hi There, Please ensure not to give this password to any of your
+								staff
+							</h1>
+						)}
+						<div className='py-3'>
+							<ZSignupForm
+								chosenLanguage={chosenLanguage}
+								values={values}
+								clickSubmit={clickSubmit}
+								handleChange={handleChange}
+								roleDescription={roleDescription}
+								setRoleDescription={setRoleDescription}
+							/>
 						</div>
 					</div>
 				</div>
-			) : null}
+			</div>
 		</SignupNewWrapper>
 	);
 };

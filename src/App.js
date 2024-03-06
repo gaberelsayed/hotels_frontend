@@ -98,45 +98,45 @@ function App() {
 
 					{/* Admin Routes for Hotels  */}
 					<AdminRoute
-						path='/admin-management/dashboard'
+						path='/admin-management/dashboard/:hotelId/:userId'
 						exact
 						component={HotelManagerDashboardAdmin}
 					/>
 					<AdminRoute
-						path='/admin-management/reservation-history'
+						path='/admin-management/reservation-history/:hotelId/:userId'
 						exact
 						component={ReservationsMainAdmin}
 					/>
 					<AdminRoute
-						path='/admin-management/new-reservation'
+						path='/admin-management/new-reservation/:hotelId/:userId'
 						exact
 						component={NewReservationMainAdmin}
 					/>
 					<AdminRoute
-						path='/admin-management/settings'
+						path='/admin-management/settings/:hotelId/:userId'
 						exact
 						component={HotelSettingsMainAdmin}
 					/>
 
 					<AdminRoute
-						path='/admin-management/staff'
+						path='/admin-management/staff/:hotelId/:userId'
 						exact
 						component={SignupNewAdmin}
 					/>
 
 					<AdminRoute
-						path='/admin-management-payment'
+						path='/admin-management-payment/:hotelId/:userId'
 						exact
 						component={PaymentMainAdmin}
 					/>
 					<AdminRoute
-						path='/admin-management/house-keeping'
+						path='/admin-management/house-keeping/:hotelId/:userId'
 						exact
 						component={HouseKeepingMainAdmin}
 					/>
 					<AdminRoute path='/admin/receipt' exact component={ReceiptPDFAdmin} />
 					<AdminRoute
-						path='/admin-management/admin-reports'
+						path='/admin-management/admin-reports/:hotelId/:userId'
 						exact
 						component={HotelReportsMainAdmin}
 					/>

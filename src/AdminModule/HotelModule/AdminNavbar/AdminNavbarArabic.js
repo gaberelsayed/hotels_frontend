@@ -1,7 +1,7 @@
 // eslint-disable-next-line
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { Redirect, Link } from "react-router-dom";
+import { Redirect, Link, useParams } from "react-router-dom";
 import {
 	AreaChartOutlined,
 	BankTwoTone,
@@ -39,130 +39,6 @@ const handleSignout = (history) => {
 	});
 };
 
-const items = [
-	getItem(
-		<div className='logoClass'></div>,
-		"شعار الفندق",
-		<>
-			<LastAddedLogoImage />
-		</>
-	),
-	getItem(
-		<div className='logoClass '></div>,
-		"شعار الفندق",
-		<div
-			className='logoClass no-background'
-			style={{
-				width: "100%",
-			}}
-		>
-			<hr />
-		</div>
-	),
-	getItem(
-		<Link to='/admin-management/dashboard'>لوحة تحكم الإدارة</Link>,
-		"sub1",
-		<PieChartOutlined />
-	),
-	getItem(
-		<Link to='/admin-management/reservation-history'>الحجوزات</Link>,
-		"sub2",
-		<AreaChartOutlined />
-	),
-	getItem(
-		<Link to='/admin-management/new-reservation'>إضافة حجز جديد</Link>,
-		"sub3",
-		<ShopOutlined />
-	),
-	getItem(
-		<Link to='/admin-management/admin-reports'>تقارير الفندق</Link>,
-		"sub4",
-		<AreaChartOutlined />
-	),
-
-	getItem(
-		<Link to='/admin-management/settings'>إعدادات الفندق</Link>,
-		"sub6",
-		<SettingOutlined />
-	),
-
-	getItem(
-		<Link to='/admin-management/house-keeping'>هاوس كيبينج</Link>,
-		"sub7",
-		<BankTwoTone />
-	),
-
-	getItem(
-		<Link to='/admin-management/staff'>طاقم الفندق</Link>,
-		"sub8",
-		<>
-			<TeamOutlined />
-		</>
-	),
-
-	getItem(
-		<Link to='#'>منشئ مواقع الفندق</Link>,
-		"sub10",
-		<>
-			<DollarCircleOutlined />
-		</>
-	),
-
-	getItem(
-		<div className='margin-divider'></div>,
-		"divider1",
-		null,
-		null,
-		"divider"
-	),
-	getItem(
-		"إدارة الواردات",
-		"sub13",
-		<ImportOutlined />,
-		null,
-		null,
-		"black-bg"
-	),
-	getItem("CRM", "sub14", <CustomerServiceOutlined />, null, null, "black-bg"),
-	getItem(
-		"نقاط البيع والمنتجات",
-		"sub15",
-		<ShopOutlined />,
-		null,
-		null,
-		"black-bg"
-	),
-	getItem("المالية", "sub16", <DollarCircleOutlined />, null, null, "black-bg"),
-	getItem("حسابات الموظفين", "sub17", <TeamOutlined />, null, null, "black-bg"),
-	getItem(
-		<div className='margin-divider'></div>,
-		"divider2",
-		null,
-		null,
-		"divider2"
-	),
-	getItem(
-		<Link to='/admin-management-payment'>المدفوعات</Link>,
-		"sub18",
-		<CreditCardOutlined />,
-		null,
-		null,
-		"red-bg"
-	),
-	getItem(
-		<div style={{ fontWeight: "bold", textDecoration: "underline" }}>
-			Signout
-		</div>,
-		"signout", // The key used in the Menu's onClick handler
-		<CreditCardOutlined />,
-		null,
-		null,
-		"reddish-bg"
-	),
-
-	// getItem("Option 3", "4", <ContainerOutlined />),
-];
-
 const AdminNavbarArabic = ({
 	fromPage,
 	setAdminMenuStatus,
@@ -178,6 +54,168 @@ const AdminNavbarArabic = ({
 	};
 
 	const history = useHistory();
+	const { hotelId, userId } = useParams();
+
+	const items = [
+		getItem(
+			<div className='logoClass'></div>,
+			"شعار الفندق",
+			<>
+				<LastAddedLogoImage />
+			</>
+		),
+		getItem(
+			<div className='logoClass '></div>,
+			"شعار الفندق",
+			<div
+				className='logoClass no-background'
+				style={{
+					width: "100%",
+				}}
+			>
+				<hr />
+			</div>
+		),
+		getItem(
+			<Link to={`/admin-management/dashboard/${hotelId}/${userId}`}>
+				لوحة تحكم الإدارة
+			</Link>,
+			"sub1",
+			<PieChartOutlined />
+		),
+		getItem(
+			<Link to={`/admin-management/reservation-history/${hotelId}/${userId}`}>
+				الحجوزات
+			</Link>,
+			"sub2",
+			<AreaChartOutlined />
+		),
+		getItem(
+			<Link to={`/admin-management/new-reservation/${hotelId}/${userId}`}>
+				إضافة حجز جديد
+			</Link>,
+			"sub3",
+			<ShopOutlined />
+		),
+		getItem(
+			<Link to={`/admin-management/admin-reports/${hotelId}/${userId}`}>
+				تقارير الفندق
+			</Link>,
+			"sub4",
+			<AreaChartOutlined />
+		),
+
+		getItem(
+			<Link to={`/admin-management/settings/${hotelId}/${userId}`}>
+				إعدادات الفندق
+			</Link>,
+			"sub6",
+			<SettingOutlined />
+		),
+
+		getItem(
+			<Link to={`/admin-management/house-keeping/${hotelId}/${userId}`}>
+				هاوس كيبينج
+			</Link>,
+			"sub7",
+			<BankTwoTone />
+		),
+
+		getItem(
+			<Link to={`/admin-management/staff/${hotelId}/${userId}`}>
+				طاقم الفندق
+			</Link>,
+			"sub8",
+			<>
+				<TeamOutlined />
+			</>
+		),
+
+		getItem(
+			<Link to='#'>منشئ مواقع الفندق</Link>,
+			"sub10",
+			<>
+				<DollarCircleOutlined />
+			</>
+		),
+
+		getItem(
+			<div className='margin-divider'></div>,
+			"divider1",
+			null,
+			null,
+			"divider"
+		),
+		getItem(
+			"إدارة الواردات",
+			"sub13",
+			<ImportOutlined />,
+			null,
+			null,
+			"black-bg"
+		),
+		getItem(
+			"CRM",
+			"sub14",
+			<CustomerServiceOutlined />,
+			null,
+			null,
+			"black-bg"
+		),
+		getItem(
+			"نقاط البيع والمنتجات",
+			"sub15",
+			<ShopOutlined />,
+			null,
+			null,
+			"black-bg"
+		),
+		getItem(
+			"المالية",
+			"sub16",
+			<DollarCircleOutlined />,
+			null,
+			null,
+			"black-bg"
+		),
+		getItem(
+			"حسابات الموظفين",
+			"sub17",
+			<TeamOutlined />,
+			null,
+			null,
+			"black-bg"
+		),
+		getItem(
+			<div className='margin-divider'></div>,
+			"divider2",
+			null,
+			null,
+			"divider2"
+		),
+		getItem(
+			<Link to={`/admin-management-payment/${hotelId}/${userId}`}>
+				المدفوعات
+			</Link>,
+			"sub18",
+			<CreditCardOutlined />,
+			null,
+			null,
+			"red-bg"
+		),
+		getItem(
+			<div style={{ fontWeight: "bold", textDecoration: "underline" }}>
+				Signout
+			</div>,
+			"signout", // The key used in the Menu's onClick handler
+			<CreditCardOutlined />,
+			null,
+			null,
+			"reddish-bg"
+		),
+
+		// getItem("Option 3", "4", <ContainerOutlined />),
+	];
 
 	return (
 		<AdminNavbarWrapper

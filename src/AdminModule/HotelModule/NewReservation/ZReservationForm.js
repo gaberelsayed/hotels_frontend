@@ -61,6 +61,7 @@ const ZReservationForm = ({
 
 	const [isFixed, setIsFixed] = useState(false);
 
+	// eslint-disable-next-line
 	const { user } = isAuthenticated();
 
 	useEffect(() => {

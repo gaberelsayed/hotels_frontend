@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import AdminNavbar from "../AdminNavbar/AdminNavbar";
 import AdminNavbarArabic from "../AdminNavbar/AdminNavbarArabic";
 import {
+	getHotelDetails,
 	getReservationSummary,
 	reservationsList,
 	reservationsTotalRecords,
@@ -12,7 +13,7 @@ import PreReservationTable from "../ReservationsFolder/PreReservationTable";
 import { Spin } from "antd";
 import { useCartContext } from "../../../cart_context";
 
-const ReservationsMain = () => {
+const ReservationsMain = (props) => {
 	const [AdminMenuStatus, setAdminMenuStatus] = useState(false);
 	const [collapsed, setCollapsed] = useState(false);
 	const [allPreReservations, setAllPreReservations] = useState([]);
@@ -44,65 +45,72 @@ const ReservationsMain = () => {
 		return [year, month, day].join("-");
 	};
 
-	const getAllPreReservation = (hotelDetailsPassed) => {
+	const getAllPreReservation = (hotelId, userId) => {
 		setLoading(true); // Set loading to true when fetching data
 
-		if (hotelDetailsPassed && hotelDetailsPassed._id) {
-			const dateToUse = selectedDates ? selectedDates : formatDate(new Date());
+		getHotelDetails(userId).then((data2) => {
+			if (data2 && data2.error) {
+				console.log(data2.error, "Error rendering");
+			} else {
+				if (userId && data2 && data2.length > 0) {
+					setHotelDetails(data2[0]);
+					const dateToUse = selectedDates
+						? selectedDates
+						: formatDate(new Date());
 
-			reservationsList(
-				currentPage,
-				recordsPerPage,
-				JSON.stringify({ selectedFilter }),
-				hotelDetailsPassed._id,
-				dateToUse // Pass the formatted date
-			)
-				.then((data) => {
-					if (data && data.error) {
-						console.log(data.error);
-					} else {
-						setAllPreReservations(data && data.length > 0 ? data : []);
-						reservationsTotalRecords(
-							currentPage,
-							recordsPerPage,
-							JSON.stringify({ selectedFilter }),
-							hotelDetailsPassed._id,
-							dateToUse // Pass the formatted date
-						).then((data) => {
+					reservationsList(
+						currentPage,
+						recordsPerPage,
+						JSON.stringify({ selectedFilter }),
+						data2[0]._id,
+						dateToUse // Pass the formatted date
+					)
+						.then((data) => {
 							if (data && data.error) {
 								console.log(data.error);
 							} else {
-								setTotalRecords(data.total); // Set total records
-							}
-						});
+								setAllPreReservations(data && data.length > 0 ? data : []);
+								reservationsTotalRecords(
+									currentPage,
+									recordsPerPage,
+									JSON.stringify({ selectedFilter }),
+									data2[0]._id,
+									dateToUse // Pass the formatted date
+								).then((data) => {
+									if (data && data.error) {
+										console.log(data.error);
+									} else {
+										setTotalRecords(data.total); // Set total records
+									}
+								});
 
-						getReservationSummary(hotelDetailsPassed._id, dateToUse).then(
-							(data2) => {
-								if (data2 && data2.error) {
-									console.log("Error summary");
-								} else {
-									setReservationObject(data2);
-								}
-							}
-						);
+								getReservationSummary(data2[0]._id, dateToUse).then((data2) => {
+									if (data2 && data2.error) {
+										console.log("Error summary");
+									} else {
+										console.log(data2, "data2");
+										setReservationObject(data2);
+									}
+								});
 
-						setLoading(false);
-					}
-				})
-				.catch((err) => console.log(err))
-				.finally(() => setLoading(false)); // Set loading to false after fetching
-		}
+								setLoading(false);
+							}
+						})
+						.catch((err) => console.log(err))
+						.finally(() => setLoading(false)); // Set loading to false after fetching
+				}
+			}
+		});
 	};
 
 	useEffect(() => {
 		// Fetch total records
 
-		// Retrieve the hotel details from local storage when the component mounts
-		const storedHotelDetails = localStorage.getItem("hotel");
-
-		if ((!searchClicked || !q) && storedHotelDetails) {
-			setHotelDetails(JSON.parse(storedHotelDetails));
-			getAllPreReservation(JSON.parse(storedHotelDetails));
+		if (!searchClicked || !q) {
+			getAllPreReservation(
+				props.match.params.hotelId,
+				props.match.params.userId
+			);
 		}
 		// eslint-disable-next-line
 	}, [currentPage, selectedFilter, searchClicked, selectedDates]);

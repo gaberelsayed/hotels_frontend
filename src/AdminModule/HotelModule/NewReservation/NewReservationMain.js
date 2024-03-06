@@ -9,6 +9,7 @@ import moment from "moment";
 import ZReservationForm from "./ZReservationForm";
 import {
 	createNewReservation,
+	getHotelDetails,
 	getHotelRooms,
 	getHotelReservations,
 	getListOfRoomSummary,
@@ -25,7 +26,7 @@ import useBoss from "../useBoss";
 import HotelHeatMap from "./HotelHeatMap";
 import InHouseReport from "./InHouseReport";
 
-const NewReservationMain = () => {
+const NewReservationMain = (props) => {
 	const [AdminMenuStatus, setAdminMenuStatus] = useState(false);
 	const [collapsed, setCollapsed] = useState(false);
 	const [loading, setLoading] = useState(false);
@@ -80,6 +81,9 @@ const NewReservationMain = () => {
 
 	const { languageToggle, chosenLanguage } = useCartContext();
 
+	const hotelId = props.match.params.hotelId;
+	const userId = props.match.params.userId;
+
 	// Inside your functional component
 	const history = useHistory(); // Initialize the history object
 
@@ -125,13 +129,8 @@ const NewReservationMain = () => {
 		return [year, month, day].join("-");
 	};
 
-	const gettingHotelData = (hotelDetailsPassed) => {
-		if (
-			hotelDetailsPassed &&
-			hotelDetailsPassed._id &&
-			hotelDetailsPassed.belongsTo &&
-			hotelDetailsPassed.belongsTo._id
-		) {
+	const gettingHotelData = (hotelId, userId) => {
+		if (hotelId && userId) {
 			// eslint-disable-next-line
 			const formattedStartDate = moment(formatDate(new Date(start_date)));
 			// eslint-disable-next-line
@@ -148,48 +147,59 @@ const NewReservationMain = () => {
 			setStart_date_Map(moment(heatMapStartDate));
 			setEnd_date_Map(moment(heatMapEndDate));
 
-			if (heatMapStartDate && heatMapEndDate) {
-				getHotelReservations(
-					hotelDetailsPassed._id,
-					hotelDetailsPassed.belongsTo._id,
-					heatMapStartDate,
-					heatMapEndDate
-				).then((data3) => {
-					if (data3 && data3.error) {
-						console.log(data3.error);
-					} else {
-						// console.log(data3, "data3");
-						setAllReservations(data3 && data3.length > 0 ? data3 : []);
-					}
-				});
-			}
-
-			getHotelReservations(
-				hotelDetailsPassed._id,
-				hotelDetailsPassed.belongsTo._id,
-				heatMapStartDate,
-				heatMapEndDate
-			).then((data4) => {
-				if (data4 && data4.error) {
-					console.log(data4.error);
+			getHotelDetails(userId).then((data2) => {
+				if (data2 && data2.error) {
+					console.log(data2.error, "Error rendering");
 				} else {
-					// console.log(data4, "data4");
-					setAllReservationsHeatMap(data4 && data4.length > 0 ? data4 : []);
+					if (userId && data2 && data2.length > 0) {
+						if (heatMapStartDate && heatMapEndDate) {
+							getHotelReservations(
+								data2[0]._id,
+								userId,
+								heatMapStartDate,
+								heatMapEndDate
+							).then((data3) => {
+								if (data3 && data3.error) {
+									console.log(data3.error);
+								} else {
+									// console.log(data3, "data3");
+									setAllReservations(data3 && data3.length > 0 ? data3 : []);
+								}
+							});
+						}
+
+						getHotelReservations(
+							data2[0]._id,
+							userId,
+							heatMapStartDate,
+							heatMapEndDate
+						).then((data4) => {
+							if (data4 && data4.error) {
+								console.log(data4.error);
+							} else {
+								// console.log(data4, "data4");
+								setAllReservationsHeatMap(
+									data4 && data4.length > 0 ? data4 : []
+								);
+							}
+						});
+
+						if (!hotelDetails) {
+							setHotelDetails(data2[0]);
+						}
+
+						if (!hotelRooms || hotelRooms.length === 0) {
+							getHotelRooms(hotelId, userId).then((data3) => {
+								if (data3 && data3.error) {
+									console.log(data3.error);
+								} else {
+									setHotelRooms(data3);
+								}
+							});
+						}
+					}
 				}
 			});
-
-			if (!hotelRooms || hotelRooms.length === 0) {
-				getHotelRooms(
-					hotelDetailsPassed._id,
-					hotelDetailsPassed.belongsTo._id
-				).then((data3) => {
-					if (data3 && data3.error) {
-						console.log(data3.error);
-					} else {
-						setHotelRooms(data3);
-					}
-				});
-			}
 		}
 	};
 
@@ -427,7 +437,7 @@ const NewReservationMain = () => {
 			});
 		} else {
 			createNewReservation(
-				user._id,
+				userId,
 				hotelDetails._id,
 				token,
 				new_reservation
@@ -447,11 +457,8 @@ const NewReservationMain = () => {
 	};
 
 	useEffect(() => {
-		// Retrieve the hotel details from local storage when the component mounts
-		const storedHotelDetails = localStorage.getItem("hotel");
-		if (storedHotelDetails) {
-			setHotelDetails(JSON.parse(storedHotelDetails));
-			gettingHotelData(JSON.parse(storedHotelDetails));
+		if (hotelId && userId) {
+			gettingHotelData(hotelId, userId);
 		}
 
 		// eslint-disable-next-line
@@ -463,7 +470,7 @@ const NewReservationMain = () => {
 		gettingRoomInventory(
 			formattedStartDate,
 			formattedEndDate,
-			user._id,
+			userId,
 			hotelDetails._id
 		).then((data) => {
 			if (data && data.error) {
@@ -544,7 +551,7 @@ const NewReservationMain = () => {
 								onClick={() => {
 									setActiveTab("reserveARoom");
 									history.push(
-										"/admin-management/new-reservation?reserveARoom"
+										`/admin-management/new-reservation/${hotelId}/${userId}?reserveARoom`
 									); // Programmatically navigate
 								}}
 							>
@@ -556,7 +563,7 @@ const NewReservationMain = () => {
 								onClick={() => {
 									setActiveTab("newReservation");
 									history.push(
-										"/admin-management/new-reservation?newReservation"
+										`/admin-management/new-reservation/${hotelId}/${userId}?newReservation`
 									); // Programmatically navigate
 								}}
 							>
@@ -569,7 +576,9 @@ const NewReservationMain = () => {
 								isActive={activeTab === "list"}
 								onClick={() => {
 									setActiveTab("list");
-									history.push("/admin-management/new-reservation?list"); // Programmatically navigate
+									history.push(
+										`/admin-management/new-reservation/${hotelId}/${userId}?list`
+									); // Programmatically navigate
 								}}
 							>
 								{chosenLanguage === "Arabic"
@@ -580,7 +589,9 @@ const NewReservationMain = () => {
 								isActive={activeTab === "heatmap"}
 								onClick={() => {
 									setActiveTab("heatmap");
-									history.push("/admin-management/new-reservation?heatmap"); // Programmatically navigate
+									history.push(
+										`/admin-management/new-reservation/${hotelId}/${userId}?heatmap`
+									); // Programmatically navigate
 								}}
 							>
 								{chosenLanguage === "Arabic"
@@ -592,7 +603,7 @@ const NewReservationMain = () => {
 								onClick={() => {
 									setActiveTab("housingreport");
 									history.push(
-										"/admin-management/new-reservation?housingreport"
+										`/admin-management/new-reservation/${hotelId}/${userId}?housingreport`
 									); // Programmatically navigate
 								}}
 							>
