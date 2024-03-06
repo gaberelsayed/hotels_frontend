@@ -197,7 +197,7 @@ const ZReservationForm = ({
 		const country = isFromUS ? "US" : "NotUS";
 
 		const accountId = hotelDetails._id; // Get the account ID
-		const belongsTo = user._id;
+		const belongsTo = hotelDetails.belongsTo._id;
 		const fileInput = document.createElement("input");
 		fileInput.type = "file";
 		fileInput.accept =
