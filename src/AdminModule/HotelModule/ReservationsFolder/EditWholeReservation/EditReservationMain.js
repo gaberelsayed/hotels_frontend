@@ -57,7 +57,7 @@ export const EditReservationMain = ({
 		gettingRoomInventory(
 			formattedStartDate,
 			formattedEndDate,
-			user._id,
+			hotelDetails.belongsTo._id,
 			reservation.hotelId
 		).then((data) => {
 			if (data && data.error) {
