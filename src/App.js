@@ -22,6 +22,7 @@ import PaymentMainAdmin from "./AdminModule/HotelModule/Payment/PaymentMain";
 import ReceiptPDFAdmin from "./AdminModule/HotelModule/NewReservation/ReceiptPDF";
 import HouseKeepingMainAdmin from "./AdminModule/HotelModule/HouseKeeping/HouseKeepingMain";
 import HotelReportsMainAdmin from "./AdminModule/HotelModule/HotelReports/HotelReportsMain";
+import AddOwnerAccount from "./AdminModule/AddOwner/AddOwnerAccount";
 
 //Hotel Routes
 import HotelRoute from "./auth/HotelRoute";
@@ -47,6 +48,8 @@ import HouseKeepingEmployeeMain from "./HouseKeepingEmployee/HouseKeepingEmploye
 import HouseKeepingEmployeeRoute from "./auth/HouseKeepingEmployeeRoute";
 import FinanceRoute from "./auth/FinanceRoute";
 import PaymentMainFinance from "./Finance/Payment/PaymentMainFinance";
+import OwnerRoute from "./auth/OwnerRoute";
+import OwnerDashboardMain from "./OwnerContent/OwnerDashboardMain";
 
 function App() {
 	const { languageToggle, chosenLanguage } = useCartContext();
@@ -85,6 +88,11 @@ function App() {
 						component={AdminDashboard}
 					/>
 					<AdminRoute path='/admin/new-hotel' exact component={AddNewHotel} />
+					<AdminRoute
+						path='/admin/add-owner-account'
+						exact
+						component={AddOwnerAccount}
+					/>
 					<AdminRoute
 						path='/admin/janat-website'
 						exact
@@ -215,6 +223,12 @@ function App() {
 						path='/finance/overview'
 						exact
 						component={PaymentMainFinance}
+					/>
+
+					<OwnerRoute
+						path='/owner-dashboard'
+						exact
+						component={OwnerDashboardMain}
 					/>
 				</Switch>
 			</>

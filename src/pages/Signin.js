@@ -84,6 +84,8 @@ const Signin = ({ history }) => {
 				return (window.location.href = "/house-keeping-employee/house-keeping");
 			} else if (user && user.role === 6000) {
 				return (window.location.href = "/finance/overview");
+			} else if (user && user.role === 10000) {
+				return (window.location.href = "/owner-dashboard");
 			} else {
 				return (window.location.href = "/");
 			}
@@ -103,6 +105,14 @@ const Signin = ({ history }) => {
 			isAuthenticated().user.role === 1000
 		) {
 			return (window.location.href = "/admin/dashboard");
+		}
+
+		if (
+			isAuthenticated() &&
+			isAuthenticated().user &&
+			isAuthenticated().user.role === 10000
+		) {
+			return (window.location.href = "/owner-dashboard");
 		}
 
 		if (

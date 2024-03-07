@@ -66,7 +66,7 @@ const items = [
 		<AreaChartOutlined />
 	),
 	getItem(
-		<Link to='/admin/added-hotels'>Added Hotels</Link>,
+		<Link to='/admin/add-owner-account'>Add Owner Account</Link>,
 		"sub3",
 		<SettingOutlined />
 	),
@@ -180,7 +180,7 @@ const AdminNavbar = ({
 						? "sub1"
 						: fromPage === "NewHotel"
 						  ? "sub2"
-						  : fromPage === "AddedHotels"
+						  : fromPage === "OwnerAccount"
 						    ? "sub3"
 						    : fromPage === "AddCategories"
 						      ? "sub4"

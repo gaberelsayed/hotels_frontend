@@ -2,16 +2,17 @@ import React, { useEffect, useState } from "react";
 import AdminNavbar from "../AdminNavbar/AdminNavbar";
 import AdminNavbarArabic from "../AdminNavbar/AdminNavbarArabic";
 import styled from "styled-components";
-import { gettingHotelDetailsForAdmin } from "../apiAdmin";
+import OwnerRegisterForm from "./OwnerRegisterForm";
 import { isAuthenticated } from "../../auth";
-import { Link } from "react-router-dom";
+import { gettingHotelDetailsForAdmin } from "../apiAdmin";
 
-const AddedHotelsMain = ({ chosenLanguage }) => {
+const AddOwnerAccount = ({ chosenLanguage }) => {
 	const [AdminMenuStatus, setAdminMenuStatus] = useState(false);
 	const [collapsed, setCollapsed] = useState(false);
 	const [allHotelDetailsAdmin, setAllHotelDetailsAdmin] = useState("");
 
 	const { user, token } = isAuthenticated();
+
 	const adminAllHotelDetails = () => {
 		gettingHotelDetailsForAdmin(user._id, token).then((data) => {
 			if (data && data.error) {
@@ -26,12 +27,13 @@ const AddedHotelsMain = ({ chosenLanguage }) => {
 		if (window.innerWidth <= 1000) {
 			setCollapsed(true);
 		}
+
 		adminAllHotelDetails();
 		// eslint-disable-next-line
 	}, []);
 
 	return (
-		<AddedHotelsMainWrapper
+		<AddOwnerAccountWrapper
 			dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}
 			show={collapsed}
 		>
@@ -39,7 +41,7 @@ const AddedHotelsMain = ({ chosenLanguage }) => {
 				<div className='navcontent'>
 					{chosenLanguage === "Arabic" ? (
 						<AdminNavbarArabic
-							fromPage='AddedHotels'
+							fromPage='OwnerAccount'
 							AdminMenuStatus={AdminMenuStatus}
 							setAdminMenuStatus={setAdminMenuStatus}
 							collapsed={collapsed}
@@ -48,7 +50,7 @@ const AddedHotelsMain = ({ chosenLanguage }) => {
 						/>
 					) : (
 						<AdminNavbar
-							fromPage='AddedHotels'
+							fromPage='OwnerAccount'
 							AdminMenuStatus={AdminMenuStatus}
 							setAdminMenuStatus={setAdminMenuStatus}
 							collapsed={collapsed}
@@ -60,36 +62,19 @@ const AddedHotelsMain = ({ chosenLanguage }) => {
 
 				<div className='otherContentWrapper'>
 					<div className='container-wrapper'>
-						<h3 className='mb-3'>All Added Hotels</h3>
-						<div className='row'>
-							{allHotelDetailsAdmin &&
-								allHotelDetailsAdmin.map((hotel, i) => {
-									return (
-										<div className='col-md-3 mx-auto' key={i}>
-											<Link
-												to={`/admin/new-hotel?${hotel.belongsTo._id}`}
-												style={{
-													fontWeight: "bold",
-													textTransform: "capitalize",
-													textDecoration: "underline",
-												}}
-											>
-												{hotel.hotelName} | {hotel.belongsTo.hotelAddress}
-											</Link>
-										</div>
-									);
-								})}
-						</div>
+						{allHotelDetailsAdmin && allHotelDetailsAdmin.length > 0 ? (
+							<OwnerRegisterForm allHotelDetailsAdmin={allHotelDetailsAdmin} />
+						) : null}
 					</div>
 				</div>
 			</div>
-		</AddedHotelsMainWrapper>
+		</AddOwnerAccountWrapper>
 	);
 };
 
-export default AddedHotelsMain;
+export default AddOwnerAccount;
 
-const AddedHotelsMainWrapper = styled.div`
+const AddOwnerAccountWrapper = styled.div`
 	overflow-x: hidden;
 	/* background: #ededed; */
 	margin-top: 20px;
@@ -106,13 +91,6 @@ const AddedHotelsMainWrapper = styled.div`
 		border-radius: 20px;
 		background: white;
 		margin: 0px 10px;
-	}
-
-	h3 {
-		font-weight: bold;
-		font-size: 1.5rem;
-		text-align: center;
-		color: #006ad1;
 	}
 
 	@media (max-width: 1400px) {
