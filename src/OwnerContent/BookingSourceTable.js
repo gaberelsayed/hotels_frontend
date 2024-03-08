@@ -1,5 +1,6 @@
 import React from "react";
 import { Table } from "antd";
+import styled from "styled-components";
 
 const formatNumber = (num) => {
 	// Ensure we are dealing with a type Number to avoid formatting issues
@@ -103,13 +104,43 @@ const BookingSourceTable = ({ aggregateByBookingSource, chosenLanguage }) => {
 	};
 
 	return (
-		<Table
-			dataSource={dataSource}
-			columns={columns}
-			rowClassName={rowClassName}
-			pagination={false}
-		/>
+		<BookingSourceTableWrapper>
+			<Table
+				dataSource={dataSource}
+				columns={columns}
+				rowClassName={rowClassName}
+				pagination={false}
+			/>
+		</BookingSourceTableWrapper>
 	);
 };
 
 export default BookingSourceTable;
+
+const BookingSourceTableWrapper = styled.div`
+	.ant-table-thead,
+	td {
+		padding: 10px !important; /* Adjust the padding as needed to control the height */
+		font-size: 14px !important; /* Adjust the font size as needed */
+	}
+
+	.ant-table-row {
+		height: auto; /* Adjust the height as needed */
+		line-height: normal; /* Adjust the line height as needed */
+	}
+
+	.totals-row td {
+		background-color: #717171;
+		color: white;
+		font-weight: bold;
+		font-size: 15px;
+		padding: 10px !important; /* Adjust the padding as needed to control the height */
+	}
+
+	.totals-row td:hover {
+		background-color: #383737 !important;
+		color: white;
+		font-weight: bold;
+		font-size: 14px;
+	}
+`;

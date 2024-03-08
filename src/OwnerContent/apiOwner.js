@@ -34,3 +34,21 @@ export const getAggregatedReservations = (month, hotelIds) => {
 		})
 		.catch((err) => console.log(err));
 };
+
+export const getReservationToDate = (hotelIds, date) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/owner-reservation-date/${hotelIds}/${date}`,
+		{
+			method: "GET",
+			headers: {
+				// content type?
+				"Content-Type": "application/json",
+				Accept: "application/json",
+			},
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};

@@ -1,7 +1,11 @@
 import React from "react";
 import ApexCharts from "react-apexcharts";
 
-const BarChartComponent = ({ aggregateByHotelName, chosenLanguage }) => {
+const BarChartComponent = ({
+	aggregateByHotelName,
+	chosenLanguage,
+	selectedMonth,
+}) => {
 	const isArabic = chosenLanguage === "Arabic";
 	const currency = isArabic ? "ريال" : "SAR";
 	const totalAmountText = isArabic ? "المبلغ الإجمالي" : "Total Amount";
@@ -86,7 +90,9 @@ const BarChartComponent = ({ aggregateByHotelName, chosenLanguage }) => {
 			},
 		},
 		title: {
-			text: isArabic ? "مقارنة إيرادات الفنادق" : "Hotel Revenue Comparison", // Replace with the correct Arabic translation if needed
+			text: isArabic
+				? ` مقارنة إيرادات الفنادق ${selectedMonth}`
+				: `Hotel Revenue Comparison (${selectedMonth})`, // Replace with the correct Arabic translation if needed
 			align: "center",
 			margin: 20,
 			offsetY: 20,

@@ -261,17 +261,3 @@ body {
 .arabicFonts {
 	font-family: "Droid Arabic Kufi";
 }
-
-.totals-row td {
-	background-color: #717171;
-	color: white;
-	font-weight: bold;
-	font-size: 15px;
-}
-
-.totals-row td:hover {
-	background-color: #383737 !important;
-	color: white;
-	font-weight: bold;
-	font-size: 14px;
-}

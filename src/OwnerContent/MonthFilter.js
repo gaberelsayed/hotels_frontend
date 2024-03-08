@@ -31,7 +31,13 @@ const monthsArabic = [
 	"ديسمبر",
 ];
 
-const MonthFilter = ({ selectedMonth, setSelectedMonth, chosenLanguage }) => {
+const MonthFilter = ({
+	selectedMonth,
+	setSelectedMonth,
+	selectedHotelName,
+	setSelectedHotelName,
+	chosenLanguage,
+}) => {
 	const months = chosenLanguage === "Arabic" ? monthsArabic : monthsEnglish;
 
 	return (

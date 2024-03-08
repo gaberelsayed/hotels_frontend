@@ -3,15 +3,45 @@ import styled from "styled-components";
 import { isAuthenticated } from "../auth";
 import { useCartContext } from "../cart_context";
 import MonthFilter from "./MonthFilter";
-import { getAggregatedReservations, hotelAccount } from "./apiOwner";
+import {
+	getAggregatedReservations,
+	getReservationToDate,
+	hotelAccount,
+} from "./apiOwner";
 import BarChartComponent from "./BarChartComponent";
 import BookingSourceTable from "./BookingSourceTable";
+import HotelNameFilter from "./HotelNameFilter";
+import DayToDayReport from "./DayToDayReport";
 
 const OwnerDashboardMain = () => {
-	const [selectedMonth, setSelectedMonth] = useState("January");
+	const monthNames = [
+		"January",
+		"February",
+		"March",
+		"April",
+		"May",
+		"June",
+		"July",
+		"August",
+		"September",
+		"October",
+		"November",
+		"December",
+	];
+	const currentMonth = new Date().getMonth();
+	const [selectedMonth, setSelectedMonth] = useState(monthNames[currentMonth]);
+
+	// eslint-disable-next-line
 	const [reservationsSummary, setReservationsSummary] = useState("");
 	const [aggregateByHotelName, setAggregateByHotelName] = useState("");
 	const [aggregateByBookingSource, setAggregateByBookingSource] = useState("");
+	const [distinctHotelNames, setDistinctHotelNames] = useState("");
+	const [selectedHotelName, setSelectedHotelName] = useState("");
+	const [selectedDate, setSelectedDate] = useState(
+		new Date().toISOString().slice(0, 10)
+	);
+	const [reservationListToDate, setReservationListToDate] = useState("");
+
 	const { languageToggle, chosenLanguage } = useCartContext();
 
 	const { user, token } = isAuthenticated();
@@ -29,8 +59,20 @@ const OwnerDashboardMain = () => {
 						} else {
 							setReservationsSummary(data2);
 
+							// Populate distinct hotel names from the original data
+							const distinctNames = [
+								...new Set(data2.map((item) => item.hotelName)),
+							];
+
+							// Filter data if selectedHotelName is provided and exists in the data
+							const filteredData =
+								selectedHotelName &&
+								data2.some((data) => data.hotelName === selectedHotelName)
+									? data2.filter((data) => data.hotelName === selectedHotelName)
+									: data2;
+
 							// Aggregate by hotel name
-							const byHotelName = data2.reduce((acc, cur) => {
+							const byHotelName = filteredData.reduce((acc, cur) => {
 								if (!acc[cur.hotelName]) {
 									acc[cur.hotelName] = {
 										totalBookings: 0,
@@ -50,7 +92,7 @@ const OwnerDashboardMain = () => {
 							}, {});
 
 							// Aggregate by booking source
-							const byBookingSource = data2.reduce((acc, cur) => {
+							const byBookingSource = filteredData.reduce((acc, cur) => {
 								if (!acc[cur.booking_source]) {
 									acc[cur.booking_source] = {
 										totalBookings: 0,
@@ -58,7 +100,7 @@ const OwnerDashboardMain = () => {
 										commission: 0,
 										totalBookingsHoused: 0,
 										total_amountHoused: 0,
-										totalNights: 0, // Initialize totalNights
+										totalNights: 0,
 									};
 								}
 								acc[cur.booking_source].totalBookings += cur.totalBookings;
@@ -68,13 +110,32 @@ const OwnerDashboardMain = () => {
 									cur.totalBookingsHoused;
 								acc[cur.booking_source].total_amountHoused +=
 									cur.total_amountHoused;
-								acc[cur.booking_source].totalNights += cur.totalNights; // Accumulate totalNights
+								acc[cur.booking_source].totalNights += cur.totalNights;
 								return acc;
 							}, {});
 
 							// Update the states
 							setAggregateByHotelName(byHotelName);
 							setAggregateByBookingSource(byBookingSource);
+							setDistinctHotelNames(distinctNames);
+
+							getReservationToDate(formattedHotelIds, selectedDate).then(
+								(data3) => {
+									if (data3 && data3.error) {
+										console.log(data3.error, "returning list to date");
+									} else {
+										// Filter data3 if selectedHotelName is provided and exists in the data
+										const filteredData3 = selectedHotelName
+											? data3.filter(
+													(reservation) =>
+														reservation.hotelId.hotelName === selectedHotelName
+											  )
+											: data3;
+
+										setReservationListToDate(filteredData3);
+									}
+								}
+							);
 						}
 					}
 				);
@@ -85,11 +146,9 @@ const OwnerDashboardMain = () => {
 	useEffect(() => {
 		gettingHotelData();
 		// eslint-disable-next-line
-	}, [selectedMonth]);
+	}, [selectedMonth, selectedHotelName, selectedDate]);
 
-	console.log(reservationsSummary, "reservationsSummary");
-	console.log(aggregateByHotelName, "aggregateByHotelName");
-	console.log(aggregateByBookingSource, "aggregateByBookingSource");
+	console.log(reservationListToDate, "reservationListToDate");
 
 	return (
 		<OwnerDashboardMainWrapper
@@ -119,14 +178,29 @@ const OwnerDashboardMain = () => {
 					selectedMonth={selectedMonth}
 					setSelectedMonth={setSelectedMonth}
 					chosenLanguage={chosenLanguage}
+					selectedHotelName={selectedHotelName}
+					setSelectedHotelName={setSelectedHotelName}
 				/>
 			</div>
+			{distinctHotelNames && distinctHotelNames.length > 0 ? (
+				<div>
+					<HotelNameFilter
+						chosenLanguage={chosenLanguage}
+						selectedHotelName={selectedHotelName}
+						setSelectedHotelName={setSelectedHotelName}
+						distinctHotelNames={distinctHotelNames}
+					/>
+				</div>
+			) : null}
+
 			<div>
-				<div className='row mt-5'>
-					<div className='col-lg-6'>
+				<div className='row mt-5 p-3' style={{ backgroundColor: "#e0e0e0" }}>
+					<div className='col-lg-6 my-auto'>
 						<BarChartComponent
 							aggregateByHotelName={aggregateByHotelName}
 							chosenLanguage={chosenLanguage}
+							selectedHotelName={selectedHotelName}
+							selectedMonth={selectedMonth}
 						/>
 					</div>
 
@@ -134,10 +208,21 @@ const OwnerDashboardMain = () => {
 						<BookingSourceTable
 							aggregateByBookingSource={aggregateByBookingSource}
 							chosenLanguage={chosenLanguage}
+							selectedHotelName={selectedHotelName}
 						/>
 					</div>
 				</div>
 			</div>
+			{reservationListToDate && reservationListToDate.length > 0 ? (
+				<div className='mt-5'>
+					<DayToDayReport
+						selectedDate={selectedDate}
+						setSelectedDate={setSelectedDate}
+						reservationListToDate={reservationListToDate}
+						chosenLanguage={chosenLanguage}
+					/>
+				</div>
+			) : null}
 		</OwnerDashboardMainWrapper>
 	);
 };
@@ -147,4 +232,12 @@ export default OwnerDashboardMain;
 const OwnerDashboardMainWrapper = styled.div`
 	min-height: 750px;
 	padding: 15px;
+
+	@media (max-width: 1000px) {
+		padding: 5px;
+
+		.row {
+			padding: 2px !important;
+		}
+	}
 `;
