@@ -50,6 +50,7 @@ import FinanceRoute from "./auth/FinanceRoute";
 import PaymentMainFinance from "./Finance/Payment/PaymentMainFinance";
 import OwnerRoute from "./auth/OwnerRoute";
 import OwnerDashboardMain from "./OwnerContent/OwnerDashboardMain";
+import ClientPayVirtualCard from "./AdminModule/HotelModule/ClientPay/ClientPayVirtualCard";
 
 function App() {
 	const { languageToggle, chosenLanguage } = useCartContext();
@@ -147,6 +148,12 @@ function App() {
 						path='/admin-management/admin-reports/:hotelId/:userId'
 						exact
 						component={HotelReportsMainAdmin}
+					/>
+
+					<AdminRoute
+						path='/admin/virtual-card-payments/:reservationId/:guestname/:guestphone/:hotelname/:roomtype/:checkin/:checkout/:daysofresidence/:totalamount'
+						exact
+						component={ClientPayVirtualCard}
 					/>
 
 					{/*End of Admin Routes for Hotels  */}
