@@ -38,7 +38,9 @@ const OwnerDashboardMain = () => {
 	const [distinctHotelNames, setDistinctHotelNames] = useState("");
 	const [selectedHotelName, setSelectedHotelName] = useState("");
 	const [selectedDate, setSelectedDate] = useState(
-		new Date().toISOString().slice(0, 10)
+		new Date(new Date().setDate(new Date().getDate() - 1))
+			.toISOString()
+			.slice(0, 10)
 	);
 	const [reservationListToDate, setReservationListToDate] = useState("");
 
