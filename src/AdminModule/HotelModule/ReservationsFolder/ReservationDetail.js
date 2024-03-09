@@ -272,7 +272,7 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 	};
 
 	const getHotelRoomsDetails = () => {
-		getHotelRooms(reservation.hotelId, user._id).then((data3) => {
+		getHotelRooms(reservation.hotelId, reservation.belongsTo).then((data3) => {
 			if (data3 && data3.error) {
 				console.log(data3.error);
 			} else {
