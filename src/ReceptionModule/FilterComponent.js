@@ -76,18 +76,13 @@ const FilterComponent = ({
 	// Define filter labels in both English and Arabic
 	const filterLabels = {
 		All: chosenLanguage === "Arabic" ? "إختيار الكل" : "All",
-		"New Reservation":
-			chosenLanguage === "Arabic" ? "حجز جديد" : "New Reservation",
-		Cancelations: chosenLanguage === "Arabic" ? "الإلغاءات" : "Cancelations",
+
 		"Today's Arrivals":
 			chosenLanguage === "Arabic" ? "وصول اليوم" : "Today's Arrivals",
 		"Today's Departures":
 			chosenLanguage === "Arabic" ? "مغادرة اليوم" : "Today's Departures",
 		"In House": chosenLanguage === "Arabic" ? "في المنزل" : "In House",
-		"Incomplete reservations":
-			chosenLanguage === "Arabic"
-				? "الحجوزات الغير مكتملة"
-				: "Incomplete reservations",
+
 		"Specific Date":
 			chosenLanguage === "Arabic" ? "تاريخ الوصول" : "Checkin Date",
 		"Specific Date2":
