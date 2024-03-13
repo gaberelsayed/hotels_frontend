@@ -934,6 +934,17 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 												"N/A"}
 										</div>
 									</div>
+									<div className='col-md-12 mx-auto text-center mx-auto my-2'>
+										{chosenLanguage === "Arabic"
+											? "تاريخ الميلاد"
+											: "Date Of Birth"}
+										<div className='mx-2'>
+											{(reservation &&
+												reservation.customer_details &&
+												reservation.customer_details.passportExpiry) ||
+												"N/A"}
+										</div>
+									</div>
 									{/* <div className='col-md-4 mx-auto text-center mx-auto my-2'>
 										{chosenLanguage === "Arabic" ? "العنوان" : "Address"}
 										<div className='mx-2'>

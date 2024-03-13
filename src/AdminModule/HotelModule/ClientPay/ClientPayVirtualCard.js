@@ -78,8 +78,8 @@ const ClientPayVirtualCard = () => {
 				const nonce = data.nonce;
 				const paymentData = {
 					paymentMethodNonce: nonce,
-					amount: currency.amountInUSD,
-					amountInSAR: currency.amountInSAR,
+					amount: reservation.sub_total,
+					amountInSAR: reservation.sub_total,
 					email: reservation?.customer_details.email,
 					customerId: reservation?._id,
 					planId: "One Time Payment",
@@ -91,6 +91,9 @@ const ClientPayVirtualCard = () => {
 			})
 			.then((response) => {
 				// Directly check for a successful transaction indicator from your backend response
+				setTimeout(() => {
+					window.location.reload(false);
+				}, 1500);
 				if (
 					response.message ===
 					"Payment processed and reservation updated successfully."

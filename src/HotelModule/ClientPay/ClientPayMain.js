@@ -98,6 +98,10 @@ const ClientPayMain = () => {
 			})
 			.then((response) => {
 				// Directly check for a successful transaction indicator from your backend response
+				setTimeout(() => {
+					window.location.reload(false);
+				}, 1500);
+
 				if (
 					response.message ===
 					"Payment processed and reservation updated successfully."
