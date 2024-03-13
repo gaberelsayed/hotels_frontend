@@ -662,6 +662,24 @@ export const processPayment = (reservationId, paymentData) => {
 		.catch((err) => console.log(err));
 };
 
+export const processPayment_SAR = (reservationId, paymentData) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/braintree/sar-payment/${reservationId}`,
+		{
+			method: "POST",
+			headers: {
+				Accept: "application/json",
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(paymentData),
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
 export const processCommissionPayment = (paymentData) => {
 	return fetch(
 		`${process.env.REACT_APP_API_URL}/braintree/commission-payment`,

@@ -5,7 +5,8 @@ import { useCartContext } from "../../../cart_context";
 import {
 	currecyConversion,
 	getBraintreeClientToken,
-	processPayment,
+	// processPayment,
+	processPayment_SAR,
 	singlePreReservationById,
 } from "../apiAdmin";
 import { isAuthenticated } from "../../../auth";
@@ -87,7 +88,7 @@ const ClientPayVirtualCard = () => {
 					hotelName: reservation?.hotelId.hotelName,
 				};
 
-				return processPayment(reservation._id, paymentData);
+				return processPayment_SAR(reservation._id, paymentData);
 			})
 			.then((response) => {
 				// Directly check for a successful transaction indicator from your backend response
