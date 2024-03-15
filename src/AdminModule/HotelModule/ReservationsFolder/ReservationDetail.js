@@ -657,9 +657,11 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 													}}
 													onClick={() => {
 														setLinkGenerated(
-															`https://xhotelpro.com/client-payment/${
+															`${
+																process.env.REACT_APP_MAIN_URL
+															}/client-payment/${reservation._id}/${
 																reservation._id
-															}/${reservation._id}/${reservation._id}/${
+															}/${reservation._id}/${
 																hotelDetails.hotelName
 															}/roomTypes/${reservation._id}/${
 																reservation._id
@@ -730,9 +732,11 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 													}}
 													onClick={() => {
 														setLinkGenerated(
-															`https://xhotelpro.com/client-payment/${
+															`${
+																process.env.REACT_APP_MAIN_URL
+															}/client-payment/${reservation._id}/${
 																reservation._id
-															}/${reservation._id}/${reservation._id}/${
+															}/${reservation._id}/${
 																hotelDetails.hotelName
 															}/roomTypes/${reservation._id}/${
 																reservation._id
@@ -1077,9 +1081,11 @@ const ReservationDetail = ({ reservation, setReservation, hotelDetails }) => {
 										}}
 										onClick={() =>
 											window.open(
-												`https://xhotelpro.com/admin/virtual-card-payments/${
+												`${
+													process.env.REACT_APP_MAIN_URL
+												}/admin/virtual-card-payments/${reservation._id}/${
 													reservation._id
-												}/${reservation._id}/${reservation._id}/${
+												}/${reservation._id}/${
 													hotelDetails.hotelName
 												}/roomTypes/${reservation._id}/${reservation._id}/${
 													reservation.days_of_residence
