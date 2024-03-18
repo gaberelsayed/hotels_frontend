@@ -82,10 +82,16 @@ const ClientPayVirtualCard = () => {
 			.requestPaymentMethod()
 			.then((data) => {
 				const nonce = data.nonce;
+				// Ensure the sub_total is a number and format it to two decimal places
+				const formattedSubTotal = parseFloat(reservation.sub_total).toFixed(2);
+				if (isNaN(formattedSubTotal)) {
+					throw new Error("Invalid amount format.");
+				}
+
 				const paymentData = {
 					paymentMethodNonce: nonce,
-					amount: reservation.sub_total,
-					amountInSAR: reservation.sub_total,
+					amount: formattedSubTotal,
+					amountInSAR: currency.amountInSAR,
 					email: reservation?.customer_details.email,
 					customerId: reservation?._id,
 					planId: "One Time Payment",
@@ -211,10 +217,10 @@ const ClientPayVirtualCard = () => {
 				</div>
 				<div className='total-amount'>
 					<strong>Reservation Total Amount:</strong>{" "}
-					{reservation && reservation.sub_total.toLocaleString()} SAR
+					{reservation && reservation.sub_total.toLocaleString()} {currency2}
 				</div>
 				<div className='total-amount'>
-					<strong>Transaction Fee & Taxes (2%):</strong> 0 SAR
+					<strong>Transaction Fee & Taxes (2%):</strong> 0 {currency2}
 				</div>
 				<div
 					className='total-amount'
@@ -238,7 +244,7 @@ const ClientPayVirtualCard = () => {
 					<Input
 						value={editedSubTotal}
 						onChange={handleChange}
-						prefix='SAR'
+						prefix={currency2}
 						type='number'
 					/>
 				</Modal>
