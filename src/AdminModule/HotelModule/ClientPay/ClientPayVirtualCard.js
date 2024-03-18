@@ -12,10 +12,13 @@ import {
 import { isAuthenticated } from "../../../auth";
 import { toast } from "react-toastify";
 import PaymentForm from "./PaymentForm";
+import { Modal, Input, Button, Radio } from "antd";
+import { EditOutlined } from "@ant-design/icons";
 
 const ClientPayVirtualCard = () => {
 	const [reservation, setReservation] = useState("");
 	const [currency, setCurrency] = useState("");
+	const [currency2, setCurrency2] = useState("USD");
 	const [paymentStatus, setPaymentStatus] = useState(false);
 	const [data, setData] = useState({
 		loading: true,
@@ -24,6 +27,8 @@ const ClientPayVirtualCard = () => {
 		error: "",
 		instance: {},
 	});
+	const [isModalVisible, setIsModalVisible] = useState(false);
+	const [editedSubTotal, setEditedSubTotal] = useState("");
 
 	// Use useParams hook to get the route parameters
 	const params = useParams();
@@ -86,6 +91,7 @@ const ClientPayVirtualCard = () => {
 					planId: "One Time Payment",
 					country: reservation?.customer_details.nationality,
 					hotelName: reservation?.hotelId.hotelName,
+					chosenCurrency: currency2,
 				};
 
 				return processPayment_SAR(reservation._id, paymentData);
@@ -118,6 +124,24 @@ const ClientPayVirtualCard = () => {
 					"An error occurred during payment processing. Please try again."
 				);
 			});
+	};
+
+	const showModal = () => {
+		setIsModalVisible(true);
+		setEditedSubTotal(reservation.sub_total);
+	};
+
+	const handleOk = () => {
+		setIsModalVisible(false);
+		setReservation({ ...reservation, sub_total: editedSubTotal });
+	};
+
+	const handleCancel = () => {
+		setIsModalVisible(false);
+	};
+
+	const handleChange = (e) => {
+		setEditedSubTotal(e.target.value);
 	};
 
 	// Render the component with the data
@@ -173,6 +197,18 @@ const ClientPayVirtualCard = () => {
 					<strong>Total Guests:</strong>{" "}
 					{reservation && reservation.total_guests}
 				</div>
+
+				<div className='currency-selection'>
+					<label>Choose A Currency:</label>
+					<Radio.Group
+						value={currency2}
+						onChange={(e) => setCurrency2(e.target.value)}
+						style={{ marginLeft: "10px" }}
+					>
+						<Radio value='USD'>USD</Radio>
+						<Radio value='SAR'>SAR</Radio>
+					</Radio.Group>
+				</div>
 				<div className='total-amount'>
 					<strong>Reservation Total Amount:</strong>{" "}
 					{reservation && reservation.sub_total.toLocaleString()} SAR
@@ -182,11 +218,30 @@ const ClientPayVirtualCard = () => {
 				</div>
 				<div
 					className='total-amount'
-					style={{ color: "darkgreen", fontWeight: "bold" }}
+					style={{ color: "darkgreen", fontWeight: "bold", width: "100%" }}
 				>
 					<strong>Your Payment Total Amount:</strong>{" "}
-					{reservation && reservation.sub_total.toLocaleString()} SAR
+					{reservation && reservation.sub_total.toLocaleString()} {currency2}
+					<Button
+						type='link'
+						onClick={showModal}
+						icon={<EditOutlined />}
+						style={{ marginLeft: "10px" }}
+					/>
 				</div>
+				<Modal
+					title='Edit The Amount'
+					open={isModalVisible}
+					onOk={handleOk}
+					onCancel={handleCancel}
+				>
+					<Input
+						value={editedSubTotal}
+						onChange={handleChange}
+						prefix='SAR'
+						type='number'
+					/>
+				</Modal>
 			</div>
 			{paymentStatus ||
 			(reservation &&
@@ -262,8 +317,16 @@ const ClientPayVirtualCardWrapper = styled.div`
 		grid-column: 1 / -1; /* Makes the total amount take up the full width */
 		text-align: center;
 		margin: auto;
-		min-width: 500px !important; /* Ensures each item does not exceed 75px width */
+		min-width: 650px !important; /* Ensures each item does not exceed 75px width */
 		font-size: 1.5rem;
+	}
+
+	.currency-selection {
+		margin: auto;
+		width: 100%;
+		label {
+			font-weight: bold;
+		}
 	}
 
 	@media (max-width: 700px) {
