@@ -112,7 +112,7 @@ const ClientPayVirtualCard = () => {
 					"Payment processed and reservation updated successfully."
 				) {
 					toast.success(
-						"You have successfully subscribed to our platform share"
+						"Payment processed and reservation updated successfully."
 					);
 					setPaymentStatus(true); // Update state to reflect payment status
 				} else {
@@ -130,6 +130,89 @@ const ClientPayVirtualCard = () => {
 					"An error occurred during payment processing. Please try again."
 				);
 			});
+	};
+
+	// eslint-disable-next-line
+	const buy2 = () => {
+		let vendorShare; // Define vendorShare outside the promise chain
+
+		data.instance
+			.requestPaymentMethod()
+			.then((data) => {
+				const nonce = data.nonce;
+				const totalAmount = parseFloat(reservation.sub_total).toFixed(2);
+				if (isNaN(totalAmount)) {
+					throw new Error("Invalid amount format.");
+				}
+
+				const yourCommission = (totalAmount * 0.03).toFixed(2);
+				vendorShare = (totalAmount * 0.97).toFixed(2); // Assign value to vendorShare
+
+				const paymentData = {
+					paymentMethodNonce: nonce,
+					amount: yourCommission, // Only process your commission through Braintree
+					amountInSAR: currency.amountInSAR, // Adjust if necessary for currency conversion
+					email: reservation?.customer_details.email,
+					customerId: reservation?._id,
+					planId: "One Time Payment",
+					country: reservation?.customer_details.nationality,
+					hotelName: reservation?.hotelId.hotelName,
+					chosenCurrency: currency2,
+				};
+
+				return processPayment_SAR(reservation._id, paymentData);
+			})
+			.then((response) => {
+				if (
+					response.message ===
+					"Payment processed and reservation updated successfully."
+				) {
+					toast.success("2% were sent to Janat Successfully");
+					setPaymentStatus(true); // Update state to reflect payment status
+
+					// Here, you can trigger the PayPal payouts route with the vendor's share
+					const payoutData = {
+						payoutEmail: reservation.belongsTo.email, // Assuming you have the vendor's email
+						payoutAmount: vendorShare, // Send the vendor's share via PayPal
+					};
+
+					return initiatePayPalPayout(payoutData); // Function to call your PayPal payouts route
+				} else {
+					toast.error(
+						"Not Paid, Maybe insufficient credit, Please try another card"
+					);
+				}
+			})
+			.then((payoutResponse) => {
+				// Handle the response from your PayPal payouts route
+				console.log(payoutResponse);
+				toast.success(
+					`98% were sent to ${reservation.hotelId.hotelName} Successfully`
+				);
+			})
+			.catch((error) => {
+				console.error("Payment processing error: ", error);
+				setData({ loading: false, error: error.message });
+				toast.error(
+					"An error occurred during payment processing. Please try again."
+				);
+			});
+	};
+
+	// Function to initiate PayPal payout
+	const initiatePayPalPayout = (payoutData) => {
+		return fetch(`${process.env.REACT_APP_API_URL}/create-a-vendor-paypal`, {
+			method: "POST",
+			headers: {
+				Accept: "application/json",
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(payoutData),
+		})
+			.then((response) => {
+				return response.json();
+			})
+			.catch((err) => console.log(err));
 	};
 
 	const showModal = () => {
