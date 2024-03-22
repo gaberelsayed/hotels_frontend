@@ -14,9 +14,11 @@ import { toast } from "react-toastify";
 import PaymentForm from "./PaymentForm";
 import { Modal, Input, Button, Radio } from "antd";
 import { EditOutlined } from "@ant-design/icons";
+import PayPalComponent from "./PayPalComponent";
 
 const ClientPayVirtualCard = () => {
 	const [reservation, setReservation] = useState("");
+	const [payPalClicked, setPayPalClicked] = useState(false);
 	const [currency, setCurrency] = useState("");
 	const [currency2, setCurrency2] = useState("USD");
 	const [paymentStatus, setPaymentStatus] = useState(false);
@@ -332,6 +334,7 @@ const ClientPayVirtualCard = () => {
 					/>
 				</Modal>
 			</div>
+
 			{paymentStatus ||
 			(reservation &&
 				reservation.payment_details &&
@@ -362,6 +365,31 @@ const ClientPayVirtualCard = () => {
 						token={token}
 						language={chosenLanguage}
 					/>
+
+					{payPalClicked ? (
+						<div className='mx-auto col-md-6 text-center my-5'>
+							{reservation &&
+								reservation.sub_total &&
+								reservation._id &&
+								currency &&
+								Number(currency.amountInUSD).toFixed(2) && (
+									<PayPalComponent
+										totalAmount={currency.amountInUSD}
+										vendorEmail={"zaerhotel@gmail.com"}
+										reservationId={reservation._id}
+									/>
+								)}
+						</div>
+					) : (
+						<div className='mx-auto text-center my-5 p-3'>
+							<button
+								className='btn-primary btn p-3'
+								onClick={() => setPayPalClicked(!payPalClicked)}
+							>
+								Split Payments VIA PayPal
+							</button>
+						</div>
+					)}
 				</div>
 			)}
 		</ClientPayVirtualCardWrapper>

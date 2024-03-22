@@ -45,6 +45,19 @@ const ScoreCards = ({ scoreCardObject }) => {
 					/>
 				</Count>
 			</Card>
+			<Card bgColor='#ea706f'>
+				<Title>Actual Amount</Title>
+				<Count>
+					<CountUp
+						start={0}
+						end={total_amount - commission}
+						duration={3}
+						separator=','
+						decimals={2}
+						suffix=' SAR'
+					/>
+				</Count>
+			</Card>
 		</ScoreCardsWrapper>
 	);
 };
@@ -60,11 +73,12 @@ const ScoreCardsWrapper = styled.div`
 const Card = styled.div`
 	background-color: ${(props) => props.bgColor};
 	color: white;
-	padding: 20px;
+	padding: 10px;
+	margin: 10px;
 	border-radius: 10px;
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 	text-align: center;
-	width: 30%;
+	width: 25%;
 	transition: transform 0.3s ease;
 
 	&:hover {

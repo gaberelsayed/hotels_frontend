@@ -62,12 +62,21 @@ export const GeneralOverview = ({ hotelDetails }) => {
 								fontSize: "12px", // Adjust font size
 							},
 						},
-						colors: ["#eaad6f", "#ea706f"],
+						colors: ["#6facea", "#ea706f", "#eaae6f"],
 					});
+
+					// In the gettingDayOverDay.then() callback:
+					const actualAmounts = totalAmounts.map(
+						(total, index) => total - totalAmountsCancelled[index]
+					);
+					const actualCounts = reservationCounts.map(
+						(count, index) => count - reservationCountsCancelled[index]
+					);
 
 					setSeriesTotalAmount([
 						{ name: "Total Amount", data: totalAmounts },
 						{ name: "Cancelled Amount", data: totalAmountsCancelled },
+						{ name: "Actual Amount", data: actualAmounts }, // Added Actual Amount series
 					]);
 
 					setOptionsReservationCount({
@@ -86,7 +95,7 @@ export const GeneralOverview = ({ hotelDetails }) => {
 								fontSize: "12px", // Adjust font size
 							},
 						},
-						colors: ["#6facea", "#ea706f"],
+						colors: ["#6facea", "#ea706f", "#eaae6f"],
 					});
 
 					setSeriesReservationCount([
@@ -95,6 +104,7 @@ export const GeneralOverview = ({ hotelDetails }) => {
 							name: "Cancelled Reservations",
 							data: reservationCountsCancelled,
 						},
+						{ name: "Actual Count", data: actualCounts }, // Added Actual Count series
 					]);
 				}
 			}
@@ -112,6 +122,10 @@ export const GeneralOverview = ({ hotelDetails }) => {
 					const totalAmounts = data.map((item) => item.totalAmount);
 					const cancelledAmounts = data.map((item) => item.cancelledAmount);
 
+					// In the gettingMonthOverMonth.then() callback:
+					const actualMonthAmounts = totalAmounts.map(
+						(total, index) => total - cancelledAmounts[index]
+					);
 					setOptionsMonthTotalAmount({
 						chart: { id: "month-total-amount" },
 						xaxis: { categories: monthLabels },
@@ -140,12 +154,13 @@ export const GeneralOverview = ({ hotelDetails }) => {
 								},
 							},
 						},
-						colors: ["#6feaad", "#ea706f"],
+						colors: ["#6feaad", "#ea706f", "#eaae6f"],
 					});
 
 					setSeriesMonthTotalAmount([
 						{ name: "Total Amount", data: totalAmounts },
 						{ name: "Cancelled Amount", data: cancelledAmounts },
+						{ name: "Actual Amount", data: actualMonthAmounts }, // Added Actual Amount series
 					]);
 				}
 			}
@@ -162,9 +177,12 @@ export const GeneralOverview = ({ hotelDetails }) => {
 					const bookingSourceLabel = data.map((item) => item._id);
 					const totalAmounts = data.map((item) => item.totalAmount);
 					const cancelledAmounts = data.map((item) => item.cancelledAmount);
+					const actualAmounts = totalAmounts.map(
+						(total, index) => total - cancelledAmounts[index]
+					); // Calculate Actual Amounts
 
 					setOptionsBookingSource({
-						chart: { id: "month-total-amount" },
+						chart: { id: "booking-source-amount" },
 						xaxis: {
 							categories: bookingSourceLabel.map((label) =>
 								label.toUpperCase()
@@ -201,12 +219,13 @@ export const GeneralOverview = ({ hotelDetails }) => {
 								},
 							},
 						},
-						colors: ["#6feaad", "#ea706f"],
+						colors: ["#6feaad", "#ea706f", "#eaae6f"],
 					});
 
 					setSeriesBookingSourceTotalAmount([
 						{ name: "Total Amount", data: totalAmounts },
 						{ name: "Cancelled Amount", data: cancelledAmounts },
+						{ name: "Actual Amount", data: actualAmounts }, // Added Actual Amount series
 					]);
 				}
 			}
@@ -259,7 +278,7 @@ export const GeneralOverview = ({ hotelDetails }) => {
 								},
 							},
 						},
-						colors: ["#eaea6f", "#ea706f"],
+						colors: ["#eaea6f", "#ea706f", "#eaae6f"],
 					});
 
 					setSeriesStatusTotalAmount([
@@ -288,7 +307,7 @@ export const GeneralOverview = ({ hotelDetails }) => {
 							marginTop: "20px",
 						}}
 					>
-						Day Over Day By Total Amount (SAR)
+						Day Over Day (Check Out Date) By Total Amount (SAR)
 					</h4>
 					<ReactApexChart
 						options={optionsTotalAmount}
@@ -304,7 +323,7 @@ export const GeneralOverview = ({ hotelDetails }) => {
 							marginTop: "20px",
 						}}
 					>
-						Day Over Day By Reservation Count
+						Day Over Day (Check Out Date) By Reservation Count
 					</h4>
 
 					<ReactApexChart
@@ -320,7 +339,7 @@ export const GeneralOverview = ({ hotelDetails }) => {
 					reservationStatus ? (
 						<div>
 							<div className='row mt-5'>
-								<div className='col-md-6 mx-auto'>
+								<div className='col-md-12 mx-auto'>
 									<h4
 										style={{
 											fontSize: "1rem",
@@ -338,7 +357,7 @@ export const GeneralOverview = ({ hotelDetails }) => {
 										height={350}
 									/>
 								</div>
-								<div className='col-md-6'>
+								<div className='col-md-12'>
 									<h4
 										style={{
 											fontSize: "1rem",
@@ -357,7 +376,7 @@ export const GeneralOverview = ({ hotelDetails }) => {
 									/>
 								</div>
 
-								<div className='col-md-6 mx-auto my-3'>
+								<div className='col-md-12 mx-auto my-3'>
 									<h4
 										style={{
 											fontSize: "1rem",
@@ -366,7 +385,7 @@ export const GeneralOverview = ({ hotelDetails }) => {
 											marginTop: "20px",
 										}}
 									>
-										MTD Overall Overview
+										MTD (Check Out Month) Overall Overview
 									</h4>
 									<ReactApexChart
 										options={optionsMonthTotalAmount}
