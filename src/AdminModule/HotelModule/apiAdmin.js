@@ -267,10 +267,11 @@ export const generalReportReservationsList = (
 	noshow,
 	cancel,
 	inhouse,
-	showCheckedout
+	showCheckedout,
+	payment
 ) => {
 	return fetch(
-		`${process.env.REACT_APP_API_URL}/reservations-general-report/${page}/${records}/${hotelId}/${channel}/${startDate}/${endDate}/${dateBy}/${noshow}/${cancel}/${inhouse}/${showCheckedout}`,
+		`${process.env.REACT_APP_API_URL}/reservations-general-report/${page}/${records}/${hotelId}/${channel}/${startDate}/${endDate}/${dateBy}/${noshow}/${cancel}/${inhouse}/${showCheckedout}/${payment}`,
 		{
 			method: "GET",
 		}
@@ -290,10 +291,11 @@ export const getGeneralReportReservations = (
 	noshow,
 	cancel,
 	inhouse,
-	showCheckedout
+	showCheckedout,
+	payment
 ) => {
 	return fetch(
-		`${process.env.REACT_APP_API_URL}/general-report-reservations/list/${hotelId}/${channel}/${startDate}/${endDate}/${dateBy}/${noshow}/${cancel}/${inhouse}/${showCheckedout}`,
+		`${process.env.REACT_APP_API_URL}/general-report-reservations/list/${hotelId}/${channel}/${startDate}/${endDate}/${dateBy}/${noshow}/${cancel}/${inhouse}/${showCheckedout}/${payment}`,
 		{
 			method: "GET",
 		}
@@ -903,6 +905,48 @@ export const pendingPaymentReservationList = (page, records, hotelId) => {
 export const gettingCommissionPaidReservations = (page, records, hotelId) => {
 	return fetch(
 		`${process.env.REACT_APP_API_URL}/reservations-paid-commission/${page}/${records}/${hotelId}`,
+		{
+			method: "GET",
+			headers: {
+				Accept: "application/json",
+			},
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
+export const gettingCollectedReservations = (
+	page,
+	records,
+	hotelId,
+	status
+) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/collected-reservations/list/${status}/${page}/${records}/${hotelId}`,
+		{
+			method: "GET",
+			headers: {
+				Accept: "application/json",
+			},
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
+export const gettingAggregatedCollectedReservations = (
+	page,
+	records,
+	hotelId,
+	status
+) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/aggregated-collected-reservations/list/${status}/${page}/${records}/${hotelId}`,
 		{
 			method: "GET",
 			headers: {

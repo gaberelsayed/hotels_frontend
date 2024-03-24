@@ -35,6 +35,7 @@ const GeneralReportMain = ({ hotelDetails, chosenLanguage }) => {
 	const [cancelFilter, setCancelFilter] = useState(0);
 	const [inhouseFilter, setInhouseFilter] = useState(0);
 	const [noshowFilter, setNoshowFilter] = useState(0);
+	const [payment, setPayment] = useState(false);
 	const [selectedFilter, setSelectedFilter] = useState("selectAll");
 
 	const { RangePicker } = DatePicker;
@@ -56,7 +57,8 @@ const GeneralReportMain = ({ hotelDetails, chosenLanguage }) => {
 			noshowFilter,
 			cancelFilter,
 			inhouseFilter,
-			0
+			0,
+			payment
 		).then((data) => {
 			if (data.error) {
 				console.log(data.error);
@@ -72,7 +74,8 @@ const GeneralReportMain = ({ hotelDetails, chosenLanguage }) => {
 					noshowFilter,
 					cancelFilter,
 					inhouseFilter,
-					0
+					0,
+					payment
 				).then((data4) => {
 					if (data4 && data4.error) {
 						console.log(data4.error, "data4.error");
@@ -147,17 +150,17 @@ const GeneralReportMain = ({ hotelDetails, chosenLanguage }) => {
 			title: chosenLanguage === "Arabic" ? "حالة السداد" : "Payment Status",
 			dataIndex: "payment",
 			key: "payment",
-			render: (payment, record) => {
-				const paidOnlinePayments = [
-					"agoda collect",
-					"expedia collect",
-					"booking.com collect",
-				];
-				const isPaidOnline =
-					paidOnlinePayments.includes(payment) ||
-					record.booking_source === "agoda";
-				return isPaidOnline ? "Paid Online" : "Paid in Cash";
-			},
+			// render: (payment, record) => {
+			// 	const paidOnlinePayments = [
+			// 		"agoda collect",
+			// 		"expedia collect",
+			// 		"booking.com collect",
+			// 	];
+			// 	const isPaidOnline =
+			// 		paidOnlinePayments.includes(payment) ||
+			// 		record.booking_source === "agoda";
+			// 	return isPaidOnline ? "Paid Online" : "Paid in Cash";
+			// },
 		},
 
 		{
@@ -403,6 +406,30 @@ const GeneralReportMain = ({ hotelDetails, chosenLanguage }) => {
 					>
 						Show Inhouse
 					</Button>
+					<div className='filter-buttons mt-4'>
+						{/* Existing filter buttons */}
+
+						<Button
+							type={payment === false ? "primary" : "default"}
+							style={{
+								backgroundColor: payment === false ? "#002850" : undefined,
+								borderColor: payment === false ? "#002850" : undefined,
+							}}
+							onClick={() => setPayment(false)}
+						>
+							All
+						</Button>
+						<Button
+							type={payment === true ? "primary" : "default"}
+							style={{
+								backgroundColor: payment === true ? "#002850" : undefined,
+								borderColor: payment === true ? "#002850" : undefined,
+							}}
+							onClick={() => setPayment(true)}
+						>
+							Collected Payments
+						</Button>
+					</div>
 				</div>
 				<Button onClick={applyFilter}>Apply Now</Button>
 			</div>
