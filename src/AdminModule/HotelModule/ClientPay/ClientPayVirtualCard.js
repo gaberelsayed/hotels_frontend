@@ -82,58 +82,61 @@ const ClientPayVirtualCard = () => {
 	console.log(currency, "cu");
 
 	const buy = () => {
-		data.instance
-			.requestPaymentMethod()
-			.then((data) => {
-				const nonce = data.nonce;
-				// Ensure the sub_total is a number and format it to two decimal places
-				const formattedSubTotal = parseFloat(reservation.sub_total).toFixed(2);
-				if (isNaN(formattedSubTotal)) {
-					throw new Error("Invalid amount format.");
-				}
+		return toast.error(
+			"There's an error in the payment gateway. Please contact your adminstrator."
+		);
+		// data.instance
+		// 	.requestPaymentMethod()
+		// 	.then((data) => {
+		// 		const nonce = data.nonce;
+		// 		// Ensure the sub_total is a number and format it to two decimal places
+		// 		const formattedSubTotal = parseFloat(reservation.sub_total).toFixed(2);
+		// 		if (isNaN(formattedSubTotal)) {
+		// 			throw new Error("Invalid amount format.");
+		// 		}
 
-				const paymentData = {
-					paymentMethodNonce: nonce,
-					amount: formattedSubTotal,
-					amountInSAR: currency.amountInSAR,
-					email: reservation?.customer_details.email,
-					customerId: reservation?._id,
-					planId: "One Time Payment",
-					country: reservation?.customer_details.nationality,
-					hotelName: reservation?.hotelId.hotelName,
-					chosenCurrency: currency2,
-				};
+		// 		const paymentData = {
+		// 			paymentMethodNonce: nonce,
+		// 			amount: formattedSubTotal,
+		// 			amountInSAR: currency.amountInSAR,
+		// 			email: reservation?.customer_details.email,
+		// 			customerId: reservation?._id,
+		// 			planId: "One Time Payment",
+		// 			country: reservation?.customer_details.nationality,
+		// 			hotelName: reservation?.hotelId.hotelName,
+		// 			chosenCurrency: currency2,
+		// 		};
 
-				return processPayment_SAR(reservation._id, paymentData);
-			})
-			.then((response) => {
-				// Directly check for a successful transaction indicator from your backend response
-				setTimeout(() => {
-					window.location.reload(false);
-				}, 1500);
-				if (
-					response.message ===
-					"Payment processed and reservation updated successfully."
-				) {
-					toast.success(
-						"Payment processed and reservation updated successfully."
-					);
-					setPaymentStatus(true); // Update state to reflect payment status
-				} else {
-					// If response does not indicate success, handle as a failed payment
-					toast.error(
-						"Not Paid, Maybe insufficient credit, Please try another card"
-					);
-				}
-			})
-			.catch((error) => {
-				// Handle errors from both requestPaymentMethod and processPayment
-				console.error("Payment processing error: ", error);
-				setData({ loading: false, error: error.message });
-				toast.error(
-					"An error occurred during payment processing. Please try again."
-				);
-			});
+		// 		return processPayment_SAR(reservation._id, paymentData);
+		// 	})
+		// 	.then((response) => {
+		// 		// Directly check for a successful transaction indicator from your backend response
+		// 		setTimeout(() => {
+		// 			window.location.reload(false);
+		// 		}, 1500);
+		// 		if (
+		// 			response.message ===
+		// 			"Payment processed and reservation updated successfully."
+		// 		) {
+		// 			toast.success(
+		// 				"Payment processed and reservation updated successfully."
+		// 			);
+		// 			setPaymentStatus(true); // Update state to reflect payment status
+		// 		} else {
+		// 			// If response does not indicate success, handle as a failed payment
+		// 			toast.error(
+		// 				"Not Paid, Maybe insufficient credit, Please try another card"
+		// 			);
+		// 		}
+		// 	})
+		// 	.catch((error) => {
+		// 		// Handle errors from both requestPaymentMethod and processPayment
+		// 		console.error("Payment processing error: ", error);
+		// 		setData({ loading: false, error: error.message });
+		// 		toast.error(
+		// 			"An error occurred during payment processing. Please try again."
+		// 		);
+		// 	});
 	};
 
 	// eslint-disable-next-line
