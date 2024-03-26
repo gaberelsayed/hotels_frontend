@@ -90,6 +90,7 @@ const ReceiptPDF = forwardRef(
 							{reservation.payment === "agoda collect" ||
 							reservation.payment === "expedia collect" ||
 							reservation.payment === "inhouse" ||
+							reservation.payment === "collected" ||
 							reservation.payment.includes("checked_out")
 								? "PAID"
 								: "Not Paid"}

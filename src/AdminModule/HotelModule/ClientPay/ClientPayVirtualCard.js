@@ -22,7 +22,7 @@ const ClientPayVirtualCard = () => {
 	// eslint-disable-next-line
 	const [payPalClicked, setPayPalClicked] = useState(false);
 	const [currency, setCurrency] = useState("");
-	const [currency2, setCurrency2] = useState("USD");
+	const [currency2, setCurrency2] = useState("SAR");
 	const [paymentStatus, setPaymentStatus] = useState(false);
 	const [data, setData] = useState({
 		loading: true,
@@ -87,7 +87,12 @@ const ClientPayVirtualCard = () => {
 			.then((data) => {
 				const nonce = data.nonce;
 				// Ensure the sub_total is a number and format it to two decimal places
-				const formattedSubTotal = parseFloat(reservation.sub_total).toFixed(2);
+				const formattedSubTotal =
+					currency2 === "USD"
+						? parseFloat(currency.amountInUSD).toFixed(2) - 0.03
+						: parseFloat(reservation.sub_total).toFixed(2);
+
+				// const formattedSubTotal =parseFloat(currency.amountInUSD).toFixed(2);
 				if (isNaN(formattedSubTotal)) {
 					throw new Error("Invalid amount format.");
 				}
@@ -104,6 +109,7 @@ const ClientPayVirtualCard = () => {
 					country: reservation?.customer_details.nationality,
 					hotelName: reservation?.hotelId.hotelName,
 					chosenCurrency: currency2,
+					// chosenCurrency: "USD",
 				};
 
 				return processPayment_SAR(reservation._id, paymentData);
@@ -229,6 +235,15 @@ const ClientPayVirtualCard = () => {
 	const handleOk = () => {
 		setIsModalVisible(false);
 		setReservation({ ...reservation, sub_total: editedSubTotal });
+		currecyConversion(Number(Number(editedSubTotal)).toFixed(2)).then(
+			(data2) => {
+				if (data2 && data2.error) {
+					console.log("Error converting money");
+				} else {
+					setCurrency(data2);
+				}
+			}
+		);
 	};
 
 	const handleCancel = () => {
@@ -306,7 +321,10 @@ const ClientPayVirtualCard = () => {
 				</div>
 				<div className='total-amount'>
 					<strong>Reservation Total Amount:</strong>{" "}
-					{reservation && reservation.sub_total.toLocaleString()} {currency2}
+					{reservation && currency2 === "USD"
+						? parseFloat(currency.amountInUSD).toFixed(2) - 0.03
+						: parseFloat(reservation.sub_total).toFixed(2)}{" "}
+					{currency2}
 				</div>
 				<div className='total-amount'>
 					<strong>Transaction Fee & Taxes (2%):</strong> 0 {currency2}
@@ -316,7 +334,10 @@ const ClientPayVirtualCard = () => {
 					style={{ color: "darkgreen", fontWeight: "bold", width: "100%" }}
 				>
 					<strong>Your Payment Total Amount:</strong>{" "}
-					{reservation && reservation.sub_total.toLocaleString()} {currency2}
+					{reservation && currency2 === "USD"
+						? parseFloat(currency.amountInUSD).toFixed(2) - 0.03
+						: parseFloat(reservation.sub_total).toFixed(2)}{" "}
+					{currency2}
 					<Button
 						type='link'
 						onClick={showModal}
