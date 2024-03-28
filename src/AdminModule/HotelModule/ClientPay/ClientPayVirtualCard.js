@@ -4,20 +4,26 @@ import styled from "styled-components";
 import { useCartContext } from "../../../cart_context";
 import {
 	currecyConversion,
-	getBraintreeClientToken,
+	// getBraintreeClientToken,
 	// processPayment,
 	processPayment_SAR,
+	processPayment_Stripe,
 	singlePreReservationById,
 } from "../apiAdmin";
 import { isAuthenticated } from "../../../auth";
 import { toast } from "react-toastify";
+// eslint-disable-next-line
 import PaymentForm from "./PaymentForm";
 import { Modal, Input, Button, Radio } from "antd";
 import { EditOutlined } from "@ant-design/icons";
 // eslint-disable-next-line
 import PayPalComponent from "./PayPalComponent";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
+import StripePaymentForm from "./StripePaymentForm";
 
 const ClientPayVirtualCard = () => {
+	const stripePromise = loadStripe(process.env.REACT_APP_PUBLISHABLE_KEY);
 	const [reservation, setReservation] = useState("");
 	// eslint-disable-next-line
 	const [payPalClicked, setPayPalClicked] = useState(false);
@@ -41,6 +47,7 @@ const ClientPayVirtualCard = () => {
 	// Destructure the parameters for easier access
 	const { reservationId } = params;
 
+	// eslint-disable-next-line
 	const { token } = isAuthenticated();
 
 	const gettingSingleReservation = () => {
@@ -58,15 +65,6 @@ const ClientPayVirtualCard = () => {
 							console.log("Error converting money");
 						} else {
 							setCurrency(data2);
-
-							getBraintreeClientToken(token).then((data3) => {
-								if (data3.error) {
-									setData({ ...data3, error: data3.error });
-								} else {
-									setData({ ...data3, clientToken: data3.clientToken });
-									setData({ ...data3, loading: false });
-								}
-							});
 						}
 					}
 				);
@@ -81,91 +79,62 @@ const ClientPayVirtualCard = () => {
 
 	console.log(currency, "cu");
 
-	const buy = () => {
-		return toast.error("Gateway is down, please contact your adminstrator.");
-	};
+	const buy_stripe = async (paymentMethodId) => {
+		// Format the sub_total to two decimal places
+		// const formattedSubTotal =
+		// 	currency2 === "USD"
+		// 		? parseFloat(currency.amountInUSD).toFixed(2) - 0.03
+		// 		: parseFloat(reservation.sub_total).toFixed(2);
 
-	// eslint-disable-next-line
-	const buy2 = () => {
-		let vendorShare; // Define vendorShare outside the promise chain
+		const formattedSubTotal =
+			parseFloat(currency.amountInUSD).toFixed(2) - 0.03;
 
-		data.instance
-			.requestPaymentMethod()
-			.then((data) => {
-				const nonce = data.nonce;
-				const totalAmount = parseFloat(reservation.sub_total).toFixed(2);
-				if (isNaN(totalAmount)) {
-					throw new Error("Invalid amount format.");
-				}
+		if (isNaN(formattedSubTotal)) {
+			throw new Error("Invalid amount format.");
+		}
 
-				const yourCommission = (totalAmount * 0.03).toFixed(2);
-				vendorShare = (totalAmount * 0.97).toFixed(2); // Assign value to vendorShare
+		const paymentData = {
+			paymentMethodId: paymentMethodId,
+			amount: formattedSubTotal,
+			amountInSAR: currency.amountInSAR,
+			email: reservation?.customer_details.email,
+			name: reservation?.customer_details.name,
+			passport: reservation?.customer_details.passport,
+			nationality: reservation?.customer_details.nationality,
+			phone: reservation?.customer_details.phone,
+			confirmation_number: reservation?.confirmation_number,
+			customerId: reservation?._id,
+			reservationId: reservation?._id,
+			planId: "One Time Payment",
+			country: reservation?.customer_details.nationality,
+			hotelName: reservation?.hotelId.hotelName,
+			chosenCurrency: "USD",
+		};
 
-				const paymentData = {
-					paymentMethodNonce: nonce,
-					amount: yourCommission, // Only process your commission through Braintree
-					amountInSAR: currency.amountInSAR, // Adjust if necessary for currency conversion
-					email: reservation?.customer_details.email,
-					customerId: reservation?._id,
-					planId: "One Time Payment",
-					country: reservation?.customer_details.nationality,
-					hotelName: reservation?.hotelId.hotelName,
-					chosenCurrency: currency2,
-				};
-
-				return processPayment_SAR(reservation._id, paymentData);
-			})
-			.then((response) => {
-				if (
-					response.message ===
-					"Payment processed and reservation updated successfully."
-				) {
-					toast.success("2% were sent to Janat Successfully");
-					setPaymentStatus(true); // Update state to reflect payment status
-
-					// Here, you can trigger the PayPal payouts route with the vendor's share
-					const payoutData = {
-						payoutEmail: reservation.belongsTo.email, // Assuming you have the vendor's email
-						payoutAmount: vendorShare, // Send the vendor's share via PayPal
-					};
-
-					return initiatePayPalPayout(payoutData); // Function to call your PayPal payouts route
-				} else {
-					toast.error(
-						"Not Paid, Maybe insufficient credit, Please try another card"
-					);
-				}
-			})
-			.then((payoutResponse) => {
-				// Handle the response from your PayPal payouts route
-				console.log(payoutResponse);
+		try {
+			const response = await processPayment_Stripe(
+				reservation._id,
+				paymentData
+			);
+			if (
+				response.message ===
+				"Payment processed and reservation updated successfully."
+			) {
 				toast.success(
-					`98% were sent to ${reservation.hotelId.hotelName} Successfully`
+					"Payment processed and reservation updated successfully."
 				);
-			})
-			.catch((error) => {
-				console.error("Payment processing error: ", error);
-				setData({ loading: false, error: error.message });
+				setPaymentStatus(true); // Update state to reflect payment status
+			} else {
 				toast.error(
-					"An error occurred during payment processing. Please try again."
+					"Not Paid, Maybe insufficient credit, Please try another card"
 				);
-			});
-	};
-
-	// Function to initiate PayPal payout
-	const initiatePayPalPayout = (payoutData) => {
-		return fetch(`${process.env.REACT_APP_API_URL}/create-a-vendor-paypal`, {
-			method: "POST",
-			headers: {
-				Accept: "application/json",
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify(payoutData),
-		})
-			.then((response) => {
-				return response.json();
-			})
-			.catch((err) => console.log(err));
+			}
+		} catch (error) {
+			console.error("Payment processing error: ", error);
+			toast.error(
+				"An error occurred during payment processing. Please try again."
+			);
+		}
 	};
 
 	const showModal = () => {
@@ -322,40 +291,10 @@ const ClientPayVirtualCard = () => {
 					</h4>
 				</div>
 			) : (
-				<div>
-					<PaymentForm
-						setData={setData}
-						data={data}
-						buy={buy}
-						user={reservation}
-						token={token}
-						language={chosenLanguage}
-					/>
-
-					{/* {payPalClicked ? (
-						<div className='mx-auto col-md-6 text-center my-5'>
-							{reservation &&
-								reservation.sub_total &&
-								reservation._id &&
-								currency &&
-								Number(currency.amountInUSD).toFixed(2) && (
-									<PayPalComponent
-										totalAmount={currency.amountInUSD}
-										vendorEmail={"zaerhotel@gmail.com"}
-										reservationId={reservation._id}
-									/>
-								)}
-						</div>
-					) : (
-						<div className='mx-auto text-center my-5 p-3'>
-							<button
-								className='btn-primary btn p-3'
-								onClick={() => setPayPalClicked(!payPalClicked)}
-							>
-								Split Payments VIA PayPal
-							</button>
-						</div>
-					)} */}
+				<div className='my-5'>
+					<Elements stripe={stripePromise}>
+						<StripePaymentForm buy={buy_stripe} />
+					</Elements>
 				</div>
 			)}
 		</ClientPayVirtualCardWrapper>

@@ -700,6 +700,39 @@ export const processCommissionPayment = (paymentData) => {
 		.catch((err) => console.log(err));
 };
 
+export const processPayment_Stripe = (reservationId, paymentData) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/stripe/payment/${reservationId}`,
+		{
+			method: "POST",
+			headers: {
+				Accept: "application/json",
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(paymentData),
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
+export const processCommissionPayment_Stripe = (paymentData) => {
+	return fetch(`${process.env.REACT_APP_API_URL}/stripe/commission-payment`, {
+		method: "POST",
+		headers: {
+			Accept: "application/json",
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify(paymentData),
+	})
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
 export const currecyConversion = (saudimoney) => {
 	return fetch(
 		`${process.env.REACT_APP_API_URL}/currencyapi/${Number(saudimoney).toFixed(

@@ -204,7 +204,7 @@ const GeneralReportMain = ({ hotelDetails, chosenLanguage }) => {
 		},
 
 		{
-			title: chosenLanguage === "Arabic" ? "اسم الزائر" : "Client Name",
+			title: chosenLanguage === "Arabic" ? "اسم الزائر" : "Guest Name",
 			dataIndex: "customer_details",
 			key: "name",
 			render: (customer_details) => customer_details.name,
