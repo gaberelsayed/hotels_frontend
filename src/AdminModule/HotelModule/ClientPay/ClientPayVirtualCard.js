@@ -108,6 +108,8 @@ const ClientPayVirtualCard = () => {
 			planId: "One Time Payment",
 			country: reservation?.customer_details.nationality,
 			hotelName: reservation?.hotelId.hotelName,
+			checkin_date: reservation?.checkin_date,
+			checkout_date: reservation?.checkout_date,
 			chosenCurrency: "USD",
 		};
 
