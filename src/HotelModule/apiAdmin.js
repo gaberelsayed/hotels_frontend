@@ -267,10 +267,11 @@ export const generalReportReservationsList = (
 	noshow,
 	cancel,
 	inhouse,
-	showCheckedout
+	showCheckedout,
+	payment
 ) => {
 	return fetch(
-		`${process.env.REACT_APP_API_URL}/reservations-general-report/${page}/${records}/${hotelId}/${channel}/${startDate}/${endDate}/${dateBy}/${noshow}/${cancel}/${inhouse}/${showCheckedout}`,
+		`${process.env.REACT_APP_API_URL}/reservations-general-report/${page}/${records}/${hotelId}/${channel}/${startDate}/${endDate}/${dateBy}/${noshow}/${cancel}/${inhouse}/${showCheckedout}/${payment}`,
 		{
 			method: "GET",
 		}
