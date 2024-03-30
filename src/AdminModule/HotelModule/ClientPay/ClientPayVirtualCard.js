@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import { useCartContext } from "../../../cart_context";
 import {
+	gettingCreatePaymentIntent,
 	currecyConversion,
 	// getBraintreeClientToken,
 	// processPayment,
@@ -24,6 +25,7 @@ import StripePaymentForm from "./StripePaymentForm";
 const ClientPayVirtualCard = () => {
 	const stripePromise = loadStripe(process.env.REACT_APP_PUBLISHABLE_KEY);
 	const [reservation, setReservation] = useState("");
+	const [clientSecret, setClientSecret] = useState("");
 	// eslint-disable-next-line
 	const [payPalClicked, setPayPalClicked] = useState(false);
 	const [currency, setCurrency] = useState("");
@@ -52,23 +54,40 @@ const ClientPayVirtualCard = () => {
 	const gettingSingleReservation = () => {
 		setData({ ...data, loading: true });
 
-		singlePreReservationById(reservationId).then((data) => {
-			if (data && data.error) {
-				console.log(data.error, "getting single reservation");
+		singlePreReservationById(reservationId).then((reservationData) => {
+			if (reservationData && reservationData.error) {
+				console.log(reservationData.error, "getting single reservation");
+				toast.error("Error fetching reservation.");
+				setData({ ...data, loading: false });
 			} else {
-				setReservation(data);
-				console.log(Number(Number(data.sub_total)).toFixed(2), "The currency");
-				currecyConversion(Number(Number(data.sub_total)).toFixed(2)).then(
-					(data2) => {
-						if (data2 && data2.error) {
-							console.log("Error converting money");
-						} else {
-							setCurrency(data2);
-						}
+				setReservation(reservationData);
+				currecyConversion(
+					Number(Number(reservationData.sub_total)).toFixed(2)
+				).then((convertedData) => {
+					if (convertedData && convertedData.error) {
+						console.log("Error converting money");
+						toast.error("Error converting currency.");
+						setData({ ...data, loading: false });
+					} else {
+						setCurrency(convertedData);
+						setData({ ...data, loading: false });
+						// Now that you have all needed details, initiate payment intent creation
+						initiatePayment(convertedData.amountInUSD); // Make sure to pass the correct amount you want to charge
 					}
-				);
+				});
 			}
 		});
+	};
+
+	const initiatePayment = async (amount) => {
+		const amountInCents = Math.round(amount * 100); // Convert the amount to the smallest currency unit
+		try {
+			const secret = await gettingCreatePaymentIntent(amountInCents);
+			setClientSecret(secret); // Save the client secret to state
+		} catch (error) {
+			console.error("Error creating payment intent:", error);
+			toast.error("Could not initiate payment process. Please try again.");
+		}
 	};
 
 	useEffect(() => {
@@ -314,7 +333,11 @@ const ClientPayVirtualCard = () => {
 						</div>
 					) : null}
 					<Elements stripe={stripePromise}>
-						<StripePaymentForm buy={buy_stripe} />
+						<StripePaymentForm
+							buy={buy_stripe}
+							clientSecret={clientSecret}
+							reservation={reservation}
+						/>
 					</Elements>
 				</div>
 			)}
