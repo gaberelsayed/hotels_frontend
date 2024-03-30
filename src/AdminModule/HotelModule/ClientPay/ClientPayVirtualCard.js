@@ -6,7 +6,6 @@ import {
 	currecyConversion,
 	// getBraintreeClientToken,
 	// processPayment,
-	processPayment_SAR,
 	processPayment_Stripe,
 	singlePreReservationById,
 } from "../apiAdmin";
@@ -80,12 +79,6 @@ const ClientPayVirtualCard = () => {
 	console.log(currency, "cu");
 
 	const buy_stripe = async (paymentMethodId) => {
-		// Format the sub_total to two decimal places
-		// const formattedSubTotal =
-		// 	currency2 === "USD"
-		// 		? parseFloat(currency.amountInUSD).toFixed(2) - 0.03
-		// 		: parseFloat(reservation.sub_total).toFixed(2);
-
 		const formattedSubTotal =
 			parseFloat(currency.amountInUSD).toFixed(2) - 0.03;
 
@@ -123,10 +116,20 @@ const ClientPayVirtualCard = () => {
 				response.message ===
 				"Payment processed and reservation updated successfully."
 			) {
-				toast.success(
-					"Payment processed and reservation updated successfully."
-				);
-				setPaymentStatus(true); // Update state to reflect payment status
+				if (
+					response?.updatedReservation?.payment_details?.status === "succeeded"
+				) {
+					toast.success(
+						"Payment processed and reservation updated successfully."
+					);
+					setPaymentStatus(true); // Update state to reflect payment status
+				} else {
+					toast.info(
+						`Payment is incomplete. Please contact ${
+							reservation && reservation.booking_source
+						} to get a new card.`
+					);
+				}
 			} else {
 				toast.error(
 					"Not Paid, Maybe insufficient credit, Please try another card"
@@ -276,7 +279,8 @@ const ClientPayVirtualCard = () => {
 			{paymentStatus ||
 			(reservation &&
 				reservation.payment_details &&
-				reservation.payment_details.transactionId) ? (
+				reservation.payment_details.transactionId &&
+				reservation.payment_details.status === "succeeded") ? (
 				<div className='my-4'>
 					<h2 style={{ fontSize: "1.6rem" }}>Thank you for your payment</h2>
 					<h4 style={{ fontSize: "1.3rem" }}>
@@ -295,6 +299,18 @@ const ClientPayVirtualCard = () => {
 				</div>
 			) : (
 				<div className='my-5'>
+					{reservation &&
+					reservation.payment_details &&
+					reservation.payment_details.status !== "succeeded" ? (
+						<div
+							className='my-3'
+							style={{ fontWeight: "bolder", color: "darkred" }}
+						>
+							This payment was paid before but was Unsuccessful.
+							<br />
+							Please Try Again...
+						</div>
+					) : null}
 					<Elements stripe={stripePromise}>
 						<StripePaymentForm buy={buy_stripe} />
 					</Elements>

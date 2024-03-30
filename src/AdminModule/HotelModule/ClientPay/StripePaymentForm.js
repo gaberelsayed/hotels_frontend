@@ -53,7 +53,9 @@ const StripePaymentForm = ({ buy }) => {
 		<PaymentFormWrapper>
 			<form onSubmit={handleSubmit}>
 				<StyledCardElement>
-					<CardElement options={CARD_ELEMENT_OPTIONS} />
+					<CardElement
+						options={{ ...CARD_ELEMENT_OPTIONS, autocomplete: "off" }}
+					/>
 				</StyledCardElement>
 				<PayButton type='submit' disabled={!stripe}>
 					Pay Now
