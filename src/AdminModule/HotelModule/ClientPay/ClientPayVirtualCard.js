@@ -280,7 +280,9 @@ const ClientPayVirtualCard = () => {
 			(reservation &&
 				reservation.payment_details &&
 				reservation.payment_details.transactionId &&
-				reservation.payment_details.status === "succeeded") ? (
+				(reservation.payment_details.status === "succeeded" ||
+					reservation.payment_details.status ===
+						"submitted_for_settlement")) ? (
 				<div className='my-4'>
 					<h2 style={{ fontSize: "1.6rem" }}>Thank you for your payment</h2>
 					<h4 style={{ fontSize: "1.3rem" }}>
