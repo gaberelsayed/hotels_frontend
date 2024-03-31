@@ -75,16 +75,16 @@ const ClientPayVirtualCard = () => {
 		});
 	};
 
-	// const initiatePayment = async (amount) => {
-	// 	const amountInCents = Math.round(amount * 100); // Convert the amount to the smallest currency unit
-	// 	try {
-	// 		const secret = await gettingCreatePaymentIntent(amountInCents);
-	// 		setClientSecret(secret); // Save the client secret to state
-	// 	} catch (error) {
-	// 		console.error("Error creating payment intent:", error);
-	// 		toast.error("Could not initiate payment process. Please try again.");
-	// 	}
-	// };
+	const initiatePayment = async (amount) => {
+		const amountInCents = Math.round(amount * 100); // Convert the amount to the smallest currency unit
+		try {
+			const secret = await gettingCreatePaymentIntent(amountInCents);
+			setClientSecret(secret); // Save the client secret to state
+		} catch (error) {
+			console.error("Error creating payment intent:", error);
+			toast.error("Could not initiate payment process. Please try again.");
+		}
+	};
 
 	useEffect(() => {
 		gettingSingleReservation();
@@ -94,6 +94,11 @@ const ClientPayVirtualCard = () => {
 	console.log(currency, "cu");
 
 	const buy_stripe = async (paymentMethodId) => {
+		// const formattedSubTotal =
+		// 	currency2 === "USD"
+		// 		? parseFloat(currency.amountInUSD).toFixed(2) - 0.03
+		// 		: parseFloat(currency.amountInSAR).toFixed(2);
+
 		const formattedSubTotal =
 			parseFloat(currency.amountInUSD).toFixed(2) - 0.03;
 
@@ -119,7 +124,7 @@ const ClientPayVirtualCard = () => {
 			checkin_date: reservation?.checkin_date,
 			checkout_date: reservation?.checkout_date,
 			reservation_status: reservation?.reservation_status,
-			chosenCurrency: "USD",
+			chosenCurrency: currency2,
 		};
 
 		try {
@@ -371,9 +376,9 @@ const ClientPayVirtualCard = () => {
 						/>
 					</Elements>
 
-					{/* <div className='my-5'>
+					<div className='my-5'>
 						<Button onClick={redirectToStripeCheckout}>Pay with Stripe</Button>
-					</div> */}
+					</div>
 				</div>
 			)}
 		</ClientPayVirtualCardWrapper>
