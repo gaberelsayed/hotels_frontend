@@ -9,15 +9,12 @@ import {
 	// processPayment,
 	processPayment_Stripe,
 	singlePreReservationById,
+	createStripeCheckoutSession,
 } from "../apiAdmin";
 import { isAuthenticated } from "../../../auth";
 import { toast } from "react-toastify";
-// eslint-disable-next-line
-import PaymentForm from "./PaymentForm";
 import { Modal, Input, Button, Radio } from "antd";
 import { EditOutlined } from "@ant-design/icons";
-// eslint-disable-next-line
-import PayPalComponent from "./PayPalComponent";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import StripePaymentForm from "./StripePaymentForm";
@@ -25,9 +22,8 @@ import StripePaymentForm from "./StripePaymentForm";
 const ClientPayVirtualCard = () => {
 	const stripePromise = loadStripe(process.env.REACT_APP_PUBLISHABLE_KEY);
 	const [reservation, setReservation] = useState("");
-	const [clientSecret, setClientSecret] = useState("");
 	// eslint-disable-next-line
-	const [payPalClicked, setPayPalClicked] = useState(false);
+	const [clientSecret, setClientSecret] = useState("");
 	const [currency, setCurrency] = useState("");
 	const [currency2, setCurrency2] = useState("SAR");
 	const [paymentStatus, setPaymentStatus] = useState(false);
@@ -72,23 +68,23 @@ const ClientPayVirtualCard = () => {
 						setCurrency(convertedData);
 						setData({ ...data, loading: false });
 						// Now that you have all needed details, initiate payment intent creation
-						initiatePayment(convertedData.amountInUSD); // Make sure to pass the correct amount you want to charge
+						// initiatePayment(convertedData.amountInUSD); // Make sure to pass the correct amount you want to charge
 					}
 				});
 			}
 		});
 	};
 
-	const initiatePayment = async (amount) => {
-		const amountInCents = Math.round(amount * 100); // Convert the amount to the smallest currency unit
-		try {
-			const secret = await gettingCreatePaymentIntent(amountInCents);
-			setClientSecret(secret); // Save the client secret to state
-		} catch (error) {
-			console.error("Error creating payment intent:", error);
-			toast.error("Could not initiate payment process. Please try again.");
-		}
-	};
+	// const initiatePayment = async (amount) => {
+	// 	const amountInCents = Math.round(amount * 100); // Convert the amount to the smallest currency unit
+	// 	try {
+	// 		const secret = await gettingCreatePaymentIntent(amountInCents);
+	// 		setClientSecret(secret); // Save the client secret to state
+	// 	} catch (error) {
+	// 		console.error("Error creating payment intent:", error);
+	// 		toast.error("Could not initiate payment process. Please try again.");
+	// 	}
+	// };
 
 	useEffect(() => {
 		gettingSingleReservation();
@@ -187,6 +183,41 @@ const ClientPayVirtualCard = () => {
 
 	const handleChange = (e) => {
 		setEditedSubTotal(e.target.value);
+	};
+
+	// eslint-disable-next-line
+	const redirectToStripeCheckout = async () => {
+		try {
+			const formattedSubTotal =
+				parseFloat(currency.amountInUSD).toFixed(2) - 0.03;
+
+			if (isNaN(formattedSubTotal)) {
+				throw new Error("Invalid amount format.");
+			}
+
+			const checkoutData = {
+				amount: formattedSubTotal,
+				reservationId: reservation._id,
+				hotelName: reservation?.hotelId.hotelName,
+				amountInSAR: currency.amountInSAR,
+				chosenCurrency: "USD",
+				confirmation_number: reservation?.confirmation_number,
+				name: reservation?.customer_details.name,
+				phone: reservation?.customer_details.phone,
+				email: reservation?.customer_details.email,
+				nationality: reservation?.customer_details.nationality,
+				checkin_date: reservation?.checkin_date,
+				checkout_date: reservation?.checkout_date,
+				reservation_status: reservation?.reservation_status,
+				// Add any other data you want to include
+			};
+
+			const checkoutUrl = await createStripeCheckoutSession(checkoutData);
+			window.location.href = checkoutUrl;
+		} catch (error) {
+			console.error("Error redirecting to Stripe Checkout:", error);
+			toast.error("Could not redirect to Stripe Checkout. Please try again.");
+		}
 	};
 
 	// Render the component with the data
@@ -339,6 +370,10 @@ const ClientPayVirtualCard = () => {
 							reservation={reservation}
 						/>
 					</Elements>
+
+					{/* <div className='my-5'>
+						<Button onClick={redirectToStripeCheckout}>Pay with Stripe</Button>
+					</div> */}
 				</div>
 			)}
 		</ClientPayVirtualCardWrapper>

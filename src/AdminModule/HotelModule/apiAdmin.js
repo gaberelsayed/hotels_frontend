@@ -753,6 +753,26 @@ export const processCommissionPayment_Stripe = (paymentData) => {
 		.catch((err) => console.log(err));
 };
 
+export const createStripeCheckoutSession = async (checkoutData) => {
+	try {
+		const response = await fetch(
+			`${process.env.REACT_APP_API_URL}/create-checkout-session`,
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(checkoutData),
+			}
+		);
+		const data = await response.json();
+		return data.url;
+	} catch (error) {
+		console.error("Error creating checkout session:", error);
+		throw error;
+	}
+};
+
 export const currecyConversion = (saudimoney) => {
 	return fetch(
 		`${process.env.REACT_APP_API_URL}/currencyapi/${Number(saudimoney).toFixed(
