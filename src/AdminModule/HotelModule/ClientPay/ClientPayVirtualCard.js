@@ -73,10 +73,10 @@ const ClientPayVirtualCard = () => {
 						if (paymentStatus === false && paymentIntentCreate === false) {
 							setPaymentIntentCreated(true);
 
-							// initiatePayment(
-							// 	Number(convertedData.amountInUSD) - 0.05,
-							// 	reservationData
-							// ); // Make sure to pass the correct amount you want to charge
+							initiatePayment(
+								Number(convertedData.amountInUSD),
+								reservationData
+							); // Make sure to pass the correct amount you want to charge
 						}
 					}
 				});
@@ -84,7 +84,6 @@ const ClientPayVirtualCard = () => {
 		});
 	};
 
-	// eslint-disable-next-line
 	const initiatePayment = async (amount, reservationData) => {
 		const amountInCents = Math.round(amount * 100); // Convert the amount to the smallest currency unit
 		try {
@@ -117,8 +116,7 @@ const ClientPayVirtualCard = () => {
 
 	const buy_stripe = async (paymentMethodId) => {
 		const paymentIntentId = clientSecret.split("_secret_")[0];
-		const formattedSubTotal =
-			parseFloat(currency.amountInUSD).toFixed(2) - 0.05;
+		const formattedSubTotal = parseFloat(currency.amountInUSD).toFixed(2);
 
 		if (isNaN(formattedSubTotal)) {
 			throw new Error("Invalid amount format.");
@@ -211,8 +209,7 @@ const ClientPayVirtualCard = () => {
 	// eslint-disable-next-line
 	const redirectToStripeCheckout = async () => {
 		try {
-			const formattedSubTotal =
-				parseFloat(currency.amountInUSD).toFixed(2) - 0.03;
+			const formattedSubTotal = parseFloat(currency.amountInUSD).toFixed(2);
 
 			if (isNaN(formattedSubTotal)) {
 				throw new Error("Invalid amount format.");
@@ -311,7 +308,7 @@ const ClientPayVirtualCard = () => {
 				<div className='total-amount'>
 					<strong>Reservation Total Amount:</strong>{" "}
 					{reservation && currency2 === "USD"
-						? parseFloat(currency.amountInUSD).toFixed(2) - 0.03
+						? parseFloat(currency.amountInUSD).toFixed(2)
 						: parseFloat(reservation.sub_total).toFixed(2)}{" "}
 					{currency2}
 				</div>
@@ -324,7 +321,7 @@ const ClientPayVirtualCard = () => {
 				>
 					<strong>Your Payment Total Amount:</strong>{" "}
 					{reservation && currency2 === "USD"
-						? parseFloat(currency.amountInUSD).toFixed(2) - 0.03
+						? parseFloat(currency.amountInUSD).toFixed(2)
 						: parseFloat(reservation.sub_total).toFixed(2)}{" "}
 					{currency2}
 					<Button
@@ -386,14 +383,16 @@ const ClientPayVirtualCard = () => {
 							Please Try Again...
 						</div>
 					) : null}
-					<Elements stripe={stripePromise}>
-						<StripePaymentForm
-							buy={buy_stripe}
-							clientSecret={clientSecret}
-							reservation={reservation}
-							currency={currency}
-						/>
-					</Elements>
+					{clientSecret && reservation && reservation._id ? (
+						<Elements stripe={stripePromise} options={{ clientSecret }}>
+							<StripePaymentForm
+								buy={buy_stripe}
+								clientSecret={clientSecret}
+								reservation={reservation}
+								currency={currency}
+							/>
+						</Elements>
+					) : null}
 
 					<div className='my-5'>
 						<Button onClick={redirectToStripeCheckout}>Pay with Stripe</Button>

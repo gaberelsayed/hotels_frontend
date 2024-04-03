@@ -1,31 +1,14 @@
 import React from "react";
 import styled from "styled-components";
-import { CardElement, useElements, useStripe } from "@stripe/react-stripe-js";
-import { gettingCreatePaymentIntent } from "../apiAdmin";
+import {
+	PaymentElement,
+	useElements,
+	useStripe,
+} from "@stripe/react-stripe-js";
 
-const StripePaymentForm = ({ clientSecret, currency, reservation }) => {
+const StripePaymentForm = () => {
 	const stripe = useStripe();
 	const elements = useElements();
-
-	const CARD_ELEMENT_OPTIONS = {
-		style: {
-			base: {
-				color: "#303238",
-				fontSize: "16px",
-				fontFamily: "sans-serif",
-				fontSmoothing: "antialiased",
-				"::placeholder": {
-					color: "#CFD7DF",
-				},
-			},
-			invalid: {
-				color: "#e5424d",
-				":focus": {
-					color: "#303238",
-				},
-			},
-		},
-	};
 
 	const handleSubmit = async (event) => {
 		event.preventDefault();
@@ -34,31 +17,13 @@ const StripePaymentForm = ({ clientSecret, currency, reservation }) => {
 			return;
 		}
 
-		const cardElement = elements.getElement(CardElement);
-		const amountInCents = Math.round(
-			(parseFloat(currency.amountInUSD) - 0.05) * 100
-		);
-		const metadata = {
-			confirmation_number: reservation.confirmation_number,
-			name: reservation.customer_details.name,
-			phone: reservation.customer_details.phone,
-			email: reservation.customer_details.email,
-			hotel_name: reservation.hotelId.hotelName,
-			nationality: reservation.customer_details.nationality,
-			checkin_date: reservation.checkin_date,
-			checkout_date: reservation.checkout_date,
-			reservation_status: reservation.reservation_status,
-		};
-
 		try {
-			const response = await gettingCreatePaymentIntent(
-				amountInCents,
-				metadata
-			);
-			console.log(response, "Response from gettingCreatePaymentIntent");
-
-			const result = await stripe.confirmCardPayment(response, {
-				payment_method: { card: cardElement },
+			const result = await stripe.confirmPayment({
+				elements,
+				confirmParams: {
+					return_url: window.location.href,
+				},
+				redirect: "if_required",
 			});
 
 			if (result.error) {
@@ -68,13 +33,9 @@ const StripePaymentForm = ({ clientSecret, currency, reservation }) => {
 				console.log("[PaymentIntent]", result.paymentIntent);
 				alert("Payment successful!");
 			} else if (result.paymentIntent.status === "requires_action") {
-				// Handle additional authentication if required
-				const { paymentIntent } = await stripe.handleCardAction(response);
-				if (paymentIntent.status === "succeeded") {
-					alert("Payment successful after authentication!");
-				} else {
-					alert("Payment failed after authentication.");
-				}
+				alert(
+					"Additional authentication required. Please follow the instructions in the new window."
+				);
 			} else {
 				alert("Payment status: " + result.paymentIntent.status);
 			}
@@ -87,11 +48,9 @@ const StripePaymentForm = ({ clientSecret, currency, reservation }) => {
 	return (
 		<PaymentFormWrapper>
 			<form onSubmit={handleSubmit}>
-				<StyledCardElement>
-					<CardElement
-						options={{ ...CARD_ELEMENT_OPTIONS, autocomplete: "off" }}
-					/>
-				</StyledCardElement>
+				<StyledPaymentElement>
+					<PaymentElement />
+				</StyledPaymentElement>
 				<PayButton type='submit' disabled={!stripe}>
 					Pay Now
 				</PayButton>
@@ -106,16 +65,11 @@ const PaymentFormWrapper = styled.div`
 	margin: 20px 0;
 `;
 
-const StyledCardElement = styled.div`
+const StyledPaymentElement = styled.div`
 	border: 1px solid #e6e6e6;
 	padding: 10px;
 	border-radius: 4px;
 	background-color: white;
-
-	.StripeElement {
-		width: 100%;
-		padding: 15px;
-	}
 `;
 
 const PayButton = styled.button`
