@@ -1,8 +1,9 @@
 import React from "react";
 import styled from "styled-components";
 import { CardElement, useElements, useStripe } from "@stripe/react-stripe-js";
+import { gettingCreatePaymentIntent } from "../apiAdmin";
 
-const StripePaymentForm = ({ buy }) => {
+const StripePaymentForm = ({ clientSecret, currency, reservation }) => {
 	const stripe = useStripe();
 	const elements = useElements();
 
@@ -30,22 +31,56 @@ const StripePaymentForm = ({ buy }) => {
 		event.preventDefault();
 
 		if (!stripe || !elements) {
-			// Stripe.js has not loaded yet. Make sure to disable form submission until Stripe.js has loaded.
 			return;
 		}
 
 		const cardElement = elements.getElement(CardElement);
+		const amountInCents = Math.round(
+			(parseFloat(currency.amountInUSD) - 0.05) * 100
+		);
+		const metadata = {
+			confirmation_number: reservation.confirmation_number,
+			name: reservation.customer_details.name,
+			phone: reservation.customer_details.phone,
+			email: reservation.customer_details.email,
+			hotel_name: reservation.hotelId.hotelName,
+			nationality: reservation.customer_details.nationality,
+			checkin_date: reservation.checkin_date,
+			checkout_date: reservation.checkout_date,
+			reservation_status: reservation.reservation_status,
+		};
 
-		const { error, paymentMethod } = await stripe.createPaymentMethod({
-			type: "card",
-			card: cardElement,
-		});
+		try {
+			const response = await gettingCreatePaymentIntent(
+				amountInCents,
+				metadata
+			);
+			console.log(response, "Response from gettingCreatePaymentIntent");
 
-		if (error) {
-			console.log("[error]", error);
-		} else {
-			console.log("[PaymentMethod]", paymentMethod);
-			buy(paymentMethod.id);
+			const result = await stripe.confirmCardPayment(response, {
+				payment_method: { card: cardElement },
+			});
+
+			if (result.error) {
+				console.log("[error]", result.error);
+				alert("Payment failed: " + result.error.message);
+			} else if (result.paymentIntent.status === "succeeded") {
+				console.log("[PaymentIntent]", result.paymentIntent);
+				alert("Payment successful!");
+			} else if (result.paymentIntent.status === "requires_action") {
+				// Handle additional authentication if required
+				const { paymentIntent } = await stripe.handleCardAction(response);
+				if (paymentIntent.status === "succeeded") {
+					alert("Payment successful after authentication!");
+				} else {
+					alert("Payment failed after authentication.");
+				}
+			} else {
+				alert("Payment status: " + result.paymentIntent.status);
+			}
+		} catch (error) {
+			console.error("Payment processing error:", error);
+			alert("An error occurred during payment processing. Please try again.");
 		}
 	};
 

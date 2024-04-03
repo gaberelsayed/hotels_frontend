@@ -11,7 +11,7 @@ import DownloadExcel from "../DownloadExcel";
 
 const GeneralReportMain = ({ hotelDetails, chosenLanguage }) => {
 	const [allReservations, setAllReservations] = useState([]);
-	const [recordsPerPage] = useState(400);
+	const [recordsPerPage] = useState(2500);
 	const [currentPage, setCurrentPage] = useState(1);
 	const [scoreCardObject, setScoreCardObject] = useState("");
 	// eslint-disable-next-line

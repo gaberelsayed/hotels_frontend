@@ -19,8 +19,9 @@ import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import StripePaymentForm from "./StripePaymentForm";
 
+const stripePromise = loadStripe(process.env.REACT_APP_PUBLISHABLE_KEY);
+
 const ClientPayVirtualCard = () => {
-	const stripePromise = loadStripe(process.env.REACT_APP_PUBLISHABLE_KEY);
 	const [reservation, setReservation] = useState("");
 	// eslint-disable-next-line
 	const [clientSecret, setClientSecret] = useState("");
@@ -36,6 +37,7 @@ const ClientPayVirtualCard = () => {
 	});
 	const [isModalVisible, setIsModalVisible] = useState(false);
 	const [editedSubTotal, setEditedSubTotal] = useState("");
+	const [paymentIntentCreate, setPaymentIntentCreated] = useState(false);
 
 	// Use useParams hook to get the route parameters
 	const params = useParams();
@@ -68,17 +70,37 @@ const ClientPayVirtualCard = () => {
 						setCurrency(convertedData);
 						setData({ ...data, loading: false });
 						// Now that you have all needed details, initiate payment intent creation
-						// initiatePayment(convertedData.amountInUSD); // Make sure to pass the correct amount you want to charge
+						if (paymentStatus === false && paymentIntentCreate === false) {
+							setPaymentIntentCreated(true);
+
+							// initiatePayment(
+							// 	Number(convertedData.amountInUSD) - 0.05,
+							// 	reservationData
+							// ); // Make sure to pass the correct amount you want to charge
+						}
 					}
 				});
 			}
 		});
 	};
 
-	const initiatePayment = async (amount) => {
+	// eslint-disable-next-line
+	const initiatePayment = async (amount, reservationData) => {
 		const amountInCents = Math.round(amount * 100); // Convert the amount to the smallest currency unit
 		try {
-			const secret = await gettingCreatePaymentIntent(amountInCents);
+			const metadata = {
+				confirmation_number: reservationData.confirmation_number,
+				name: reservationData.customer_details.name,
+				phone: reservationData.customer_details.phone,
+				email: reservationData.customer_details.email,
+				hotel_name: reservationData.hotelId.hotelName,
+				nationality: reservationData.customer_details.nationality,
+				checkin_date: reservationData.checkin_date,
+				checkout_date: reservationData.checkout_date,
+				reservation_status: reservationData.reservation_status,
+				// Add more fields as needed
+			};
+			const secret = await gettingCreatePaymentIntent(amountInCents, metadata);
 			setClientSecret(secret); // Save the client secret to state
 		} catch (error) {
 			console.error("Error creating payment intent:", error);
@@ -94,13 +116,9 @@ const ClientPayVirtualCard = () => {
 	console.log(currency, "cu");
 
 	const buy_stripe = async (paymentMethodId) => {
-		// const formattedSubTotal =
-		// 	currency2 === "USD"
-		// 		? parseFloat(currency.amountInUSD).toFixed(2) - 0.03
-		// 		: parseFloat(currency.amountInSAR).toFixed(2);
-
+		const paymentIntentId = clientSecret.split("_secret_")[0];
 		const formattedSubTotal =
-			parseFloat(currency.amountInUSD).toFixed(2) - 0.03;
+			parseFloat(currency.amountInUSD).toFixed(2) - 0.05;
 
 		if (isNaN(formattedSubTotal)) {
 			throw new Error("Invalid amount format.");
@@ -108,23 +126,16 @@ const ClientPayVirtualCard = () => {
 
 		const paymentData = {
 			paymentMethodId: paymentMethodId,
+			paymentIntentId: paymentIntentId,
 			amount: formattedSubTotal,
 			amountInSAR: currency.amountInSAR,
 			email: reservation?.customer_details.email,
-			name: reservation?.customer_details.name,
-			passport: reservation?.customer_details.passport,
-			nationality: reservation?.customer_details.nationality,
-			phone: reservation?.customer_details.phone,
 			confirmation_number: reservation?.confirmation_number,
 			customerId: reservation?._id,
 			reservationId: reservation?._id,
 			planId: "One Time Payment",
-			country: reservation?.customer_details.nationality,
 			hotelName: reservation?.hotelId.hotelName,
-			checkin_date: reservation?.checkin_date,
-			checkout_date: reservation?.checkout_date,
-			reservation_status: reservation?.reservation_status,
-			chosenCurrency: currency2,
+			chosenCurrency: "USD",
 		};
 
 		try {
@@ -132,24 +143,31 @@ const ClientPayVirtualCard = () => {
 				reservation._id,
 				paymentData
 			);
-			if (
-				response.message ===
-				"Payment processed and reservation updated successfully."
-			) {
-				if (
-					response?.updatedReservation?.payment_details?.status === "succeeded"
-				) {
+			if (response.requiresAction) {
+				const stripe = await loadStripe(
+					process.env.REACT_APP_STRIPE_PUBLIC_KEY
+				);
+				const result = await stripe.handleCardAction(response.clientSecret);
+				if (result.error) {
+					throw new Error(result.error.message);
+				} else if (result.paymentIntent.status === "succeeded") {
 					toast.success(
 						"Payment processed and reservation updated successfully."
 					);
-					setPaymentStatus(true); // Update state to reflect payment status
+					setPaymentStatus(true);
 				} else {
 					toast.info(
-						`Payment is incomplete. Please contact ${
-							reservation && reservation.booking_source
-						} to get a new card.`
+						"Payment is incomplete. Please contact the card issuer to complete the payment."
 					);
 				}
+			} else if (
+				response.message ===
+				"Payment processed and reservation updated successfully."
+			) {
+				toast.success(
+					"Payment processed and reservation updated successfully."
+				);
+				setPaymentStatus(true);
 			} else {
 				toast.error(
 					"Not Paid, Maybe insufficient credit, Please try another card"
@@ -373,6 +391,7 @@ const ClientPayVirtualCard = () => {
 							buy={buy_stripe}
 							clientSecret={clientSecret}
 							reservation={reservation}
+							currency={currency}
 						/>
 					</Elements>
 
