@@ -700,6 +700,24 @@ export const processCommissionPayment = (paymentData) => {
 		.catch((err) => console.log(err));
 };
 
+export const processPayment_Square = (reservationId, paymentData) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/square/payment/${reservationId}`,
+		{
+			method: "POST",
+			headers: {
+				Accept: "application/json",
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(paymentData),
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
 export const processPayment_Stripe = (reservationId, paymentData) => {
 	return fetch(
 		`${process.env.REACT_APP_API_URL}/stripe/payment/${reservationId}`,
@@ -771,6 +789,22 @@ export const createStripeCheckoutSession = async (checkoutData) => {
 		console.error("Error creating checkout session:", error);
 		throw error;
 	}
+};
+
+export const updatingReservationAfterSuccessfulPayment = (details) => {
+	return fetch(`${process.env.REACT_APP_API_URL}/stripe/update-reservation`, {
+		method: "PUT",
+		headers: {
+			// content type?
+			"Content-Type": "application/json",
+			Accept: "application/json",
+		},
+		body: JSON.stringify(details),
+	})
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
 };
 
 export const currecyConversion = (saudimoney) => {
@@ -1031,4 +1065,25 @@ export const gettingAggregatedCollectedReservations = (
 			return response.json();
 		})
 		.catch((err) => console.log(err));
+};
+
+export const createConnectAccount = (hotelId) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/stripe/create-connect-account/${hotelId}`,
+		{
+			method: "POST",
+			headers: {
+				Accept: "application/json",
+				"Content-Type": "application/json",
+				// Authorization: `Bearer ${token}`,
+			},
+			// body: JSON.stringify(),
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => {
+			console.log(err);
+		});
 };

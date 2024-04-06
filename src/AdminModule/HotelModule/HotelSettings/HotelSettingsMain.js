@@ -16,6 +16,7 @@ import ZPricingCalendarForm from "./ZPricingCalendarForm";
 import { toast } from "react-toastify";
 import HotelOverview from "./HotelOverview";
 import { defaultHotelDetails } from "../../NewHotels/Assets";
+import Payouts from "./Payouts";
 
 const HotelSettingsMain = (props) => {
 	const history = useHistory();
@@ -79,6 +80,8 @@ const HotelSettingsMain = (props) => {
 			setActiveTab("RoomDetails");
 		} else if (window.location.search.includes("pricing")) {
 			setActiveTab("PricingCalendar");
+		} else if (window.location.search.includes("payouts")) {
+			setActiveTab("Payouts");
 		} else {
 			setActiveTab("HotelDetails");
 		}
@@ -232,7 +235,6 @@ const HotelSettingsMain = (props) => {
 		}
 	};
 
-	console.log(hotelRooms, "hotelRooms");
 	return (
 		<HotelSettingsMainWrapper
 			dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}
@@ -323,6 +325,20 @@ const HotelSettingsMain = (props) => {
 									? "توزيع الغرف على الطوابق"
 									: "Room Details"}
 							</Tab>
+
+							<Tab
+								isActive={activeTab === "Payouts"}
+								onClick={() => {
+									setActiveTab("Payouts");
+									history.push(
+										`/admin-management/settings/${hotelId}/${userId}?payouts`
+									); // Programmatic navigation
+								}}
+							>
+								{chosenLanguage === "Arabic"
+									? "ربط حسابك المصرفي"
+									: "Connect your bank account"}
+							</Tab>
 						</div>
 					</div>
 
@@ -378,6 +394,10 @@ const HotelSettingsMain = (props) => {
 									submittingHotelDetails={hotelDetailsUpdate}
 								/>{" "}
 							</div>
+						) : null}
+
+						{activeTab === "Payouts" ? (
+							<Payouts hotelDetails={hotelDetails} />
 						) : null}
 					</div>
 				</div>

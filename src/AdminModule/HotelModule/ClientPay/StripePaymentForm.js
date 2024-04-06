@@ -5,8 +5,9 @@ import {
 	useElements,
 	useStripe,
 } from "@stripe/react-stripe-js";
+import { updatingReservationAfterSuccessfulPayment } from "../apiAdmin";
 
-const StripePaymentForm = () => {
+const StripePaymentForm = ({ reservation, currency, setPaymentStatus }) => {
 	const stripe = useStripe();
 	const elements = useElements();
 
@@ -31,6 +32,42 @@ const StripePaymentForm = () => {
 				alert("Payment failed: " + result.error.message);
 			} else if (result.paymentIntent.status === "succeeded") {
 				console.log("[PaymentIntent]", result.paymentIntent);
+				// Create the transaction details object
+				const transactionDetails = {
+					transactionId: result.paymentIntent.id,
+					amount: result.paymentIntent.amount / 100, // Convert from cents to dollars
+					currency: result.paymentIntent.currency,
+					status: result.paymentIntent.status,
+					paymentMethodId: result.paymentIntent.payment_method,
+					createdAt: result.paymentIntent.created,
+				};
+
+				// Call the update reservation function here
+				const details = {
+					reservationId: reservation._id, // This should be passed as a prop or from state/context
+					amountInSAR: currency.amountInSAR, // This should be passed as a prop or from state/context
+					transactionDetails,
+				};
+
+				updatingReservationAfterSuccessfulPayment(details)
+					.then((response) => {
+						if (response.success) {
+							console.log(
+								"Reservation updated successfully:",
+								response.updatedReservation
+							);
+							// Additional logic for successful update
+						} else {
+							console.error("Failed to update reservation:", response.message);
+							// Handle the failure to update reservation
+						}
+					})
+					.catch((error) => {
+						console.error("Error updating reservation:", error);
+					});
+
+				setPaymentStatus(true);
+
 				alert("Payment successful!");
 			} else if (result.paymentIntent.status === "requires_action") {
 				alert(
