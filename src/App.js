@@ -150,7 +150,7 @@ function App() {
 						component={HotelReportsMainAdmin}
 					/>
 
-					<AdminRoute
+					<Route
 						path='/admin/virtual-card-payments/:reservationId/:guestname/:guestphone/:hotelname/:roomtype/:checkin/:checkout/:daysofresidence/:totalamount'
 						exact
 						component={ClientPayVirtualCard}
