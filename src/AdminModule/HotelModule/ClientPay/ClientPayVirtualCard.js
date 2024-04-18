@@ -3,39 +3,24 @@ import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import { useCartContext } from "../../../cart_context";
 import {
-	gettingCreatePaymentIntent,
 	currecyConversion,
-	// getBraintreeClientToken,
-	// processPayment,
-	processPayment_Stripe,
 	singlePreReservationById,
-	createStripeCheckoutSession,
-
-	// eslint-disable-next-line
 	processPayment_Square,
 } from "../apiAdmin";
 import { isAuthenticated } from "../../../auth";
 import { toast } from "react-toastify";
 import { Modal, Input, Button, Radio } from "antd";
 import { EditOutlined } from "@ant-design/icons";
-import { loadStripe } from "@stripe/stripe-js";
-// eslint-disable-next-line
-import { Elements } from "@stripe/react-stripe-js";
-// eslint-disable-next-line
-import StripePaymentForm from "./StripePaymentForm";
 
 // eslint-disable-next-line
 import SquarePaymentForm from "./SquarePaymentForm";
 
-// eslint-disable-next-line
-const stripePromise = loadStripe(process.env.REACT_APP_PUBLISHABLE_KEY);
-
 const ClientPayVirtualCard = () => {
 	const [reservation, setReservation] = useState("");
-	// eslint-disable-next-line
-	const [clientSecret, setClientSecret] = useState("");
+
 	const [currency, setCurrency] = useState("");
 	const [currency2, setCurrency2] = useState("SAR");
+	// eslint-disable-next-line
 	const [paymentStatus, setPaymentStatus] = useState(false);
 	const [data, setData] = useState({
 		loading: true,
@@ -46,7 +31,6 @@ const ClientPayVirtualCard = () => {
 	});
 	const [isModalVisible, setIsModalVisible] = useState(false);
 	const [editedSubTotal, setEditedSubTotal] = useState("");
-	const [paymentIntentCreate, setPaymentIntentCreated] = useState(false);
 
 	// Use useParams hook to get the route parameters
 	const params = useParams();
@@ -79,43 +63,10 @@ const ClientPayVirtualCard = () => {
 					} else {
 						setCurrency(convertedData);
 						setData({ ...data, loading: false });
-						// Now that you have all needed details, initiate payment intent creation
-						if (paymentStatus === false && paymentIntentCreate === false) {
-							setPaymentIntentCreated(true);
-
-							initiatePayment(
-								Number(convertedData.amountInUSD - 0.08),
-								reservationData
-							); // Make sure to pass the correct amount you want to charge
-						}
 					}
 				});
 			}
 		});
-	};
-
-	// eslint-disable-next-line
-	const initiatePayment = async (amount, reservationData) => {
-		const amountInCents = Math.round(amount * 100); // Convert the amount to the smallest currency unit
-		try {
-			const metadata = {
-				confirmation_number: reservationData.confirmation_number,
-				name: reservationData.customer_details.name,
-				phone: reservationData.customer_details.phone,
-				email: reservationData.customer_details.email,
-				hotel_name: reservationData.hotelId.hotelName,
-				nationality: reservationData.customer_details.nationality,
-				checkin_date: reservationData.checkin_date,
-				checkout_date: reservationData.checkout_date,
-				reservation_status: reservationData.reservation_status,
-				// Add more fields as needed
-			};
-			const secret = await gettingCreatePaymentIntent(amountInCents, metadata);
-			setClientSecret(secret); // Save the client secret to state
-		} catch (error) {
-			console.error("Error creating payment intent:", error);
-			toast.error("Could not initiate payment process. Please try again.");
-		}
 	};
 
 	useEffect(() => {
@@ -124,72 +75,6 @@ const ClientPayVirtualCard = () => {
 	}, [paymentStatus]);
 
 	console.log(currency, "cu");
-
-	// eslint-disable-next-line
-	const buy_stripe = async (paymentMethodId) => {
-		const paymentIntentId = clientSecret.split("_secret_")[0];
-		const formattedSubTotal = parseFloat(currency.amountInUSD).toFixed(2);
-
-		if (isNaN(formattedSubTotal)) {
-			throw new Error("Invalid amount format.");
-		}
-
-		const paymentData = {
-			paymentMethodId: paymentMethodId,
-			paymentIntentId: paymentIntentId,
-			amount: formattedSubTotal,
-			amountInSAR: currency.amountInSAR,
-			email: reservation?.customer_details.email,
-			confirmation_number: reservation?.confirmation_number,
-			customerId: reservation?._id,
-			reservationId: reservation?._id,
-			planId: "One Time Payment",
-			hotelName: reservation?.hotelId.hotelName,
-			chosenCurrency: "USD",
-		};
-
-		try {
-			const response = await processPayment_Stripe(
-				reservation._id,
-				paymentData
-			);
-			if (response.requiresAction) {
-				const stripe = await loadStripe(
-					process.env.REACT_APP_STRIPE_PUBLIC_KEY
-				);
-				const result = await stripe.handleCardAction(response.clientSecret);
-				if (result.error) {
-					throw new Error(result.error.message);
-				} else if (result.paymentIntent.status === "succeeded") {
-					toast.success(
-						"Payment processed and reservation updated successfully."
-					);
-					setPaymentStatus(true);
-				} else {
-					toast.info(
-						"Payment is incomplete. Please contact the card issuer to complete the payment."
-					);
-				}
-			} else if (
-				response.message ===
-				"Payment processed and reservation updated successfully."
-			) {
-				toast.success(
-					"Payment processed and reservation updated successfully."
-				);
-				setPaymentStatus(true);
-			} else {
-				toast.error(
-					"Not Paid, Maybe insufficient credit, Please try another card"
-				);
-			}
-		} catch (error) {
-			console.error("Payment processing error: ", error);
-			toast.error(
-				"An error occurred during payment processing. Please try again."
-			);
-		}
-	};
 
 	const showModal = () => {
 		setIsModalVisible(true);
@@ -217,42 +102,6 @@ const ClientPayVirtualCard = () => {
 	const handleChange = (e) => {
 		setEditedSubTotal(e.target.value);
 	};
-
-	// eslint-disable-next-line
-	const redirectToStripeCheckout = async () => {
-		try {
-			const formattedSubTotal = parseFloat(currency.amountInUSD).toFixed(2);
-
-			if (isNaN(formattedSubTotal)) {
-				throw new Error("Invalid amount format.");
-			}
-
-			const checkoutData = {
-				amount: formattedSubTotal,
-				reservationId: reservation._id,
-				hotelName: reservation?.hotelId.hotelName,
-				amountInSAR: currency.amountInSAR,
-				chosenCurrency: "USD",
-				confirmation_number: reservation?.confirmation_number,
-				name: reservation?.customer_details.name,
-				phone: reservation?.customer_details.phone,
-				email: reservation?.customer_details.email,
-				nationality: reservation?.customer_details.nationality,
-				checkin_date: reservation?.checkin_date,
-				checkout_date: reservation?.checkout_date,
-				reservation_status: reservation?.reservation_status,
-				// Add any other data you want to include
-			};
-
-			const checkoutUrl = await createStripeCheckoutSession(checkoutData);
-			window.location.href = checkoutUrl;
-		} catch (error) {
-			console.error("Error redirecting to Stripe Checkout:", error);
-			toast.error("Could not redirect to Stripe Checkout. Please try again.");
-		}
-	};
-
-	// Render the component with the data
 
 	return (
 		<ClientPayVirtualCardWrapper className='container my-4'>
@@ -401,37 +250,21 @@ const ClientPayVirtualCard = () => {
 									Please Try Again...
 								</div>
 							) : null}
-							{clientSecret && reservation && reservation._id ? (
-								<Elements stripe={stripePromise} options={{ clientSecret }}>
-									<StripePaymentForm
-										buy={buy_stripe}
-										clientSecret={clientSecret}
-										reservation={reservation}
-										currency={currency}
-										setPaymentStatus={setPaymentStatus}
-									/>
-								</Elements>
-							) : null}
 
-							{/* <SquarePaymentForm
-						processPayment={processPayment_Square}
-						reservationId={reservation._id}
-						// amount={
-						// 	currency2 === "USD"
-						// 		? parseFloat(currency.amountInUSD).toFixed(2)
-						// 		: parseFloat(reservation.sub_total).toFixed(2)
-						// }
-						amount={parseFloat(currency.amountInUSD).toFixed(2)}
-						currency={"USD"}
-						reservation={reservation}
-						amountInSar={currency.amountInSAR}
-					/> */}
-
-							<div className='my-5'>
-								<Button onClick={redirectToStripeCheckout}>
-									Pay with Stripe
-								</Button>
-							</div>
+							<SquarePaymentForm
+								processPayment={processPayment_Square}
+								reservationId={reservation._id}
+								// amount={
+								// 	currency2 === "USD"
+								// 		? parseFloat(currency.amountInUSD).toFixed(2)
+								// 		: parseFloat(reservation.sub_total).toFixed(2)
+								// }
+								amount={parseFloat(currency.amountInUSD).toFixed(2)}
+								currency={"USD"}
+								reservation={reservation}
+								amountInSar={currency.amountInSAR}
+								setPaymentStatus={setPaymentStatus}
+							/>
 						</div>
 					)}
 				</>
