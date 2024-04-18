@@ -1,6 +1,7 @@
 import React from "react";
 import { PaymentForm, CreditCard } from "react-square-web-payments-sdk";
 import { processPayment_Square } from "../apiAdmin"; // Assuming this is your custom function to call your backend
+import { toast } from "react-toastify";
 
 const SquarePaymentForm = ({
 	reservationId,
@@ -8,6 +9,7 @@ const SquarePaymentForm = ({
 	currency,
 	reservation,
 	amountInSar,
+	setPaymentStatus,
 }) => {
 	const applicationId = process.env.REACT_APP_APPLICATION_ID; // Ensure this is set in your environment variables
 	const locationId = "LSCEA11F58GQF"; // Ensure this is set in your environment variables
@@ -37,6 +39,8 @@ const SquarePaymentForm = ({
 					reservationId,
 					paymentData
 				);
+				setPaymentStatus(true);
+				toast.success("Successfully Paid");
 				console.log(response); // Handle response from your backend
 				// Add any additional handling for successful payment processing here (e.g., navigate to a confirmation page)
 			} catch (error) {
