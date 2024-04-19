@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { PaymentForm, CreditCard } from "react-square-web-payments-sdk";
-import { processPayment_Square } from "../apiAdmin"; // Assuming this is your custom function to call your backend
+import { processPayment_Square } from "../apiAdmin";
 import { toast } from "react-toastify";
 
 const SquarePaymentForm = ({
@@ -11,17 +11,19 @@ const SquarePaymentForm = ({
 	amountInSar,
 	setPaymentStatus,
 }) => {
-	const applicationId = process.env.REACT_APP_APPLICATION_ID; // Ensure this is set in your environment variables
-	const locationId = "LSCEA11F58GQF"; // Ensure this is set in your environment variables
+	const applicationId = process.env.REACT_APP_APPLICATION_ID;
+	const locationId = "LSCEA11F58GQF";
+	const [isProcessing, setIsProcessing] = useState(false); // State to track processing status
 
 	const cardTokenizeResponseReceived = async (tokenResult) => {
 		if (tokenResult.status === "OK") {
-			console.info("Token:", tokenResult.token); // For debugging
+			console.info("Token:", tokenResult.token);
+			setIsProcessing(true); // Disable further submissions
 
 			const paymentData = {
 				sourceId: tokenResult.token,
 				reservationId,
-				amount: amount.toString(), // Make sure this is a string to match the expected format
+				amount: amount.toString(),
 				currency,
 				reservation,
 				amountInSar,
@@ -33,7 +35,6 @@ const SquarePaymentForm = ({
 				},
 			};
 
-			// Call your backend to process the payment
 			try {
 				const response = await processPayment_Square(
 					reservationId,
@@ -41,15 +42,16 @@ const SquarePaymentForm = ({
 				);
 				setPaymentStatus(true);
 				toast.success("Successfully Paid");
-				console.log(response); // Handle response from your backend
-				// Add any additional handling for successful payment processing here (e.g., navigate to a confirmation page)
+				console.log(response);
 			} catch (error) {
+				toast.error("Payment Failed, Please try another card");
 				console.error("Error processing payment:", error);
-				// Handle any errors that occur during the payment process
+			} finally {
+				setIsProcessing(false); // Re-enable the form for further actions
 			}
 		} else {
+			toast.error("Payment Failed, Please try another card");
 			console.error("Failed to tokenize card:", tokenResult.errors);
-			// Handle tokenization errors here
 		}
 	};
 
@@ -59,7 +61,7 @@ const SquarePaymentForm = ({
 			locationId={locationId}
 			cardTokenizeResponseReceived={cardTokenizeResponseReceived}
 			createVerificationDetails={() => ({
-				amount: amount.toString(), // This should be the same as the payment amount
+				amount: amount.toString(),
 				currencyCode: currency,
 				intent: "CHARGE",
 				billingContact: {
@@ -67,7 +69,8 @@ const SquarePaymentForm = ({
 				},
 			})}
 		>
-			<CreditCard />
+			<CreditCard disabled={isProcessing} />
+			{/* Assuming you can control the disabled state */}
 		</PaymentForm>
 	);
 };
