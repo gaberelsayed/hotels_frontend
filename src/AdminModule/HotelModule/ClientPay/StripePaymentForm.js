@@ -27,7 +27,7 @@ const StripePaymentForm = ({
 			reservation.booking_source === "agoda"
 				? "Agoda Company Pte Ltd."
 				: reservation.booking_source === "expedia"
-				  ? "Expedia"
+				  ? reservation.customer_details.name
 				  : reservation.customer_details.name;
 
 		try {
