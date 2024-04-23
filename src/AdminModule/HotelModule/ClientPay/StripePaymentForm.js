@@ -7,7 +7,12 @@ import {
 } from "@stripe/react-stripe-js";
 import { updatingReservationAfterSuccessfulPayment } from "../apiAdmin";
 
-const StripePaymentForm = ({ reservation, currency, setPaymentStatus }) => {
+const StripePaymentForm = ({
+	reservation,
+	currency,
+	setPaymentStatus,
+	clientSecret,
+}) => {
 	const stripe = useStripe();
 	const elements = useElements();
 

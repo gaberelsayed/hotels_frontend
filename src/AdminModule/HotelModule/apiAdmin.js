@@ -745,7 +745,7 @@ export const gettingCreatePaymentIntent = async (amount, metadata) => {
 				headers: {
 					"Content-Type": "application/json",
 				},
-				body: JSON.stringify({ amount: amount, metadata: metadata }),
+				body: JSON.stringify({ amount: amount, metadata }),
 			}
 		);
 		const data = await response.json();
