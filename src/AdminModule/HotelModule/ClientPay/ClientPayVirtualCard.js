@@ -78,7 +78,9 @@ const ClientPayVirtualCard = () => {
 							convertedData.amountInUSD &&
 							!clientSecret &&
 							reservationData &&
-							reservationData._id
+							reservationData._id &&
+							(!reservationData.payment_details ||
+								reservationData.payment_details.status !== "succeeded")
 						) {
 							// Assuming currency2 is the target currency
 							const amountToSend =
