@@ -23,6 +23,13 @@ const StripePaymentForm = ({
 			return;
 		}
 
+		const cardholderName =
+			reservation.booking_source === "agoda"
+				? "Agoda Company Pte Ltd."
+				: reservation.booking_source === "expedia"
+				  ? "Expedia"
+				  : reservation.customer_details.name;
+
 		try {
 			const result = await stripe.confirmPayment({
 				elements,
@@ -45,6 +52,7 @@ const StripePaymentForm = ({
 					status: result.paymentIntent.status,
 					paymentMethodId: result.paymentIntent.payment_method,
 					createdAt: result.paymentIntent.created,
+					cardholderName: cardholderName,
 				};
 
 				// Call the update reservation function here
