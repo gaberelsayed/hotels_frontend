@@ -276,6 +276,7 @@ const ClientPayVirtualCard = () => {
 						reservation.payment_details &&
 						reservation.payment_details.transactionId &&
 						(reservation.payment_details.status === "succeeded" ||
+							reservation.payment_details.status === "COMPLETED" ||
 							reservation.payment_details.status ===
 								"submitted_for_settlement")) ? (
 						<div className='my-4'>

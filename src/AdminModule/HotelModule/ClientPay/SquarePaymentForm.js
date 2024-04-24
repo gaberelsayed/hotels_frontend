@@ -11,9 +11,9 @@ const SquarePaymentForm = ({
 	amountInSar,
 	setPaymentStatus,
 }) => {
-	const applicationId = process.env.REACT_APP_APPLICATION_ID_TEST;
+	const applicationId = process.env.REACT_APP_APPLICATION_ID;
 	const locationId = "LSCEA11F58GQF"; //Production
-	// const locationId = "LSWZYQNK2HY28";
+	// const locationId = "LSWZYQNK2HY28"; //Test
 	const [isProcessing, setIsProcessing] = useState(false); // State to track processing status
 
 	const cardTokenizeResponseReceived = async (tokenResult) => {
@@ -41,9 +41,17 @@ const SquarePaymentForm = ({
 					reservationId,
 					paymentData
 				);
-				setPaymentStatus(true);
-				toast.success("Successfully Paid");
-				console.log(response);
+
+				// Check the response for a successful order and payment
+				if (response.success) {
+					toast.success("Successfully Paid");
+					setPaymentStatus(true); // Update the payment status state
+					console.log("Payment successful:", response);
+				} else {
+					// Show an error message that the backend provides
+					toast.error(response.message || "Payment failed, please try again.");
+					console.error("Payment or order creation failed:", response);
+				}
 			} catch (error) {
 				toast.error("Payment Failed, Please try another card");
 				console.error("Error processing payment:", error);
