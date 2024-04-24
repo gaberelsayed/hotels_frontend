@@ -5,10 +5,10 @@ import { useCartContext } from "../../../cart_context";
 import {
 	currecyConversion,
 	singlePreReservationById,
-
-	// eslint-disable-next-line
 	processPayment_Square,
+	// eslint-disable-next-line
 	processPayment_Stripe,
+	// eslint-disable-next-line
 	gettingCreatePaymentIntent,
 } from "../apiAdmin";
 import { isAuthenticated } from "../../../auth";
@@ -18,11 +18,15 @@ import { EditOutlined } from "@ant-design/icons";
 
 // eslint-disable-next-line
 import SquarePaymentForm from "./SquarePaymentForm";
+
+// eslint-disable-next-line
 import StripePaymentForm from "./StripePaymentForm";
 
+// eslint-disable-next-line
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 
+// eslint-disable-next-line
 const stripePromise = loadStripe(process.env.REACT_APP_PUBLISHABLE_KEY);
 
 const ClientPayVirtualCard = () => {
@@ -41,6 +45,8 @@ const ClientPayVirtualCard = () => {
 	});
 	const [isModalVisible, setIsModalVisible] = useState(false);
 	const [editedSubTotal, setEditedSubTotal] = useState("");
+
+	// eslint-disable-next-line
 	const [clientSecret, setClientSecret] = useState("");
 
 	// Use useParams hook to get the route parameters
@@ -74,42 +80,42 @@ const ClientPayVirtualCard = () => {
 						setCurrency(convertedData);
 						setData({ ...data, loading: false });
 
-						if (
-							convertedData.amountInUSD &&
-							!clientSecret &&
-							reservationData &&
-							reservationData._id &&
-							(!reservationData.payment_details ||
-								reservationData.payment_details.status !== "succeeded")
-						) {
-							// Assuming currency2 is the target currency
-							const amountToSend =
-								parseFloat(convertedData.amountInUSD).toFixed(2) * 100; // Stripe requires amount in cents
-							const metadata = {
-								confirmation_number: reservationData.confirmation_number,
-								guest_name: reservationData.customer_details.name,
-								guest_country: reservationData.customer_details.nationality,
-								checkin_date: reservationData.checkin_date,
-								checkout_date: reservationData.checkin_date,
-								hotel_name: reservationData.hotelId.hotelName,
-								booking_source: reservationData.booking_source,
-							};
+						// if (
+						// 	convertedData.amountInUSD &&
+						// 	!clientSecret &&
+						// 	reservationData &&
+						// 	reservationData._id &&
+						// 	(!reservationData.payment_details ||
+						// 		reservationData.payment_details.status !== "succeeded")
+						// ) {
+						// 	// Assuming currency2 is the target currency
+						// 	const amountToSend =
+						// 		parseFloat(convertedData.amountInUSD).toFixed(2) * 100; // Stripe requires amount in cents
+						// 	const metadata = {
+						// 		confirmation_number: reservationData.confirmation_number,
+						// 		guest_name: reservationData.customer_details.name,
+						// 		guest_country: reservationData.customer_details.nationality,
+						// 		checkin_date: reservationData.checkin_date,
+						// 		checkout_date: reservationData.checkin_date,
+						// 		hotel_name: reservationData.hotelId.hotelName,
+						// 		booking_source: reservationData.booking_source,
+						// 	};
 
-							gettingCreatePaymentIntent(amountToSend, metadata)
-								.then((paymentIntentData) => {
-									console.log(paymentIntentData, "paymentIntentData");
-									if (paymentIntentData) {
-										setClientSecret(paymentIntentData);
-									} else {
-										console.error("Failed to create payment intent.");
-										toast.error("Payment processing setup failed.");
-									}
-								})
-								.catch((error) => {
-									console.error("Error creating payment intent:", error);
-									toast.error("Payment intent creation failed.");
-								});
-						}
+						// 	gettingCreatePaymentIntent(amountToSend, metadata)
+						// 		.then((paymentIntentData) => {
+						// 			console.log(paymentIntentData, "paymentIntentData");
+						// 			if (paymentIntentData) {
+						// 				setClientSecret(paymentIntentData);
+						// 			} else {
+						// 				console.error("Failed to create payment intent.");
+						// 				toast.error("Payment processing setup failed.");
+						// 			}
+						// 		})
+						// 		.catch((error) => {
+						// 			console.error("Error creating payment intent:", error);
+						// 			toast.error("Payment intent creation failed.");
+						// 		});
+						// }
 					}
 				});
 			}
@@ -150,6 +156,7 @@ const ClientPayVirtualCard = () => {
 		setEditedSubTotal(e.target.value);
 	};
 
+	// eslint-disable-next-line
 	const options = {
 		clientSecret: clientSecret,
 	};
@@ -302,7 +309,7 @@ const ClientPayVirtualCard = () => {
 								</div>
 							) : null}
 
-							{clientSecret && reservation && reservation._id ? (
+							{/* {clientSecret && reservation && reservation._id ? (
 								<Elements stripe={stripePromise} options={options}>
 									<StripePaymentForm
 										processPayment={processPayment_Stripe}
@@ -315,9 +322,9 @@ const ClientPayVirtualCard = () => {
 										clientSecret={clientSecret}
 									/>
 								</Elements>
-							) : null}
+							) : null} */}
 
-							{/* <SquarePaymentForm
+							<SquarePaymentForm
 								processPayment={processPayment_Square}
 								reservationId={reservation._id}
 								// amount={
@@ -330,7 +337,7 @@ const ClientPayVirtualCard = () => {
 								reservation={reservation}
 								amountInSar={currency.amountInSAR}
 								setPaymentStatus={setPaymentStatus}
-							/> */}
+							/>
 						</div>
 					)}
 				</>

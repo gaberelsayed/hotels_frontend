@@ -11,8 +11,9 @@ const SquarePaymentForm = ({
 	amountInSar,
 	setPaymentStatus,
 }) => {
-	const applicationId = process.env.REACT_APP_APPLICATION_ID;
-	const locationId = "LSCEA11F58GQF";
+	const applicationId = process.env.REACT_APP_APPLICATION_ID_TEST;
+	const locationId = "LSCEA11F58GQF"; //Production
+	// const locationId = "LSWZYQNK2HY28";
 	const [isProcessing, setIsProcessing] = useState(false); // State to track processing status
 
 	const cardTokenizeResponseReceived = async (tokenResult) => {
