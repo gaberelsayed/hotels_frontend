@@ -42,13 +42,11 @@ const SquarePaymentForm = ({
 					paymentData
 				);
 
-				// Check the response for a successful order and payment
 				if (response.success) {
 					toast.success("Successfully Paid");
-					setPaymentStatus(true); // Update the payment status state
+					setPaymentStatus(true);
 					console.log("Payment successful:", response);
 				} else {
-					// Show an error message that the backend provides
 					toast.error(response.message || "Payment failed, please try again.");
 					console.error("Payment or order creation failed:", response);
 				}
@@ -74,12 +72,11 @@ const SquarePaymentForm = ({
 				currencyCode: currency,
 				intent: "CHARGE",
 				billingContact: {
-					/* Fill in billing contact information here if available */
+					// Ideally, populate with actual data if available
 				},
 			})}
 		>
 			<CreditCard disabled={isProcessing} />
-			{/* Assuming you can control the disabled state */}
 		</PaymentForm>
 	);
 };
