@@ -1,17 +1,16 @@
 /** @format */
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { Modal } from "antd";
-import {
-	BedSizes,
-	Views,
-	roomTypeColors,
-	roomTypes,
-} from "../../AdminModule/NewHotels/Assets";
 import { toast } from "react-toastify";
 import { isAuthenticated } from "../../auth";
 import { updateSingleRoom } from "../apiAdmin";
+import {
+	roomTypeColors,
+	BedSizes,
+	Views,
+} from "../../AdminModule/NewHotels/Assets";
 
 const ZSingleRoomModal = ({
 	modalVisible,
@@ -21,15 +20,37 @@ const ZSingleRoomModal = ({
 	clickedFloor,
 	rooms,
 	setRooms,
+	hotelDetails,
 	setHelperRender,
 	helperRender,
 }) => {
 	const { user, token } = isAuthenticated();
+	const [bedCount, setBedCount] = useState(clickedRoom.bedsNumber?.length || 0);
 
-	console.log(clickedRoom, "clickedRoom");
-	console.log(rooms, "rooms");
+	useEffect(() => {
+		if (clickedRoom.room_type === "individualBed" && clickedRoom.bedsNumber) {
+			setBedCount(clickedRoom.bedsNumber.length);
+		}
+	}, [clickedRoom]);
+
+	const roomTypes = Object.keys(hotelDetails.roomCountDetails || {}).filter(
+		(type) =>
+			!type.endsWith("Price") && hotelDetails.roomCountDetails[type].count > 0
+	);
 
 	const updatingSingleRoom = () => {
+		// Update the bedsNumber array and individualBeds flag if the room type is individualBed
+		if (clickedRoom.room_type === "individualBed") {
+			const bedsNumber = Array.from(
+				{ length: bedCount },
+				(_, i) => `${clickedRoom.room_number}${String.fromCharCode(97 + i)}`
+			);
+			clickedRoom.bedsNumber = bedsNumber;
+			clickedRoom.individualBeds = true;
+		}
+
+		console.log("Updating Room:", clickedRoom);
+
 		updateSingleRoom(clickedRoom._id, user._id, token, clickedRoom)
 			.then((data) => {
 				if (data && data.error) {
@@ -80,11 +101,26 @@ const ZSingleRoomModal = ({
 		// after updating the rooms, you can call setHelperRender or other state setters here.
 	};
 
-	// console.log(clickedRoom, "clickedRoom");
+	const handleBedCountChange = (e) => {
+		const count = parseInt(e.target.value, 10);
+		setBedCount(count);
+		const bedsNumber = Array.from(
+			{ length: count },
+			(_, i) => `${clickedRoom.room_number}${String.fromCharCode(97 + i)}`
+		);
+		setClickedRoom({
+			...clickedRoom,
+			bedsNumber,
+			individualBeds: true,
+		});
+		console.log("Updated Room for Bed Count Change:", {
+			...clickedRoom,
+			bedsNumber,
+			individualBeds: true,
+		});
+	};
 
 	const mainForm = () => {
-		// Find the current floor data
-
 		return (
 			<InputFieldStylingWrapper className='mx-auto text-center'>
 				<h3
@@ -112,9 +148,13 @@ const ZSingleRoomModal = ({
 						</label>
 						<select
 							style={{ textTransform: "capitalize" }}
+							value={clickedRoom.room_type}
 							onChange={(e) => {
 								const newRoomType = e.target.value;
-								const newColorCode = roomTypeColors[newRoomType];
+								const newColorCode =
+									hotelDetails.roomCountDetails[newRoomType]?.roomColor ||
+									roomTypeColors[newRoomType] ||
+									"#000";
 								setClickedRoom({
 									...clickedRoom,
 									room_type: newRoomType,
@@ -122,24 +162,39 @@ const ZSingleRoomModal = ({
 								});
 							}}
 						>
-							{clickedRoom && clickedRoom.room_type ? (
-								<option value={clickedRoom.room_type}>
-									{clickedRoom.room_type}
-								</option>
-							) : (
-								<option value=''>Please Select</option>
-							)}
-							{roomTypes.map((t, i) => (
-								<option key={i} value={t}>
-									{t}
+							<option value=''>Please Select</option>
+							{roomTypes.map((type, i) => (
+								<option key={i} value={type}>
+									{type}
 								</option>
 							))}
 						</select>
 					</div>
 
+					{clickedRoom && clickedRoom.room_type === "individualBed" && (
+						<div className=' col-md-2 form-group' style={{ marginTop: "10px" }}>
+							<label
+								htmlFor='bedsNumber'
+								style={{
+									fontWeight: "bold",
+									fontSize: "11px",
+									textAlign: "center",
+								}}
+							>
+								How many beds?
+							</label>
+							<input
+								type='number'
+								min='1'
+								value={bedCount}
+								onChange={handleBedCountChange}
+							/>
+						</div>
+					)}
+
 					<div className=' col-md-2 form-group' style={{ marginTop: "10px" }}>
 						<label
-							htmlFor='name'
+							htmlFor='bedSize'
 							style={{
 								fontWeight: "bold",
 								fontSize: "11px",
@@ -150,6 +205,11 @@ const ZSingleRoomModal = ({
 						</label>
 						<select
 							style={{ textTransform: "capitalize" }}
+							value={
+								clickedRoom.room_features &&
+								clickedRoom.room_features[0] &&
+								clickedRoom.room_features[0].bedSize
+							}
 							onChange={(e) => {
 								setClickedRoom({
 									...clickedRoom,
@@ -163,27 +223,18 @@ const ZSingleRoomModal = ({
 								});
 							}}
 						>
-							{clickedRoom &&
-							clickedRoom.room_features &&
-							clickedRoom.room_features[0] &&
-							clickedRoom.room_features[0].bedSize ? (
-								<option value=''>{clickedRoom.room_features[0].bedSize}</option>
-							) : (
-								<option value=''>Please Select</option>
-							)}
-							{BedSizes &&
-								BedSizes.map((b, i) => {
-									return (
-										<option key={i} value={b}>
-											{b}
-										</option>
-									);
-								})}
+							<option value=''>Please Select</option>
+							{BedSizes.map((b, i) => (
+								<option key={i} value={b}>
+									{b}
+								</option>
+							))}
 						</select>
 					</div>
+
 					<div className=' col-md-2 form-group' style={{ marginTop: "10px" }}>
 						<label
-							htmlFor='name'
+							htmlFor='view'
 							style={{
 								fontWeight: "bold",
 								fontSize: "11px",
@@ -194,6 +245,11 @@ const ZSingleRoomModal = ({
 						</label>
 						<select
 							style={{ textTransform: "capitalize" }}
+							value={
+								clickedRoom.room_features &&
+								clickedRoom.room_features[0] &&
+								clickedRoom.room_features[0].view
+							}
 							onChange={(e) => {
 								setClickedRoom({
 									...clickedRoom,
@@ -206,27 +262,18 @@ const ZSingleRoomModal = ({
 								});
 							}}
 						>
-							{clickedRoom &&
-							clickedRoom.room_features &&
-							clickedRoom.room_features[0] &&
-							clickedRoom.room_features[0].view ? (
-								<option value=''>{clickedRoom.room_features[0].view}</option>
-							) : (
-								<option value=''>Please Select</option>
-							)}
-							{Views &&
-								Views.map((b, i) => {
-									return (
-										<option key={i} value={b}>
-											{b}
-										</option>
-									);
-								})}
+							<option value=''>Please Select</option>
+							{Views.map((b, i) => (
+								<option key={i} value={b}>
+									{b}
+								</option>
+							))}
 						</select>
 					</div>
+
 					<div className=' col-md-2 form-group' style={{ marginTop: "10px" }}>
 						<label
-							htmlFor='name'
+							htmlFor='smoking'
 							style={{
 								fontWeight: "bold",
 								fontSize: "11px",
@@ -237,157 +284,33 @@ const ZSingleRoomModal = ({
 						</label>
 						<select
 							style={{ textTransform: "capitalize" }}
+							value={
+								clickedRoom.room_features &&
+								clickedRoom.room_features[0] &&
+								clickedRoom.room_features[0].smoking
+									? "For Smokers"
+									: "No Smoking"
+							}
 							onChange={(e) => {
+								const smokingValue = e.target.value === "For Smokers";
 								setClickedRoom({
 									...clickedRoom,
 									room_features: clickedRoom.room_features.map(
 										(feature, index) =>
 											index === 0
-												? { ...feature, smoking: e.target.value }
+												? { ...feature, smoking: smokingValue }
 												: feature
 									),
 								});
 							}}
 						>
-							{clickedRoom &&
-							clickedRoom.room_features &&
-							clickedRoom.room_features[0] &&
-							clickedRoom.room_features[0].smoking === false ? (
-								<option value=''>No Smoking</option>
-							) : (
-								<option value=''>Please Select</option>
-							)}
+							<option value=''>Please Select</option>
 							<option value={false}>No Smoking</option>
 							<option value={true}>For Smokers</option>
 						</select>
 					</div>
 				</div>
-				<h3
-					style={{
-						fontSize: "1rem",
-						textDecoration: "underline",
-						textAlign: "left",
-						fontWeight: "bold",
-						marginTop: "25px",
-					}}
-				>
-					Price Rates Room #{clickedRoom.room_number} Floor #{clickedFloor}
-				</h3>
 
-				<div className='row'>
-					<div className=' col-md-2 form-group' style={{ marginTop: "10px" }}>
-						<label
-							style={{
-								fontWeight: "bold",
-								fontSize: "11px",
-								textAlign: "center",
-							}}
-						>
-							Base Price
-						</label>
-						<input
-							type='number'
-							value={
-								clickedRoom.room_pricing && clickedRoom.room_pricing.basePrice
-							}
-							onChange={(e) =>
-								setClickedRoom({
-									...clickedRoom,
-									room_pricing: {
-										...clickedRoom.room_pricing,
-										basePrice: e.target.value,
-									},
-								})
-							}
-							required
-						/>
-					</div>
-					<div className=' col-md-2 form-group' style={{ marginTop: "10px" }}>
-						<label
-							style={{
-								fontWeight: "bold",
-								fontSize: "11px",
-								textAlign: "center",
-							}}
-						>
-							Seasonal Price
-						</label>
-						<input
-							type='number'
-							value={
-								clickedRoom.room_pricing && clickedRoom.room_pricing.seasonPrice
-							}
-							onChange={(e) =>
-								setClickedRoom({
-									...clickedRoom,
-									room_pricing: {
-										...clickedRoom.room_pricing,
-										seasonPrice: e.target.value,
-									},
-								})
-							}
-							required
-						/>
-					</div>
-
-					<div className=' col-md-2 form-group' style={{ marginTop: "10px" }}>
-						<label
-							style={{
-								fontWeight: "bold",
-								fontSize: "11px",
-								textAlign: "center",
-							}}
-						>
-							Weekend Price
-						</label>
-						<input
-							type='number'
-							value={
-								clickedRoom.room_pricing &&
-								clickedRoom.room_pricing.weekendPrice
-							}
-							onChange={(e) =>
-								setClickedRoom({
-									...clickedRoom,
-									room_pricing: {
-										...clickedRoom.room_pricing,
-										weekendPrice: e.target.value,
-									},
-								})
-							}
-							required
-						/>
-					</div>
-
-					<div className=' col-md-2 form-group' style={{ marginTop: "10px" }}>
-						<label
-							style={{
-								fontWeight: "bold",
-								fontSize: "11px",
-								textAlign: "center",
-							}}
-						>
-							Last Minute Book Price
-						</label>
-						<input
-							type='number'
-							value={
-								clickedRoom.room_pricing &&
-								clickedRoom.room_pricing.lastMinuteDealPrice
-							}
-							onChange={(e) =>
-								setClickedRoom({
-									...clickedRoom,
-									room_pricing: {
-										...clickedRoom.room_pricing,
-										lastMinuteDealPrice: e.target.value,
-									},
-								})
-							}
-							required
-						/>
-					</div>
-				</div>
 				{clickedRoom && clickedRoom._id && (
 					<div>
 						<button
@@ -417,7 +340,6 @@ const ZSingleRoomModal = ({
 				}
 				open={modalVisible}
 				onOk={updateRoomState}
-				// okButtonProps={{ style: { display: "none" } }}
 				cancelButtonProps={{ style: { display: "none" } }}
 				onCancel={() => {
 					setModalVisible(false);

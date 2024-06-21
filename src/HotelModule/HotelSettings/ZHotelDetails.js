@@ -1,7 +1,10 @@
 import React from "react";
 import styled from "styled-components";
+// eslint-disable-next-line
 import ZHotelDetailsForm from "./ZHotelDetailsForm";
+// eslint-disable-next-line
 import RoomPhotosUpload from "./RoomPhotosUpload";
+import ZHotelDetailsForm2 from "./ZHotelDetailsForm2";
 
 const ZHotelDetails = ({
 	values,
@@ -11,26 +14,32 @@ const ZHotelDetails = ({
 	chosenLanguage,
 	hotelPhotos,
 	setHotelPhotos,
+	roomTypes,
+	amenitiesList,
+	currentStep,
+	setCurrentStep,
+	setSelectedRoomType,
+	selectedRoomType,
+	roomTypeSelected,
+	setRoomTypeSelected,
 }) => {
 	return (
 		<ZAddHotelSettingsWrapper>
-			<h3 style={{ textTransform: "capitalize" }}>
-				Build Hotel ({values && values.hotelName})
-			</h3>{" "}
 			<div>
-				<ZHotelDetailsForm
+				<ZHotelDetailsForm2
 					hotelDetails={hotelDetails}
 					setHotelDetails={setHotelDetails}
 					chosenLanguage={chosenLanguage}
+					roomTypes={roomTypes}
+					amenitiesList={amenitiesList}
+					currentStep={currentStep}
+					setCurrentStep={setCurrentStep}
+					setSelectedRoomType={setSelectedRoomType}
+					selectedRoomType={selectedRoomType}
+					roomTypeSelected={roomTypeSelected}
+					setRoomTypeSelected={setRoomTypeSelected}
 				/>
 
-				<div className='my-5 mx-auto text-center'>
-					<RoomPhotosUpload
-						hotelDetails={hotelDetails}
-						hotelPhotos={hotelPhotos}
-						setHotelPhotos={setHotelPhotos}
-					/>
-				</div>
 				<div className='mx-auto text-center mt-4'>
 					<button
 						onClick={() => {

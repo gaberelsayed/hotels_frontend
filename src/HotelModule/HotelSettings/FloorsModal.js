@@ -1,10 +1,9 @@
-/** @format */
-
 import React from "react";
 import styled from "styled-components";
 import { Modal } from "antd";
 import ZInputFieldRoomsPFloor from "./ZInputFieldRoomsPFloor";
 import { roomTypeColors } from "../../AdminModule/NewHotels/Assets";
+import { toast } from "react-toastify";
 
 const FloorsModal = ({
 	modalVisible,
@@ -29,11 +28,19 @@ const FloorsModal = ({
 		}, 0);
 	};
 
-	// Usage
 	const totalRooms = getRoomCountTotal(floorDetails.roomCountDetails);
 
 	const handleRoomCountChange = (roomType, value) => {
 		const newRoomCount = Number(value);
+		const maxRoomCount = hotelDetails.roomCountDetails[roomType];
+
+		if (newRoomCount > maxRoomCount) {
+			toast.error(
+				`Cannot add more than ${maxRoomCount} rooms for ${roomType}.`
+			);
+			return;
+		}
+
 		const newFloorDetails = {
 			...floorDetails,
 			roomCountDetails: {
@@ -62,6 +69,10 @@ const FloorsModal = ({
 
 			const count = floorDetails.roomCountDetails[type];
 			const priceObject = floorDetails.roomCountDetails[`${type}Price`];
+			const roomColor =
+				hotelDetails.roomCountDetails[type]?.roomColor ||
+				roomTypeColors[type] ||
+				"#000";
 
 			for (let i = 0; i < count; i++) {
 				const roomNumber = `${clickedFloor}${String(currentRoomNumber).padStart(
@@ -72,7 +83,7 @@ const FloorsModal = ({
 					room_number: roomNumber,
 					room_type: type,
 					room_pricing: priceObject,
-					roomColorCode: roomTypeColors[type] || "#000", // Default to black if no color is found
+					roomColorCode: roomColor, // Use roomColor from hotelDetails or fall back to roomTypeColors
 					floor: clickedFloor,
 					hotelId: hotelDetails._id,
 					belongsTo: values._id,
@@ -88,106 +99,37 @@ const FloorsModal = ({
 		setRooms([...updatedRooms, ...newRoomsForCurrentFloor]);
 	};
 
-	// console.log(floorDetails, "From Modal Floor Details");
-
 	const mainForm = () => {
-		// Find the current floor data
+		const roomTypesCount = Object.entries(hotelDetails.roomCountDetails).filter(
+			([, details]) => details.count > 0
+		).length;
 
 		return (
 			<div className='mx-auto text-center'>
-				<h3
-					style={{
-						fontSize: "1.1rem",
-						textDecoration: "underline",
-						textAlign: "left",
-						fontWeight: "bold",
-					}}
-				>
+				<h3 className='form-title'>
 					Room Types & Count In Floor #{clickedFloor}
 				</h3>
-				<div className='row'>
-					<ZInputFieldRoomsPFloor
-						Title={"Standard Room"}
-						value={floorDetails.roomCountDetails.standardRooms}
-						handleFloorRoomsCount={handleRoomCountChange}
-						roomType='standardRooms'
-					/>
-
-					<ZInputFieldRoomsPFloor
-						Title={"Single Rooms"}
-						value={floorDetails.roomCountDetails.singleRooms}
-						handleFloorRoomsCount={handleRoomCountChange}
-						roomType='singleRooms'
-					/>
-					<ZInputFieldRoomsPFloor
-						Title={"Double Rooms"}
-						value={floorDetails.roomCountDetails.doubleRooms}
-						handleFloorRoomsCount={handleRoomCountChange}
-						roomType='doubleRooms'
-					/>
-
-					<ZInputFieldRoomsPFloor
-						Title={"Twin Rooms"}
-						value={floorDetails.roomCountDetails.twinRooms}
-						handleFloorRoomsCount={handleRoomCountChange}
-						roomType='twinRooms'
-					/>
-
-					<ZInputFieldRoomsPFloor
-						Title={"Queen Rooms"}
-						value={floorDetails.roomCountDetails.queenRooms}
-						handleFloorRoomsCount={handleRoomCountChange}
-						roomType='queenRooms'
-					/>
-
-					<ZInputFieldRoomsPFloor
-						Title={"King Rooms"}
-						value={floorDetails.roomCountDetails.kingRooms}
-						handleFloorRoomsCount={handleRoomCountChange}
-						roomType='kingRooms'
-					/>
-
-					<ZInputFieldRoomsPFloor
-						Title={"Triple Rooms"}
-						value={floorDetails.roomCountDetails.tripleRooms}
-						handleFloorRoomsCount={handleRoomCountChange}
-						roomType='tripleRooms'
-					/>
-
-					<ZInputFieldRoomsPFloor
-						Title={"Quad Rooms"}
-						value={floorDetails.roomCountDetails.quadRooms}
-						handleFloorRoomsCount={handleRoomCountChange}
-						roomType='quadRooms'
-					/>
-
-					<ZInputFieldRoomsPFloor
-						Title={"Suites"}
-						value={floorDetails.roomCountDetails.suite}
-						handleFloorRoomsCount={handleRoomCountChange}
-						roomType='suite'
-					/>
-
-					<ZInputFieldRoomsPFloor
-						Title={"Family Rooms"}
-						value={floorDetails.roomCountDetails.familyRooms}
-						handleFloorRoomsCount={handleRoomCountChange}
-						roomType='familyRooms'
-					/>
-
-					<div
-						className='col-md-2 my-auto'
-						style={{
-							marginTop: "10px",
-							fontWeight: "bold",
-							fontSize: "1.2rem",
-						}}
-					>
-						Total: {totalRooms ? totalRooms : 0} Rooms In Floor #{clickedFloor}
+				<div className={`row ${roomTypesCount <= 6 ? "centered-grid" : ""}`}>
+					{Object.entries(hotelDetails.roomCountDetails)
+						.filter(([roomType, details]) => details.count > 0)
+						.map(([roomType, details], i) => (
+							<ZInputFieldRoomsPFloor
+								key={i}
+								Title={roomType.replace(/([A-Z])/g, " $1").trim()}
+								value={floorDetails.roomCountDetails[roomType]}
+								handleFloorRoomsCount={handleRoomCountChange}
+								roomType={roomType}
+								numRoomTypes={roomTypesCount}
+							/>
+						))}
+					<div className='col-md-2 my-auto total-rooms'>
+						<h5>
+							Total: {totalRooms ? totalRooms : 0} Rooms In Floor #
+							{clickedFloor}
+						</h5>
 					</div>
 				</div>
-
-				<div>
+				<div className='generate-button'>
 					<button className='btn btn-primary' onClick={populateAllRooms}>
 						Generate Floor #{clickedFloor} Rooms
 					</button>
@@ -201,19 +143,14 @@ const FloorsModal = ({
 			<Modal
 				width='70%'
 				title={
-					<div
-						style={{
-							textAlign: "center",
-							fontWeight: "bold",
-							fontSize: "1.3rem",
-						}}
-					>{`Floor ${clickedFloor} Rooms Builder`}</div>
+					<div className='modal-title'>
+						{`Floor ${clickedFloor} Rooms Builder`}
+					</div>
 				}
 				open={modalVisible}
 				onOk={() => {
 					setModalVisible(false);
 				}}
-				// okButtonProps={{ style: { display: "none" } }}
 				cancelButtonProps={{ style: { display: "none" } }}
 				onCancel={() => {
 					setModalVisible(false);
@@ -227,6 +164,37 @@ const FloorsModal = ({
 
 export default FloorsModal;
 
+// Styled components for FloorsModal
 const FloorsModalWrapper = styled.div`
 	z-index: 18000 !important;
+	.form-container {
+		margin: 0 auto;
+		text-align: center;
+	}
+	.form-title {
+		font-size: 1.3rem;
+		text-decoration: underline;
+		font-weight: bold;
+		margin-bottom: 20px;
+	}
+	.row {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 20px;
+	}
+	/* Center the input fields if there are fewer than or equal to 6 room types */
+	.centered-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+		gap: 20px;
+	}
+	.total-rooms {
+		font-weight: bold;
+		font-size: 1.2rem;
+		margin-top: 10px;
+	}
+	.generate-button {
+		margin-top: 20px;
+	}
 `;

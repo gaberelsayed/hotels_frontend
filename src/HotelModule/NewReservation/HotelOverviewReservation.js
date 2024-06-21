@@ -1,13 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import styled, { keyframes } from "styled-components";
-// eslint-disable-next-line
-import { roomTypeColors } from "../../AdminModule/NewHotels/Assets";
-import { InputNumber, Modal, Select, Tooltip, Checkbox } from "antd";
+import { InputNumber, Modal, Table, Tooltip } from "antd";
 import moment from "moment";
 import { toast } from "react-toastify";
-
-// eslint-disable-next-line
-const { Option } = Select;
 
 const HotelOverviewReservation = ({
 	hotelRooms,
@@ -25,15 +20,21 @@ const HotelOverviewReservation = ({
 	searchedReservation,
 	start_date_Map,
 	end_date_Map,
+	bedNumber,
+	setBedNumber,
+	currentRoom,
+	setCurrentRoom,
+	pricingByDay,
+	setPricingByDay,
 }) => {
-	const [selectedRoomType, setSelectedRoomType] = useState(null);
 	const [isModalVisible, setIsModalVisible] = useState(false);
-	const [currentRoom, setCurrentRoom] = useState(null);
-	const [customPrice, setCustomPrice] = useState(null);
-	const [selectedPrice, setSelectedPrice] = useState("");
+	const [isBedModalVisible, setIsBedModalVisible] = useState(false);
 	const [fixIt, setFixIt] = useState(false);
-	const [useReservationPrice, setUseReservationPrice] = useState(false);
-	const [addCustomPrice, setAddCustomPrice] = useState(false);
+	const [inheritedPrice, setInheritedPrice] = useState("");
+	const [selectedBeds, setSelectedBeds] = useState([]);
+	const [bookedBeds, setBookedBeds] = useState([]);
+	const [totalAmountPerBed, setTotalAmountPerBed] = useState(0);
+	const [overallTotal, setOverallTotal] = useState(0);
 
 	useEffect(() => {
 		const handleScroll = () => {
@@ -41,14 +42,35 @@ const HotelOverviewReservation = ({
 			setFixIt(currentPosition > 900);
 		};
 
-		// Add event listener
 		window.addEventListener("scroll", handleScroll);
-
-		// Clean up
 		return () => {
 			window.removeEventListener("scroll", handleScroll);
 		};
 	}, []);
+
+	useEffect(() => {
+		if (currentRoom && currentRoom.room_type === "individualBed") {
+			const bookedBedsTemp = [];
+
+			allReservations.forEach((reservation) => {
+				const startDate = moment(start_date_Map);
+				const endDate = moment(end_date_Map);
+				const reservationStart = moment(reservation.checkin_date);
+				const reservationEnd = moment(reservation.checkout_date);
+
+				const overlap =
+					startDate.isBefore(reservationEnd) &&
+					endDate.isAfter(reservationStart);
+
+				if (overlap) {
+					const bookedBeds = reservation.bedNumber || [];
+					bookedBedsTemp.push(...bookedBeds);
+				}
+			});
+
+			setBookedBeds(bookedBedsTemp);
+		}
+	}, [currentRoom, start_date_Map, end_date_Map, allReservations]);
 
 	const { hotelFloors, parkingLot } = hotelDetails;
 	const floors = Array.from(
@@ -57,164 +79,257 @@ const HotelOverviewReservation = ({
 	);
 
 	const handleRoomClick = (roomId, show, room) => {
-		// eslint-disable-next-line
-		let priceToAdd;
+		if (!roomId || !room) return;
 
-		if (isRoomBooked(roomId)) {
-			// If the room is booked, do not proceed further
-			console.log("Room is booked. Cannot select.");
+		if (isRoomBooked(roomId, room.room_type, room.bedsNumber)) {
+			toast.error("Room is booked. Cannot select.");
 			return;
 		}
 
 		if (pickedHotelRooms.includes(roomId)) {
-			setPickedHotelRooms(pickedHotelRooms.filter((id) => id !== roomId));
-			// eslint-disable-next-line
-			priceToAdd = currentRoom?.room_pricing[selectedPrice];
-
-			var newAmount =
-				pickedRoomPricing.filter((room) => room.roomId !== roomId) &&
-				pickedRoomPricing
-					.filter((room) => room.roomId !== roomId)
-					.map((ii) => ii.chosenPrice);
-
-			setTotal_Amount(
-				newAmount.reduce(
-					(accumulator, currentValue) => accumulator + Number(currentValue),
-					0
-				)
-			);
-
-			setPickedRoomPricing(
-				pickedRoomPricing.filter((room) => room.roomId !== roomId)
-			);
+			handleRoomDeselection(roomId);
 		} else {
 			setPickedHotelRooms([...pickedHotelRooms, roomId]);
 			setCurrentRoom(room);
-			showModal(room); // Open the modal for room pricing
+			showModal(room);
 		}
 	};
 
-	const handleRoomTypeClick = (roomType) => {
-		setSelectedRoomType(roomType);
-	};
+	const handleRoomDeselection = (roomId) => {
+		setPickedHotelRooms(pickedHotelRooms.filter((id) => id !== roomId));
 
-	const handleSelectAllClick = () => {
-		setSelectedRoomType(null); // Reset room type filter
-	};
+		const priceToRemove = pickedRoomPricing.find(
+			(pricing) => pricing.roomId === roomId
+		)?.chosenPrice;
 
-	// console.log(pickedRoomPricing, "pickedRoomPricing");
-
-	const filteredRooms = selectedRoomType
-		? hotelRooms.filter((room) => room.room_type === selectedRoomType)
-		: hotelRooms;
-
-	const showModal = (room) => {
-		setCurrentRoom(room);
-		setIsModalVisible(true);
-	};
-
-	const handleOk = () => {
-		// Initialize priceToAdd as null
-		let priceToAdd = null;
-
-		if (addCustomPrice && customPrice) {
-			// If the custom price checkbox is checked and there's a custom price
-			priceToAdd = customPrice;
-		} else if (
-			useReservationPrice &&
-			searchedReservation &&
-			searchedReservation.pickedRoomsType &&
-			searchedReservation.pickedRoomsType.length === 1
-		) {
-			// If the reservation price checkbox is checked and there's a valid reservation price
-			priceToAdd = Number(searchedReservation.pickedRoomsType[0].chosenPrice);
+		if (priceToRemove) {
+			setTotal_Amount((prevTotal) => prevTotal - Number(priceToRemove));
 		}
 
-		if (priceToAdd !== null) {
-			// Add room pricing information if a valid price is added
-			setPickedRoomPricing([
-				...pickedRoomPricing,
-				{ roomId: currentRoom._id, chosenPrice: priceToAdd },
-			]);
-			// Update total amount
-			setTotal_Amount((prevTotal) => prevTotal + Number(priceToAdd));
-		} else {
-			// If no valid option is selected, possibly show a message or handle accordingly
-			// For example, using a toast to notify the user to select or enter a price
-			toast.error(
-				chosenLanguage === "Arabic"
-					? "الرجاء اختيار أو إدخال سعر"
-					: "Please select or enter a price"
-			);
-			// Optionally, you might want to prevent the modal from closing if no valid price is selected
-			// If you decide to keep the modal open, remove or comment out the line below
-		}
-
-		// Close the modal
-		setIsModalVisible(false);
+		setPickedRoomPricing(
+			pickedRoomPricing.filter((pricing) => pricing.roomId !== roomId)
+		);
 	};
 
-	// eslint-disable-next-line
-	const handlePriceChange = (value) => {
-		setSelectedPrice(value);
-		if (value !== "custom") {
-			setCustomPrice(null); // Reset custom price if a preset price is selected
-		}
-	};
-
-	const handleCancel = () => {
-		handleRoomDeselection();
-		setIsModalVisible(false);
-		setCustomPrice(null); // Reset custom price
-	};
-
-	const handleRoomDeselection = () => {
-		if (currentRoom) {
-			// Deselect the room by removing it from pickedHotelRooms
-			setPickedHotelRooms(
-				pickedHotelRooms.filter((id) => id !== currentRoom._id)
-			);
-
-			// Update total amount by subtracting the price of the deselected room
-			const priceToRemove = pickedRoomPricing.find(
-				(pricing) => pricing.roomId === currentRoom._id
-			)?.chosenPrice;
-			if (priceToRemove) {
-				setTotal_Amount((prevTotal) => prevTotal - Number(priceToRemove));
-			}
-
-			// Remove the room's pricing information from pickedRoomPricing
-			setPickedRoomPricing(
-				pickedRoomPricing.filter(
-					(pricing) => pricing.roomId !== currentRoom._id
-				)
-			);
-		}
-	};
-
-	const isRoomBooked = (roomId) => {
+	const isRoomBooked = (roomId, roomType, bedsNumber) => {
 		if (!start_date_Map || !end_date_Map) return false;
 
 		const startDate = moment(start_date_Map);
 		const endDate = moment(end_date_Map);
 
-		return allReservations.some((reservation) => {
-			const reservationStart = moment(reservation.checkin_date);
-			const reservationEnd = moment(reservation.checkout_date);
+		if (roomType === "individualBed") {
+			const bookedBedsTemp = [];
 
-			// Check if the date range overlaps and the room ID is in the reservation's roomId array
-			return (
-				startDate.isBefore(reservationEnd) &&
-				endDate.isAfter(reservationStart) &&
-				reservation.roomId.some((room) => room._id === roomId)
-			);
-		});
+			const isBooked = allReservations.some((reservation) => {
+				const reservationStart = moment(reservation.checkin_date);
+				const reservationEnd = moment(reservation.checkout_date);
+
+				const overlap =
+					startDate.isBefore(reservationEnd) &&
+					endDate.isAfter(reservationStart);
+
+				if (overlap) {
+					const bookedBeds = reservation.bedNumber || [];
+					bookedBedsTemp.push(...bookedBeds);
+					const allBedsBooked = bedsNumber.every((bed) =>
+						bookedBeds.includes(bed)
+					);
+
+					return allBedsBooked;
+				}
+
+				return false;
+			});
+
+			return isBooked;
+		} else {
+			return allReservations.some((reservation) => {
+				const reservationStart = moment(reservation.checkin_date);
+				const reservationEnd = moment(reservation.checkout_date);
+
+				return (
+					startDate.isBefore(reservationEnd) &&
+					endDate.isAfter(reservationStart) &&
+					reservation.roomId.some((room) => room._id === roomId)
+				);
+			});
+		}
 	};
+
+	const showModal = (room) => {
+		if (!room) return;
+		setCurrentRoom(room);
+
+		if (searchedReservation && searchedReservation.pickedRoomsType) {
+			const roomType = searchedReservation.pickedRoomsType.find(
+				(r) => r.room_type === room.room_type
+			);
+
+			if (
+				roomType &&
+				roomType.pricingByDay &&
+				roomType.pricingByDay.length > 0
+			) {
+				setPricingByDay(roomType.pricingByDay);
+			} else {
+				generatePricingTable(room.room_type, start_date, end_date);
+			}
+		} else {
+			generatePricingTable(room.room_type, start_date, end_date);
+		}
+
+		setIsModalVisible(true);
+	};
+
+	const generatePricingTable = useCallback(
+		(roomType, startDate, endDate) => {
+			const roomDetails = hotelDetails.roomCountDetails[roomType];
+			const pricingRate = roomDetails?.pricingRate || [];
+			const basePrice = roomDetails?.price?.basePrice || 0;
+
+			const daysArray = [];
+			const currentDate = moment(startDate);
+
+			while (currentDate.isBefore(endDate)) {
+				const dateString = currentDate.format("YYYY-MM-DD");
+				const pricing = pricingRate.find(
+					(price) => price.calendarDate === dateString
+				);
+				const price = pricing
+					? parseFloat(pricing.price)
+					: parseFloat(basePrice);
+				daysArray.push({ date: dateString, price });
+				currentDate.add(1, "day");
+			}
+
+			setPricingByDay(daysArray);
+		},
+		[hotelDetails.roomCountDetails, setPricingByDay]
+	);
+
+	const handleInheritPrices = () => {
+		if (inheritedPrice) {
+			setPricingByDay((prev) =>
+				prev.map((day) => ({ ...day, price: parseFloat(inheritedPrice) }))
+			);
+		}
+	};
+
+	const handleOk = () => {
+		if (
+			currentRoom.room_type === "individualBed" &&
+			selectedBeds.length === 0
+		) {
+			toast.error("Please select at least one bed.");
+			return;
+		}
+
+		const chosenPrice =
+			pricingByDay.reduce((acc, day) => acc + day.price, 0) /
+			pricingByDay.length;
+
+		const finalChosenPrice =
+			currentRoom.room_type === "individualBed"
+				? chosenPrice * selectedBeds.length
+				: chosenPrice;
+
+		setPickedRoomPricing([
+			...pickedRoomPricing,
+			{
+				roomId: currentRoom._id,
+				chosenPrice: finalChosenPrice,
+				pricingByDay,
+			},
+		]);
+
+		setTotal_Amount((prevTotal) => prevTotal + finalChosenPrice);
+		resetState();
+		setIsModalVisible(false);
+	};
+
+	const handleCancel = () => {
+		if (currentRoom && pickedHotelRooms.includes(currentRoom._id)) {
+			handleRoomDeselection(currentRoom._id);
+		}
+		resetState();
+		setIsModalVisible(false);
+	};
+
+	const handleOkBeds = () => {
+		setBedNumber(selectedBeds);
+		setOverallTotal(totalAmountPerBed * selectedBeds.length);
+		setIsBedModalVisible(false);
+	};
+
+	const resetState = () => {
+		setCurrentRoom(null);
+		setPricingByDay([]);
+		setInheritedPrice("");
+		setSelectedBeds([]);
+		setBookedBeds([]);
+		setTotalAmountPerBed(0);
+		setOverallTotal(0);
+	};
+
+	const handleBedSelection = (bed) => {
+		if (bookedBeds.includes(bed)) {
+			toast.error("Bed is already booked. Cannot select.");
+			return;
+		}
+		if (selectedBeds.includes(bed)) {
+			setSelectedBeds(selectedBeds.filter((b) => b !== bed));
+		} else {
+			setSelectedBeds([...selectedBeds, bed]);
+		}
+	};
+
+	useEffect(() => {
+		const totalAmount = pricingByDay.reduce((acc, day) => acc + day.price, 0);
+		setTotalAmountPerBed(totalAmount);
+		setOverallTotal(totalAmount * selectedBeds.length);
+	}, [pricingByDay, selectedBeds]);
+
+	const columns = [
+		{
+			title: "Date",
+			dataIndex: "date",
+			key: "date",
+		},
+		{
+			title: "Price",
+			dataIndex: "price",
+			key: "price",
+			render: (text, record, index) => (
+				<InputNumber
+					min={0}
+					value={record.price}
+					onChange={(value) => {
+						const updatedPricingByDay = [...pricingByDay];
+						updatedPricingByDay[index].price = value;
+						setPricingByDay(updatedPricingByDay);
+					}}
+				/>
+			),
+		},
+	];
+
+	const handleSelectAllClick = () => {
+		setPickedHotelRooms(hotelRooms.map((room) => room._id));
+	};
+
+	const handleRoomTypeClick = (roomType) => {
+		setPickedHotelRooms(
+			hotelRooms
+				.filter((room) => room.room_type === roomType)
+				.map((room) => room._id)
+		);
+	};
+
+	const filteredRooms = hotelRooms;
 
 	const distinctRoomTypesWithColors =
 		hotelRooms &&
 		hotelRooms.reduce((accumulator, room) => {
-			// Check if this room_type is already processed
 			if (!accumulator.some((item) => item.room_type === room.room_type)) {
 				accumulator.push({
 					room_type: room.room_type,
@@ -239,7 +354,11 @@ const HotelOverviewReservation = ({
 										filteredRooms
 											.filter((room) => room.floor === floor)
 											.map((room, idx) => {
-												const roomIsBooked = isRoomBooked(room._id);
+												const roomIsBooked = isRoomBooked(
+													room._id,
+													room.room_type,
+													room.bedsNumber
+												);
 												return (
 													<Tooltip
 														title={
@@ -309,68 +428,142 @@ const HotelOverviewReservation = ({
 						onOk={handleOk}
 						onCancel={handleCancel}
 					>
-						{searchedReservation &&
-						searchedReservation.pickedRoomsType &&
-						searchedReservation.pickedRoomsType.length === 1 &&
-						Number(searchedReservation.pickedRoomsType[0].count) === 1 ? (
-							<Checkbox
-								checked={useReservationPrice}
-								onChange={(e) => {
-									// Deselect the addCustomPrice checkbox when this is checked
-									if (e.target.checked) {
-										setAddCustomPrice(false);
-										if (
-											searchedReservation &&
-											searchedReservation.pickedRoomsType &&
-											searchedReservation.pickedRoomsType.length === 1
-										) {
-											setUseReservationPrice(
-												Number(
-													searchedReservation.pickedRoomsType[0].chosenPrice
-												)
-											);
-										} else {
-											toast.error(
-												chosenLanguage === "Arabic"
-													? "الرجاء اختيار سعر مخصص لهذا الحجز"
-													: "It is recommended to make it a custom price"
-											);
-										}
-									}
-								}}
+						<InputNumber
+							value={inheritedPrice}
+							onChange={(value) => setInheritedPrice(value)}
+							placeholder='Enter new price to inherit'
+							style={{ width: "100%", marginBottom: "10px" }}
+						/>
+						<div>
+							<button
+								onClick={handleInheritPrices}
+								className='btn btn-success my-2 p-1 w-50'
+							>
+								Inherit New Prices
+							</button>
+						</div>
+
+						{currentRoom?.room_type === "individualBed" && (
+							<button
+								onClick={() => setIsBedModalVisible(true)}
+								className='btn btn-secondary my-2 p-1 w-50'
+							>
+								{chosenLanguage === "Arabic" ? "اختر السرير" : "Select Bed"}
+							</button>
+						)}
+
+						{selectedBeds && selectedBeds.length > 0 && (
+							<div
+								style={{ marginBottom: "10px", fontWeight: "bold" }}
+								dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}
 							>
 								{chosenLanguage === "Arabic"
-									? "هل تريد أن تأخذ سعر الحجز الأصلي؟"
-									: "Do you want to take the reservation original price?"}
-							</Checkbox>
-						) : null}
-
-						<br />
-						<Checkbox
-							checked={addCustomPrice}
-							onChange={(e) => {
-								setAddCustomPrice(e.target.checked);
-								// Deselect the useReservationPrice checkbox when this is checked
-								if (e.target.checked) {
-									setUseReservationPrice(false);
-								}
-							}}
-						>
-							{chosenLanguage === "Arabic"
-								? "هل ترغب في إضافة سعر مخصص؟"
-								: "Do you want to add a custom price?"}
-						</Checkbox>
-						{addCustomPrice && (
-							<InputNumber
-								value={customPrice}
-								onChange={(value) => {
-									setCustomPrice(value);
-									setSelectedPrice("custom"); // Assuming you're managing the selected price to handle logic in `handleOk`
-								}}
-								style={{ width: "100%", marginTop: "10px" }}
-								min={0}
-							/>
+									? "الأسرة المختارة"
+									: "Selected Beds"}
+								: {selectedBeds.join(", ")}
+							</div>
 						)}
+
+						<Table
+							dataSource={pricingByDay}
+							columns={columns}
+							rowKey='date'
+							pagination={false}
+						/>
+
+						{currentRoom?.room_type === "individualBed" ? (
+							<>
+								<div
+									style={{ marginTop: "20px" }}
+									dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}
+								>
+									<strong>
+										{chosenLanguage === "Arabic"
+											? "المجموع الكلي لكل سرير"
+											: "Total Amount Per Bed"}
+										: {totalAmountPerBed} SAR
+									</strong>
+								</div>
+								<div
+									style={{ marginTop: "10px", fontWeight: "bold" }}
+									dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}
+								>
+									<strong>
+										{chosenLanguage === "Arabic"
+											? "المجموع الكلي"
+											: "Overall Total"}
+										: {overallTotal} SAR
+									</strong>
+								</div>
+							</>
+						) : (
+							<>
+								<div
+									style={{ marginTop: "20px" }}
+									dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}
+								>
+									<strong>
+										{chosenLanguage === "Arabic"
+											? "المبلغ الإجمالي لكل ليلة"
+											: "Total Amount Per Night"}
+										:{" "}
+										{pricingByDay.length > 0
+											? pricingByDay.reduce((acc, day) => acc + day.price, 0) /
+											  pricingByDay.length
+											: 0}{" "}
+										SAR
+									</strong>
+								</div>
+								<div
+									style={{ marginTop: "10px", fontWeight: "bold" }}
+									dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}
+								>
+									<strong>
+										{chosenLanguage === "Arabic"
+											? "المبلغ الإجمالي"
+											: "Overall Total"}
+										:{" "}
+										{pricingByDay.length > 0
+											? pricingByDay.reduce((acc, day) => acc + day.price, 0)
+											: 0}{" "}
+										SAR
+									</strong>
+								</div>
+							</>
+						)}
+					</Modal>
+					<Modal
+						title={
+							<span>
+								{chosenLanguage === "Arabic" ? "اختر السرير" : "Select Bed"} (
+								<span
+									style={{
+										fontWeight: "bolder",
+										textTransform: "capitalize",
+										color: "#00003d",
+									}}
+								>
+									{currentRoom?.room_number}
+								</span>
+								)
+							</span>
+						}
+						open={isBedModalVisible}
+						onOk={handleOkBeds}
+						onCancel={() => setIsBedModalVisible(false)}
+					>
+						<div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+							{currentRoom?.bedsNumber.map((bed, index) => (
+								<BedSquare
+									key={index}
+									onClick={() => handleBedSelection(bed)}
+									selected={selectedBeds.includes(bed)}
+									booked={bookedBeds.includes(bed)}
+								>
+									{bed}
+								</BedSquare>
+							))}
+						</div>
 					</Modal>
 				</div>
 
@@ -530,4 +723,43 @@ const RoomSquare = styled.div`
       pointer-events: none; // Disable interactions
     }
   `}
+`;
+
+const BedSquare = styled.div`
+	width: 70px;
+	height: 100px;
+	background-color: ${({ selected, booked }) =>
+		selected ? "darkgreen" : booked ? "#e7e7e7" : "#f0f0f0"};
+	border: 1px solid #000;
+	color: ${({ selected, booked }) =>
+		selected ? "white" : booked ? "black" : "black"};
+	margin: 5px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.9rem;
+	cursor: ${({ booked }) => (booked ? "not-allowed" : "pointer")};
+	transition: all 0.3s;
+	margin: auto;
+	position: relative;
+
+	&:hover {
+		background-color: ${({ selected, booked }) =>
+			selected ? "darkgreen" : booked ? "#e7e7e7" : "#dcdcdc"};
+	}
+
+	${({ booked }) =>
+		booked &&
+		`
+        &:after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            border-top: 1px solid black;
+            transform: translateY(-50%);
+            width: 100%;
+        }
+    `}
 `;

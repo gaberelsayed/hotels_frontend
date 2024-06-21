@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
-import { DatePicker, Spin } from "antd";
+import { DatePicker, Spin, Table, Modal, InputNumber } from "antd";
 import moment from "moment";
-import { Modal, InputNumber } from "antd";
+import { toast } from "react-toastify";
+import { isAuthenticated } from "../../auth";
 import {
 	agodaData,
 	airbnbData,
@@ -10,8 +11,6 @@ import {
 	expediaData,
 	janatData,
 } from "../apiAdmin";
-import { toast } from "react-toastify";
-import { isAuthenticated } from "../../auth";
 
 const ZReservationForm2 = ({
 	customer_details,
@@ -49,16 +48,22 @@ const ZReservationForm2 = ({
 	paidAmount,
 	setPaidAmount,
 	isBoss,
+	currentRoom,
+	setCurrentRoom,
 }) => {
 	const [selectedRoomType, setSelectedRoomType] = useState("");
+	// eslint-disable-next-line
 	const [selectedPriceOption, setSelectedPriceOption] = useState("");
+	// eslint-disable-next-line
 	const [selectedCount, setSelectedCount] = useState("");
-
 	const [isModalVisible, setIsModalVisible] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [selectedRoomIndex, setSelectedRoomIndex] = useState(null);
 	const [updatedRoomCount, setUpdatedRoomCount] = useState(0);
+	// eslint-disable-next-line
 	const [updatedRoomPrice, setUpdatedRoomPrice] = useState(0);
+	const [isModalVisible2, setIsModalVisible2] = useState(false);
+	const [inheritedPrice, setInheritedPrice] = useState("");
 
 	const { user } = isAuthenticated();
 
@@ -70,159 +75,100 @@ const ZReservationForm2 = ({
 	};
 
 	const onStartDateChange = (value) => {
-		// Convert 'value' to a Date object at midnight to disregard time
 		const dateAtMidnight = value ? value.clone().startOf("day").toDate() : null;
-
 		setStart_date(dateAtMidnight ? dateAtMidnight.toISOString() : null);
 
-		// Check if end_date is already set
 		if (dateAtMidnight && end_date) {
 			const adjustedEndDate = moment(end_date).startOf("day").toDate();
-
-			// Calculate the difference in days
 			const duration = moment(adjustedEndDate).diff(
 				moment(dateAtMidnight),
 				"days"
 			);
-
-			// Update days_of_residence accordingly, ensuring it's at least 1 day
-			setDays_of_residence(duration >= 0 ? duration + 1 : 0); // Add 1 to include both start and end dates in the count
+			setDays_of_residence(duration >= 0 ? duration + 1 : 0);
 		} else {
-			// Optionally reset days_of_residence if no end_date
 			setDays_of_residence(0);
 		}
 	};
 
-	// const onStartDateChange = (date, dateString) => {
-	// 	setStart_date(dateString); // Update the start date
-	// };
-
 	const onEndDateChange = (date) => {
-		// Convert 'date' to a Date object at midnight to disregard time
 		const adjustedEndDate = date ? date.clone().startOf("day").toDate() : null;
-
 		setEnd_date(adjustedEndDate ? adjustedEndDate.toISOString() : null);
 
-		// Calculate days_of_residence if start_date is set
 		if (adjustedEndDate && start_date) {
 			const adjustedStartDate = moment(start_date).startOf("day").toDate();
-
-			// Calculate the difference in days
 			const duration = moment(adjustedEndDate).diff(
 				moment(adjustedStartDate),
 				"days"
 			);
-
-			// Update days_of_residence accordingly, ensuring it's at least 1 day
-			setDays_of_residence(duration >= 0 ? duration + 1 : 0); // Add 1 to include both start and end dates in the count
+			setDays_of_residence(duration >= 0 ? duration + 1 : 0);
 		} else {
-			// Optionally reset days_of_residence if no start_date
 			setDays_of_residence(0);
 		}
 	};
 
 	const disabledEndDate = (current) => {
-		// Disables all dates before the start date or today's date (whichever is later)
 		return current && current < moment(start_date).startOf("day");
 	};
 
 	const handleRoomTypeChange = (e) => {
 		setSelectedRoomType(e.target.value);
-		setSelectedPriceOption(""); // Reset the selected price option
-		setSelectedCount(""); // Reset the count
-	};
-
-	const handlePriceOptionChange = (e) => {
-		const value = e.target.value;
-		console.log("Selected Price Option:", value); // Debugging line
-		setSelectedPriceOption(value);
-		if (value !== "custom") {
-			setUpdatedRoomPrice(value);
-		} else {
-			// Reset or set a default value for custom price
-			setUpdatedRoomPrice(0);
-		}
-	};
-
-	const handleRoomCountChange = (e) => {
-		// Get the input value and parse it to an integer
-		let value = parseInt(e.target.value, 10);
-
-		// If the parsed value is not a number (NaN), reset it to 0
-		if (isNaN(value)) {
-			value = 0;
-		}
-
-		// Ensure the value is not negative; if it is, set it to 0
-		value = Math.max(value, 0);
-
-		// Update the state with the new value
-		setSelectedCount(value);
-	};
-
-	const addRoomToReservation = () => {
-		if (!selectedRoomType || !selectedPriceOption || !selectedCount) {
-			alert("Please complete the room selection.");
-			return;
-		}
-
-		// Determine the chosen price - use the custom price if 'custom' is selected
-		const chosenPrice =
-			selectedPriceOption === "custom"
-				? parseFloat(updatedRoomPrice)
-				: parseFloat(selectedPriceOption);
-
-		setPickedRoomsType((prev) => {
-			// Check if room type with the same price already exists
-			const existingRoomIndex = prev.findIndex(
-				(item) =>
-					item.room_type === selectedRoomType &&
-					parseFloat(item.chosenPrice) === chosenPrice
-			);
-
-			if (existingRoomIndex !== -1) {
-				// Update count of the existing room
-				const updatedRooms = [...prev];
-				updatedRooms[existingRoomIndex] = {
-					...updatedRooms[existingRoomIndex],
-					count:
-						updatedRooms[existingRoomIndex].count + parseInt(selectedCount, 10),
-				};
-				return updatedRooms;
-			} else {
-				// Add new room entry
-				return [
-					...prev,
-					{
-						room_type: selectedRoomType,
-						chosenPrice: chosenPrice,
-						count: parseInt(selectedCount, 10),
-					},
-				];
-			}
-		});
-
-		// Reset selections for the next entry
-		setSelectedRoomType("");
 		setSelectedPriceOption("");
 		setSelectedCount("");
 	};
 
-	const calculateTotalAmountPerDay = () => {
-		return pickedRoomsType.reduce((total, room) => {
-			return total + room.count * room.chosenPrice;
-		}, 0);
+	const handleOk2 = () => {
+		if (selectedRoomIndex !== null) {
+			setPickedRoomsType((prev) => {
+				const updatedRooms = [...prev];
+				const updatedRoom = { ...updatedRooms[selectedRoomIndex] };
+
+				// Ensure the count is not reset
+				const currentCount = updatedRoom.count;
+
+				// Update pricingByDay with the new prices
+				updatedRoom.pricingByDay = updatedRoom.pricingByDay.map(
+					(day, index) => {
+						return {
+							...day,
+							price: parseFloat(day.price),
+						};
+					}
+				);
+
+				// Recalculate chosenPrice as the average of the pricingByDay prices
+				updatedRoom.chosenPrice =
+					updatedRoom.pricingByDay.reduce((acc, day) => acc + day.price, 0) /
+					updatedRoom.pricingByDay.length;
+
+				// Ensure the count remains the same
+				updatedRoom.count = currentCount;
+
+				// Update the room in the array
+				updatedRooms[selectedRoomIndex] = updatedRoom;
+
+				return updatedRooms;
+			});
+		}
+		setIsModalVisible2(false);
 	};
 
 	const handleOk = () => {
 		if (selectedRoomIndex !== null) {
 			setPickedRoomsType((prev) => {
 				const updatedRooms = [...prev];
-				updatedRooms[selectedRoomIndex] = {
-					...updatedRooms[selectedRoomIndex],
-					count: updatedRoomCount,
-					chosenPrice: updatedRoomPrice, // Update the price here
-				};
+				const roomToUpdate = { ...updatedRooms[selectedRoomIndex] };
+
+				// Create an array of new room objects with the same details
+				const newRoomObjects = Array.from({ length: updatedRoomCount }, () => ({
+					room_type: roomToUpdate.room_type,
+					chosenPrice: roomToUpdate.chosenPrice,
+					count: 1,
+					pricingByDay: roomToUpdate.pricingByDay,
+				}));
+
+				// Remove the original room object and insert the new room objects
+				updatedRooms.splice(selectedRoomIndex, 1, ...newRoomObjects);
+
 				return updatedRooms;
 			});
 		}
@@ -231,6 +177,10 @@ const ZReservationForm2 = ({
 
 	const handleCancel = () => {
 		setIsModalVisible(false);
+	};
+
+	const handleCancel2 = () => {
+		setIsModalVisible2(false);
 	};
 
 	const removeRoom = () => {
@@ -243,20 +193,16 @@ const ZReservationForm2 = ({
 	};
 
 	const handleFileUpload = (uploadFunction) => {
-		// Ask the user if the upload is from the US
 		const isFromUS = window.confirm(
 			"Is this upload from the US? Click OK for Yes, Cancel for No."
 		);
-
-		// Determine the country parameter based on user response
 		const country = isFromUS ? "US" : "NotUS";
-
-		const accountId = hotelDetails._id; // Get the account ID
+		const accountId = hotelDetails._id;
 		const belongsTo = user._id;
 		const fileInput = document.createElement("input");
 		fileInput.type = "file";
 		fileInput.accept =
-			".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"; // Accept Excel and CSV files
+			".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel";
 		fileInput.onchange = (e) => {
 			setLoading(true);
 			const file = e.target.files[0];
@@ -270,8 +216,150 @@ const ZReservationForm2 = ({
 				}
 			});
 		};
-		fileInput.click(); // Simulate a click on the file input
+		fileInput.click();
 	};
+
+	const generatePricingTable = useCallback(
+		(roomType, startDate, endDate) => {
+			const roomDetails = hotelDetails.roomCountDetails[roomType];
+			const pricingRate = roomDetails?.pricingRate || [];
+			const basePrice = roomDetails?.price?.basePrice || 0;
+
+			const daysArray = [];
+			const currentDate = moment(startDate);
+
+			while (currentDate.isBefore(endDate)) {
+				const dateString = currentDate.format("YYYY-MM-DD");
+				const pricing = pricingRate.find(
+					(price) => price.calendarDate === dateString
+				);
+				const price = pricing
+					? parseFloat(pricing.price)
+					: parseFloat(basePrice);
+				daysArray.push({ date: dateString, price });
+				currentDate.add(1, "day");
+			}
+
+			setPickedRoomsType((prev) => {
+				const existingRoomIndex = prev.findIndex(
+					(item) => item.room_type === roomType
+				);
+
+				if (existingRoomIndex !== -1) {
+					const updatedRooms = [...prev];
+					updatedRooms[existingRoomIndex] = {
+						...updatedRooms[existingRoomIndex],
+						pricingByDay: daysArray,
+						chosenPrice:
+							daysArray.reduce((acc, day) => acc + day.price, 0) /
+							daysArray.length,
+					};
+					return updatedRooms;
+				} else {
+					return [
+						...prev,
+						{
+							room_type: roomType,
+							pricingByDay: daysArray,
+							chosenPrice:
+								daysArray.reduce((acc, day) => acc + day.price, 0) /
+								daysArray.length,
+							count: 1,
+						},
+					];
+				}
+			});
+		},
+		[hotelDetails.roomCountDetails, setPickedRoomsType]
+	);
+
+	const handleInheritPrices = () => {
+		if (inheritedPrice && selectedRoomType) {
+			setPickedRoomsType((prev) => {
+				const updatedRooms = prev.map((room) => {
+					if (room.room_type === selectedRoomType) {
+						const updatedPricingByDay = room.pricingByDay.map((day) => ({
+							...day,
+							price: parseFloat(inheritedPrice),
+						}));
+						return {
+							...room,
+							pricingByDay: updatedPricingByDay,
+							chosenPrice:
+								updatedPricingByDay.reduce((acc, day) => acc + day.price, 0) /
+								updatedPricingByDay.length,
+						};
+					}
+					return room;
+				});
+				return updatedRooms;
+			});
+		}
+	};
+
+	const calculateTotalAmountPerDay = () => {
+		return pickedRoomsType.reduce((total, room) => {
+			return total + room.count * room.chosenPrice;
+		}, 0);
+	};
+
+	const calculateGrandTotal = () => {
+		if (selectedRoomIndex !== null && pickedRoomsType[selectedRoomIndex]) {
+			return pickedRoomsType[selectedRoomIndex].pricingByDay.reduce(
+				(total, day) =>
+					total + day.price * pickedRoomsType[selectedRoomIndex].count,
+				0
+			);
+		}
+		return 0;
+	};
+
+	useEffect(() => {
+		if (selectedRoomType && start_date && end_date) {
+			generatePricingTable(selectedRoomType, start_date, end_date);
+		}
+	}, [selectedRoomType, start_date, end_date, generatePricingTable]);
+
+	const openModal2 = (room) => {
+		const roomIndex = pickedRoomsType.findIndex(
+			(pickedRoom) =>
+				pickedRoom.room_type === room.room_type &&
+				pickedRoom.chosenPrice === room.chosenPrice
+		);
+		if (roomIndex !== -1) {
+			setSelectedRoomIndex(roomIndex);
+			setIsModalVisible2(true);
+		}
+	};
+
+	const columns = [
+		{
+			title: "Date",
+			dataIndex: "date",
+			key: "date",
+		},
+		{
+			title: "Price",
+			dataIndex: "price",
+			key: "price",
+			render: (text, record, index) => (
+				<InputNumber
+					min={0}
+					value={record.price}
+					onChange={(value) => {
+						const updatedRooms = [...pickedRoomsType];
+						updatedRooms[selectedRoomIndex].pricingByDay[index].price = value;
+						updatedRooms[selectedRoomIndex].chosenPrice =
+							updatedRooms[selectedRoomIndex].pricingByDay.reduce(
+								(acc, day) => acc + day.price,
+								0
+							) / updatedRooms[selectedRoomIndex].pricingByDay.length;
+						setPickedRoomsType(updatedRooms);
+					}}
+				/>
+			),
+		},
+	];
 
 	return (
 		<>
@@ -301,22 +389,62 @@ const ZReservationForm2 = ({
 							onChange={setUpdatedRoomCount}
 						/>
 
-						<p className='mt-4'>
-							{chosenLanguage === "Arabic" ? "" : ""}Update the price for the
-							room:
-						</p>
-						<InputNumber
-							min={0}
-							value={updatedRoomPrice}
-							onChange={setUpdatedRoomPrice}
-						/>
+						<div className='my-3'>
+							<button
+								className='btn btn-info w-50'
+								style={{ cursor: "pointer" }}
+								onClick={() => openModal2(pickedRoomsType[selectedRoomIndex])}
+							>
+								Adjust Room Pricing
+							</button>
+						</div>
+
 						<div className='my-3'>
 							<button
 								onClick={() => removeRoom(selectedRoomIndex)}
-								className='btn btn-danger'
+								className='btn btn-danger w-50'
 							>
 								{chosenLanguage === "Arabic" ? "" : ""}Remove Room
 							</button>
+						</div>
+					</Modal>
+
+					<Modal
+						title={`Selected ${selectedRoomType} Pricing`}
+						open={isModalVisible2}
+						onOk={handleOk2}
+						onCancel={handleCancel2}
+					>
+						<div>
+							<InputNumber
+								value={inheritedPrice}
+								onChange={(value) => setInheritedPrice(value)}
+								placeholder='Enter new price to inherit'
+								style={{ width: "100%", marginBottom: "10px" }}
+							/>
+							<button onClick={handleInheritPrices} className='btn btn-primary'>
+								Inherit New Prices
+							</button>
+						</div>
+						<Table
+							dataSource={
+								pickedRoomsType[selectedRoomIndex]?.pricingByDay.map((day) => ({
+									date: day.date,
+									price: day.price,
+								})) || []
+							}
+							columns={columns}
+							rowKey='date'
+							pagination={false}
+						/>
+						<div
+							style={{
+								marginTop: "10px",
+								fontWeight: "bold",
+								fontSize: "1.2rem",
+							}}
+						>
+							Grand Total: {calculateGrandTotal().toFixed(2)} SAR
 						</div>
 					</Modal>
 
@@ -391,7 +519,6 @@ const ZReservationForm2 = ({
 										style={{ marginTop: "10px", marginBottom: "10px" }}
 									>
 										<label style={{ fontWeight: "bold" }}>
-											{" "}
 											{chosenLanguage === "Arabic" ? "الاسم" : "Guest Name"}
 										</label>
 										<input
@@ -413,7 +540,6 @@ const ZReservationForm2 = ({
 										style={{ marginTop: "10px", marginBottom: "10px" }}
 									>
 										<label style={{ fontWeight: "bold" }}>
-											{" "}
 											{chosenLanguage === "Arabic" ? "الهاتف" : "Guest Phone"}
 										</label>
 										<input
@@ -437,7 +563,7 @@ const ZReservationForm2 = ({
 										<label style={{ fontWeight: "bold" }}>
 											{chosenLanguage === "Arabic"
 												? "البريد الإلكتروني"
-												: "Guest Email"}{" "}
+												: "Guest Email"}
 										</label>
 										<input
 											background='red'
@@ -459,7 +585,6 @@ const ZReservationForm2 = ({
 										style={{ marginTop: "10px", marginBottom: "10px" }}
 									>
 										<label style={{ fontWeight: "bold" }}>
-											{" "}
 											{chosenLanguage === "Arabic"
 												? "رقم جواز السفر"
 												: "Guest Passport #"}
@@ -484,9 +609,8 @@ const ZReservationForm2 = ({
 										style={{ marginTop: "10px", marginBottom: "10px" }}
 									>
 										<label style={{ fontWeight: "bold" }}>
-											{" "}
 											{chosenLanguage === "Arabic"
-												? "نسخة جواز السفر   "
+												? "نسخة جواز السفر"
 												: "Passport Copy #"}
 										</label>
 										<input
@@ -858,7 +982,7 @@ const ZReservationForm2 = ({
 										</label>
 										<input
 											type='number'
-											min={1} // Assuming at least 1 guest must be selected
+											min={1}
 											value={total_guests}
 											onChange={(e) => setTotalGuests(e.target.value)}
 											style={{
@@ -1041,100 +1165,6 @@ const ZReservationForm2 = ({
 									)}
 								</div>
 							)}
-
-							{selectedRoomType && (
-								<div
-									className='col-md-4'
-									style={{ marginTop: "20px", marginBottom: "20px" }}
-								>
-									<label style={{ fontWeight: "bold" }}>Room Price</label>
-									<select
-										onChange={handlePriceOptionChange}
-										value={selectedPriceOption}
-										style={{
-											height: "auto",
-											width: "100%",
-											padding: "10px",
-											boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
-											borderRadius: "10px",
-										}}
-									>
-										<option value=''>Select Price Option</option>
-										{roomsSummary &&
-											roomsSummary
-												.filter((room) => room.room_type === selectedRoomType)
-												.map((room) => {
-													const { room_price } = room;
-													return Object.entries(room_price).map(
-														([key, value]) => (
-															<option key={key} value={value}>
-																{`${key}: ${value} SAR`}
-															</option>
-														)
-													);
-												})}
-										<option value='custom'>Custom Price</option>
-									</select>
-									{selectedPriceOption === "custom" && (
-										<div
-											className='form-group'
-											style={{ marginTop: "20px", marginBottom: "20px" }}
-										>
-											<label style={{ fontWeight: "bold" }}>
-												Enter Custom Price
-											</label>
-											<input
-												type='text'
-												value={updatedRoomPrice}
-												onChange={(e) => setUpdatedRoomPrice(e.target.value)}
-												style={{
-													height: "auto",
-													width: "100%",
-													padding: "10px",
-													boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
-													borderRadius: "10px",
-												}}
-											/>
-										</div>
-									)}
-								</div>
-							)}
-
-							{selectedRoomType && selectedPriceOption && (
-								<div
-									className={
-										selectedPriceOption === "custom"
-											? "col-md-3 mt-5 mx-auto"
-											: "col-md-4"
-									}
-								>
-									<div
-										className='form-group'
-										style={{ marginTop: "20px", marginBottom: "20px" }}
-									>
-										<label style={{ fontWeight: "bold" }}>
-											How Many Rooms?
-										</label>
-										<input
-											background='red'
-											type='text'
-											value={selectedCount}
-											onChange={handleRoomCountChange}
-										/>
-									</div>
-								</div>
-							)}
-
-							{selectedRoomType && selectedPriceOption && selectedCount && (
-								<div className='col-md-4 mx-auto text-center'>
-									<button
-										onClick={addRoomToReservation}
-										className='btn btn-primary'
-									>
-										Add Room
-									</button>
-								</div>
-							)}
 						</div>
 					</div>
 
@@ -1151,8 +1181,8 @@ const ZReservationForm2 = ({
 									</h5>
 
 									<h4>
-										Total Amount Per Day: {calculateTotalAmountPerDay()} SAR/
-										Day
+										Total Amount Per Day:{" "}
+										{Number(calculateTotalAmountPerDay()).toFixed(2)} SAR/ Day
 									</h4>
 									<div className='room-list my-3'>
 										{pickedRoomsType.map((room, index) => (
@@ -1168,7 +1198,16 @@ const ZReservationForm2 = ({
 												}}
 												onClick={() => openModal(room, index)}
 											>
-												{`Room Type: ${room.room_type}, Price: ${room.chosenPrice} SAR, Count: ${room.count} Rooms (Click To Update)`}
+												{`Room Type: ${room.room_type}, Price: ${room.chosenPrice} SAR, Count: ${room.count} Rooms`}{" "}
+												<span
+													style={{
+														color: "darkred",
+														textDecoration: "underline",
+														fontSize: "1.2rem",
+													}}
+												>
+													(Click To Update)
+												</span>
 											</div>
 										))}
 									</div>
@@ -1178,7 +1217,7 @@ const ZReservationForm2 = ({
 										{(
 											calculateTotalAmountPerDay() *
 											Number(days_of_residence - 1)
-										).toLocaleString()}{" "}
+										).toFixed(2)}{" "}
 										SAR
 									</h3>
 									{paidAmount && paymentStatus === "deposit" && (

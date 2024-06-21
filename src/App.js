@@ -38,7 +38,7 @@ import ReceiptPDF from "./HotelModule/NewReservation/ReceiptPDF";
 import HouseKeepingMain from "./HotelModule/HouseKeeping/HouseKeepingMain";
 import HotelReportsMain from "./HotelModule/HotelReports/HotelReportsMain";
 
-//Reception Routes
+//Reception Routes 98119
 import ReceptionRoute from "./auth/ReceptionRoute";
 import NewReservationMainReception from "./ReceptionModule/NewReservationMain";
 import JanatWebsiteMain from "./AdminModule/JanatWebsite/JanatWebsiteMain";
@@ -51,6 +51,7 @@ import PaymentMainFinance from "./Finance/Payment/PaymentMainFinance";
 import OwnerRoute from "./auth/OwnerRoute";
 import OwnerDashboardMain from "./OwnerContent/OwnerDashboardMain";
 import ClientPayVirtualCard from "./AdminModule/HotelModule/ClientPay/ClientPayVirtualCard";
+//Conf #: 197875718, 198354414, 199118009, 198501575, 198787549, 197674274, 195732024
 
 function App() {
 	const { languageToggle, chosenLanguage } = useCartContext();

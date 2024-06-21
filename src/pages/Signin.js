@@ -1,12 +1,10 @@
-/** @format */
-
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { authenticate, isAuthenticated, signin } from "../auth";
-// import Google from "../auth/Google";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
+import queryString from "query-string";
 
 const Signin = ({ history }) => {
 	const [values, setValues] = useState({
@@ -17,41 +15,62 @@ const Signin = ({ history }) => {
 	});
 
 	const { email, password, loading, redirectToReferrer } = values;
-	const { user } = isAuthenticated();
+
+	useEffect(() => {
+		const { email, password } = queryString.parse(window.location.search);
+		if (email && password) {
+			setValues((prevValues) => ({
+				...prevValues,
+				email,
+				password,
+				loading: true,
+			}));
+			setTimeout(() => {
+				signin({ emailOrPhone: email, password }).then((data) => {
+					if (data.error) {
+						setValues((prevValues) => ({
+							...prevValues,
+							error: data.error,
+							loading: false,
+						}));
+						toast.error(data.error);
+					} else if (data.user.activeUser === false) {
+						setValues((prevValues) => ({
+							...prevValues,
+							error: data.error,
+							loading: false,
+						}));
+						toast.error(
+							"User was deactivated, Please reach out to the admin site"
+						);
+					} else {
+						authenticate(data, () => {
+							setValues((prevValues) => ({
+								...prevValues,
+								redirectToReferrer: true,
+							}));
+						});
+					}
+				});
+			}, 2000); // Show spinner for 2 seconds
+		}
+	}, []);
 
 	const handleChange = (name) => (event) => {
 		setValues({ ...values, error: false, [name]: event.target.value });
 	};
 
-	// const informParent = (response) => {
-	// 	setValues({ ...values, error: false, loading: true });
-	// 	if (response.error) {
-	// 		setValues({ ...values, error: response.error, loading: false });
-	// 		toast.error(response.error);
-	// 	} else {
-	// 		authenticate2(response, () => {
-	// 			setValues({
-	// 				...values,
-	// 				redirectToReferrer: true,
-	// 			});
-	// 		});
-	// 	}
-	// };
-
 	const clickSubmit = (event) => {
 		event.preventDefault();
 		setValues({ ...values, error: false, loading: true });
-		signin({ email, password }).then((data) => {
+		signin({ emailOrPhone: email, password }).then((data) => {
 			if (data.error) {
 				setValues({ ...values, error: data.error, loading: false });
 				toast.error(data.error);
 			} else if (data.user.activeUser === false) {
 				setValues({ ...values, error: data.error, loading: false });
-				return toast.error(
-					"User was deactivated, Please reach out to the admin site"
-				);
+				toast.error("User was deactivated, Please reach out to the admin site");
 			} else {
-				// console.log(data);
 				authenticate(data, () => {
 					setValues({
 						...values,
@@ -71,24 +90,7 @@ const Signin = ({ history }) => {
 
 	const redirectUser = () => {
 		if (redirectToReferrer) {
-			if (user && user.role === 1000) {
-				return (window.location.href = "/admin/dashboard");
-			} else if (user && user.role === 2000) {
-				return (window.location.href = "/hotel-management/dashboard");
-			} else if (user && user.role === 3000) {
-				return (window.location.href = "/reception-management/new-reservation");
-			} else if (user && user.role === 4000) {
-				return (window.location.href =
-					"/house-keeping-management/house-keeping");
-			} else if (user && user.role === 5000) {
-				return (window.location.href = "/house-keeping-employee/house-keeping");
-			} else if (user && user.role === 6000) {
-				return (window.location.href = "/finance/overview");
-			} else if (user && user.role === 10000) {
-				return (window.location.href = "/owner-dashboard");
-			} else {
-				return (window.location.href = "/");
-			}
+			history.push("/hotel-management/settings");
 		}
 
 		if (
@@ -96,7 +98,7 @@ const Signin = ({ history }) => {
 			isAuthenticated().user &&
 			isAuthenticated().user.role === 2000
 		) {
-			return (window.location.href = "/hotel-management/new-reservation");
+			history.push("/hotel-management/settings");
 		}
 
 		if (
@@ -104,7 +106,7 @@ const Signin = ({ history }) => {
 			isAuthenticated().user &&
 			isAuthenticated().user.role === 1000
 		) {
-			return (window.location.href = "/admin/dashboard");
+			history.push("/admin/dashboard");
 		}
 
 		if (
@@ -112,7 +114,7 @@ const Signin = ({ history }) => {
 			isAuthenticated().user &&
 			isAuthenticated().user.role === 10000
 		) {
-			return (window.location.href = "/owner-dashboard");
+			history.push("/owner-dashboard");
 		}
 
 		if (
@@ -120,7 +122,7 @@ const Signin = ({ history }) => {
 			isAuthenticated().user &&
 			isAuthenticated().user.role === 3000
 		) {
-			return (window.location.href = "/reception-management/new-reservation");
+			history.push("/reception-management/new-reservation");
 		}
 
 		if (
@@ -128,7 +130,7 @@ const Signin = ({ history }) => {
 			isAuthenticated().user &&
 			isAuthenticated().user.role === 4000
 		) {
-			return (window.location.href = "/house-keeping-management/house-keeping");
+			history.push("/house-keeping-management/house-keeping");
 		}
 
 		if (
@@ -136,7 +138,7 @@ const Signin = ({ history }) => {
 			isAuthenticated().user &&
 			isAuthenticated().user.role === 5000
 		) {
-			return (window.location.href = "/house-keeping-employee/house-keeping");
+			history.push("/house-keeping-employee/house-keeping");
 		}
 
 		if (
@@ -144,7 +146,7 @@ const Signin = ({ history }) => {
 			isAuthenticated().user &&
 			isAuthenticated().user.role === 6000
 		) {
-			return (window.location.href = "/finance/overview");
+			history.push("/finance/overview");
 		}
 	};
 
@@ -157,7 +159,6 @@ const Signin = ({ history }) => {
 							<h1 className='mb-3'>
 								Account <span className='text-primary'>Login</span>
 							</h1>
-							{/* <Google informParent={informParent} /> */}
 						</Fragment>
 
 						<form onSubmit={clickSubmit}>
@@ -192,7 +193,6 @@ const Signin = ({ history }) => {
 									type='submit'
 									value='login'
 									className='btn btn-primary w-75 btn-block mx-auto'
-									//onClick={sendEmail}
 								/>
 							</Fragment>
 						</form>
@@ -258,7 +258,6 @@ export default Signin;
 
 const FormSignin = styled.div`
 	min-height: 628px;
-
 	margin-top: 5%;
 	input[type="text"],
 	input[type="email"],
@@ -281,7 +280,6 @@ const FormSignin = styled.div`
 	label:focus {
 		outline: none;
 		border: 1px solid var(--primaryColor);
-
 		box-shadow: 5px 8px 3px 0px rgba(0, 0, 0, 0.3);
 		transition: var(--mainTransition);
 		font-weight: bold;

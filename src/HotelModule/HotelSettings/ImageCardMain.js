@@ -7,23 +7,14 @@ import axios from "axios";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import imageImage from "../../GeneralImages/UploadImageImage.jpg";
 
-const ImageCard = ({
-	hotelPhotos,
-	roomType,
-	setHotelDetails,
-	hotelDetails,
-	chosenLanguage,
-}) => {
+const ImageCardMain = ({ hotelPhotos, setHotelDetails }) => {
 	const { user, token } = isAuthenticated();
-	const roomPhotos = hotelDetails.roomCountDetails[roomType]?.photos || [];
-	const [photos, setPhotos] = useState(roomPhotos);
+	const [photos, setPhotos] = useState(hotelPhotos);
 
 	useEffect(() => {
-		// Ensure photos are in sync with hotelDetails.roomCountDetails
-		const updatedRoomPhotos =
-			hotelDetails.roomCountDetails[roomType]?.photos || [];
-		setPhotos(updatedRoomPhotos);
-	}, [hotelDetails, roomType]);
+		// Ensure photos are in sync with hotelPhotos prop
+		setPhotos(hotelPhotos);
+	}, [hotelPhotos]);
 
 	const fileUploadAndResizeThumbNail = (e) => {
 		let files = e.target.files;
@@ -71,16 +62,10 @@ const ImageCard = ({
 				const updatedPhotos = [...photos, ...newPhotos];
 				setPhotos(updatedPhotos);
 
-				setHotelDetails((prevDetails) => {
-					const updatedRoomCountDetails = {
-						...prevDetails.roomCountDetails,
-						[roomType]: {
-							...prevDetails.roomCountDetails[roomType],
-							photos: updatedPhotos,
-						},
-					};
-					return { ...prevDetails, roomCountDetails: updatedRoomCountDetails };
-				});
+				setHotelDetails((prevDetails) => ({
+					...prevDetails,
+					hotelPhotos: updatedPhotos,
+				}));
 			});
 		}
 	};
@@ -99,19 +84,10 @@ const ImageCard = ({
 					);
 					setPhotos(updatedPhotos);
 
-					setHotelDetails((prevDetails) => {
-						const updatedRoomCountDetails = {
-							...prevDetails.roomCountDetails,
-							[roomType]: {
-								...prevDetails.roomCountDetails[roomType],
-								photos: updatedPhotos,
-							},
-						};
-						return {
-							...prevDetails,
-							roomCountDetails: updatedRoomCountDetails,
-						};
-					});
+					setHotelDetails((prevDetails) => ({
+						...prevDetails,
+						hotelPhotos: updatedPhotos,
+					}));
 				}
 			})
 			.catch((err) => {
@@ -127,32 +103,15 @@ const ImageCard = ({
 		items.splice(result.destination.index, 0, reorderedItem);
 
 		setPhotos(items);
-		setHotelDetails((prevDetails) => {
-			const updatedRoomCountDetails = {
-				...prevDetails.roomCountDetails,
-				[roomType]: {
-					...prevDetails.roomCountDetails[roomType],
-					photos: items,
-				},
-			};
-			return { ...prevDetails, roomCountDetails: updatedRoomCountDetails };
-		});
+		setHotelDetails((prevDetails) => ({
+			...prevDetails,
+			hotelPhotos: items,
+		}));
 	};
 
 	return (
 		<ImageCardWrapper dir='ltr'>
 			<div className='card card-flush py-4 mx-auto text-center'>
-				<h4>
-					{chosenLanguage === "Arabic"
-						? "أضف صور الغرفة من فضلك"
-						: "Please Add Room Images"}
-				</h4>
-				<h5>
-					{chosenLanguage === "Arabic"
-						? "مطلوب ما لا يقل عن 4 صور"
-						: "At least 4 images are required"}
-				</h5>
-				<br />
 				<div className='card-body text-center pt-0'>
 					<div className='image-input image-input-empty image-input-outline image-input-placeholder mb-3'>
 						<DragDropContext onDragEnd={handleOnDragEnd}>
@@ -224,7 +183,7 @@ const ImageCard = ({
 					<div className='text-muted fs-7'>
 						Width: 800px, Height: 954px;
 						<br />
-						Set the room thumbnail image. Only *.png, *.jpg and *.jpeg image
+						Set the General Hotel Photos. Only *.png, *.jpg and *.jpeg image
 						files are accepted
 					</div>
 				</div>
@@ -233,7 +192,7 @@ const ImageCard = ({
 	);
 };
 
-export default ImageCard;
+export default ImageCardMain;
 
 const ImageCardWrapper = styled.div`
 	margin: auto;

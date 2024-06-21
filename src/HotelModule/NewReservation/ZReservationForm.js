@@ -54,6 +54,12 @@ const ZReservationForm = ({
 	isBoss,
 	start_date_Map,
 	end_date_Map,
+	bedNumber,
+	setBedNumber, // Added to accept the bedNumber state from the parent component
+	currentRoom,
+	setCurrentRoom,
+	pricingByDay,
+	setPricingByDay,
 }) => {
 	// eslint-disable-next-line
 	const [loading, setLoading] = useState(false);
@@ -81,59 +87,40 @@ const ZReservationForm = ({
 	}, []);
 
 	const onStartDateChange = (value) => {
-		// Convert 'value' to a Date object at midnight to disregard time
 		const dateAtMidnight = value ? value.clone().startOf("day").toDate() : null;
 
 		setStart_date(dateAtMidnight ? dateAtMidnight.toISOString() : null);
 
-		// Check if end_date is already set
 		if (dateAtMidnight && end_date) {
 			const adjustedEndDate = moment(end_date).startOf("day").toDate();
-
-			// Calculate the difference in days
 			const duration = moment(adjustedEndDate).diff(
 				moment(dateAtMidnight),
 				"days"
 			);
-
-			// Update days_of_residence accordingly, ensuring it's at least 1 day
-			setDays_of_residence(duration >= 0 ? duration + 1 : 0); // Add 1 to include both start and end dates in the count
+			setDays_of_residence(duration >= 0 ? duration + 1 : 0);
 		} else {
-			// Optionally reset days_of_residence if no end_date
 			setDays_of_residence(0);
 		}
 	};
 
-	// const onStartDateChange = (date, dateString) => {
-	// 	setStart_date(dateString); // Update the start date
-	// };
-
 	const onEndDateChange = (date) => {
-		// Convert 'date' to a Date object at midnight to disregard time
 		const adjustedEndDate = date ? date.clone().startOf("day").toDate() : null;
 
 		setEnd_date(adjustedEndDate ? adjustedEndDate.toISOString() : null);
 
-		// Calculate days_of_residence if start_date is set
 		if (adjustedEndDate && start_date) {
 			const adjustedStartDate = moment(start_date).startOf("day").toDate();
-
-			// Calculate the difference in days
 			const duration = moment(adjustedEndDate).diff(
 				moment(adjustedStartDate),
 				"days"
 			);
-
-			// Update days_of_residence accordingly, ensuring it's at least 1 day
-			setDays_of_residence(duration >= 0 ? duration + 1 : 0); // Add 1 to include both start and end dates in the count
+			setDays_of_residence(duration >= 0 ? duration + 1 : 0);
 		} else {
-			// Optionally reset days_of_residence if no start_date
 			setDays_of_residence(0);
 		}
 	};
 
 	const disabledEndDate = (current) => {
-		// Disables all dates before the start date or today's date (whichever is later)
 		return current && current < moment(start_date).startOf("day");
 	};
 
@@ -188,20 +175,17 @@ const ZReservationForm = ({
 	};
 
 	const handleFileUpload = (uploadFunction) => {
-		// Ask the user if the upload is from the US
 		const isFromUS = window.confirm(
 			"Is this upload from the US? Click OK for Yes, Cancel for No."
 		);
-
-		// Determine the country parameter based on user response
 		const country = isFromUS ? "US" : "NotUS";
 
-		const accountId = hotelDetails._id; // Get the account ID
+		const accountId = hotelDetails._id;
 		const belongsTo = user._id;
 		const fileInput = document.createElement("input");
 		fileInput.type = "file";
 		fileInput.accept =
-			".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"; // Accept Excel and CSV files
+			".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel";
 		fileInput.onchange = (e) => {
 			setLoading(true);
 			const file = e.target.files[0];
@@ -215,7 +199,7 @@ const ZReservationForm = ({
 				}
 			});
 		};
-		fileInput.click(); // Simulate a click on the file input
+		fileInput.click();
 	};
 
 	console.log(finalTotalByRoom(), "finalTotalByRoom");
@@ -301,6 +285,11 @@ const ZReservationForm = ({
 											}
 											value={searchQuery}
 											onChange={(e) => setSearchQuery(e.target.value)}
+											onKeyPress={(e) => {
+												if (e.key === "Enter") {
+													setSearchClicked(!searchClicked);
+												}
+											}}
 										/>
 									</div>
 									<div
@@ -1307,6 +1296,12 @@ const ZReservationForm = ({
 								searchedReservation={searchedReservation}
 								start_date_Map={start_date_Map}
 								end_date_Map={end_date_Map}
+								bedNumber={bedNumber}
+								setBedNumber={setBedNumber}
+								currentRoom={currentRoom}
+								setCurrentRoom={setCurrentRoom}
+								pricingByDay={pricingByDay}
+								setPricingByDay={setPricingByDay}
 							/>
 						</>
 					) : null}
@@ -1387,12 +1382,12 @@ const ZReservationFormWrapper = styled.div`
 		width: 100%;
 		background-color: darkgrey;
 		z-index: 10;
-		opacity: 0; // Start with the section being transparent
-		transition: opacity 0.5s ease-in-out; // Smooth transition for opacity
+		opacity: 0;
+		transition: opacity 0.5s ease-in-out;
 	}
 
 	.visible {
-		opacity: 1; // Fully visible when the class 'visible' is added
+		opacity: 1;
 	}
 
 	.inner-grid {

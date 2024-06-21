@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import styled, { keyframes } from "styled-components";
-import { roomTypeColors } from "../../AdminModule/NewHotels/Assets";
 import { Spin } from "antd";
 import FloorsModal from "./FloorsModal";
 import ZSingleRoomModal from "./ZSingleRoomModal";
@@ -29,6 +28,7 @@ const HotelOverview = ({
 	setInheritModalVisible,
 	baseFloor,
 	setBaseFloor,
+	roomTypeColors,
 	roomsAlreadyExists,
 }) => {
 	const { hotelFloors, parkingLot, hotelName } = hotelDetails;
@@ -64,12 +64,24 @@ const HotelOverview = ({
 					room.room_number.length - 2
 				)}`;
 
-				return {
+				// Create a new room object with the updated floor and room number
+				const newRoom = {
 					...room,
 					floor: floorNumber,
-					room_number: newRoomNumber, // Set the new room number here
+					room_number: newRoomNumber,
 					_id: undefined, // Reset room id if necessary to avoid duplicates
 				};
+
+				// If the room type is individualBed, generate the bedsNumber array
+				if (room.room_type === "individualBed") {
+					newRoom.bedsNumber = Array.from(
+						{ length: room.bedsNumber.length },
+						(_, i) => `${newRoomNumber}${String.fromCharCode(97 + i)}`
+					);
+					newRoom.individualBeds = true;
+				}
+
+				return newRoom;
 			});
 		});
 
@@ -78,6 +90,11 @@ const HotelOverview = ({
 			`All floors updated based on floor ${baseFloorNumber} structure.`
 		);
 	};
+
+	const roomCountDetails = hotelDetails.roomCountDetails || {};
+	const roomTypesCount = Object.entries(roomCountDetails).filter(
+		([, details]) => details.count > 0
+	).length;
 
 	return (
 		<HotelOverviewWrapper>
@@ -107,6 +124,7 @@ const HotelOverview = ({
 				setRooms={setHotelRooms}
 				setHelperRender={undefined}
 				helperRender={undefined}
+				hotelDetails={hotelDetails}
 			/>
 
 			<ZInheritRoomsModal
@@ -131,24 +149,32 @@ const HotelOverview = ({
 					</button>
 				) : null}
 			</div>
-			<div className='colors-grid mt-3'>
-				{Object.entries(roomTypeColors).map(([roomType, color], i) => (
-					<div className='' key={i} style={{ textAlign: "center" }}>
-						<div
-							style={{
-								width: "20px",
-								height: "20px",
-								backgroundColor: color,
-								margin: "0 auto",
-								marginBottom: "5px",
-							}}
-						></div>
-						<span style={{ textTransform: "capitalize", fontSize: "13px" }}>
-							{roomType.replace(/([A-Z])/g, " $1").trim()}
-						</span>
-					</div>
-				))}
+			<div
+				className={`colors-grid mt-3 mx-auto text-center ${
+					roomTypesCount <= 7 ? "expanded" : ""
+				}`}
+			>
+				{Object.entries(roomCountDetails)
+					.filter(([roomType, details]) => details.count > 0)
+					.map(([roomType, details], i) => (
+						<div className='' key={i} style={{ textAlign: "center" }}>
+							<div
+								style={{
+									width: "20px",
+									height: "20px",
+									backgroundColor:
+										details.roomColor || roomTypeColors[roomType] || "#ddd", // Use roomTypeColors as default
+									margin: "0 auto",
+									marginBottom: "5px",
+								}}
+							></div>
+							<span style={{ textTransform: "capitalize", fontSize: "13px" }}>
+								{roomType.replace(/([A-Z])/g, " $1").trim()} ({details.count})
+							</span>
+						</div>
+					))}
 			</div>
+
 			<FloorsContainer>
 				{floors.map((floor, index) => {
 					const roomsOnFloor =
@@ -248,11 +274,19 @@ const HotelOverviewWrapper = styled.div`
 
 	.colors-grid {
 		display: grid;
+		justify-content: center; /* Center the grid container */
+		align-items: center;
+		align-content: center;
+		grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+		gap: 2px; /* Adds some space between grid items */
+		justify-items: center; /* Center the grid items horizontally */
+	}
+	.colors-grid.expanded {
+		gap: 10px; /* Increase the gap if there are 7 or fewer room types */
 		grid-template-columns: repeat(
-			13,
-			1fr
-		); /* Creates four columns of equal width */
-		gap: 2px; /* Optional: Adds some space between grid items */
+			auto-fit,
+			minmax(120px, 1fr)
+		); /* Make columns wider */
 	}
 `;
 

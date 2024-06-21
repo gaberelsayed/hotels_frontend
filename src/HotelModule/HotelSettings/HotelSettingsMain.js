@@ -17,6 +17,23 @@ import ZPricingCalendarForm from "./ZPricingCalendarForm";
 import { toast } from "react-toastify";
 import HotelOverview from "./HotelOverview";
 import { defaultHotelDetails } from "../../AdminModule/NewHotels/Assets";
+import ZUpdateRoomCount from "./ZUpdateRoomCount";
+import ZSuccessfulUpdate from "./ZSuccessfulUpdate";
+
+const roomTypeColors = {
+	standardRooms: "#003366", // Dark Blue
+	singleRooms: "#8B0000", // Dark Red
+	doubleRooms: "#004d00", // Dark Green
+	twinRooms: "#800080", // Dark Purple
+	queenRooms: "#FF8C00", // Dark Orange
+	kingRooms: "#2F4F4F", // Dark Slate Gray
+	tripleRooms: "#8B4513", // Saddle Brown
+	quadRooms: "#00008B", // Navy
+	studioRooms: "#696969", // Dim Gray
+	suite: "#483D8B", // Dark Slate Blue
+	masterSuite: "#556B2F", // Dark Olive Green
+	familyRooms: "#A52A2A", // Brown
+};
 
 const HotelSettingsMain = () => {
 	const history = useHistory();
@@ -29,6 +46,9 @@ const HotelSettingsMain = () => {
 	const [activeTab, setActiveTab] = useState("HotelDetails");
 	const [pricingData, setPricingData] = useState([]);
 	const [hotelPhotos, setHotelPhotos] = useState([]);
+	const [currentStep, setCurrentStep] = useState(0);
+	const [selectedRoomType, setSelectedRoomType] = useState("");
+	const [roomTypeSelected, setRoomTypeSelected] = useState(false);
 
 	//For Rooms
 	const [floorDetails, setFloorDetails] = useState(defaultHotelDetails);
@@ -64,6 +84,7 @@ const HotelSettingsMain = () => {
 	const [inheritModalVisible, setInheritModalVisible] = useState(false);
 	const [baseFloor, setBaseFloor] = useState("");
 	const [roomsAlreadyExists, setRoomsAlreadyExists] = useState(false);
+	const [finalStepModal, setFinalStepModal] = useState(false);
 
 	useEffect(() => {
 		if (window.innerWidth <= 1000) {
@@ -76,11 +97,63 @@ const HotelSettingsMain = () => {
 			setActiveTab("RoomDetails");
 		} else if (window.location.search.includes("pricing")) {
 			setActiveTab("PricingCalendar");
+		} else if (window.location.search.includes("roomcount")) {
+			setActiveTab("UpdateRoomCount");
 		} else {
 			setActiveTab("HotelDetails");
 		}
 		// eslint-disable-next-line
 	}, [activeTab]);
+
+	const roomTypes = [
+		{ value: "standardRooms", label: "Standard Rooms" },
+		{ value: "singleRooms", label: "Single Rooms" },
+		{ value: "doubleRooms", label: "Double Rooms" },
+		{ value: "twinRooms", label: "Twin Rooms" },
+		{ value: "queenRooms", label: "Queen Rooms" },
+		{ value: "kingRooms", label: "King Rooms" },
+		{ value: "tripleRooms", label: "Triple Rooms" },
+		{ value: "quadRooms", label: "Quad Rooms" },
+		{ value: "studioRooms", label: "Studio Rooms" },
+		{ value: "suite", label: "Suite" },
+		{ value: "masterSuite", label: "Master Suite" },
+		{ value: "familyRooms", label: "Family Rooms" },
+		{ value: "individualBed", label: "Rooms With Individual Beds" },
+		// { value: "other", label: "Other" },
+	];
+
+	const amenitiesList = [
+		"WiFi",
+		"TV",
+		"Air Conditioning",
+		"Mini Bar",
+		"Pool",
+		"Gym",
+		"Restaurant",
+		"Bar",
+		"Spa",
+		"Room Service",
+		"Laundry Service",
+		"Free Parking",
+		"Pet Friendly",
+		"Business Center",
+		"Airport Shuttle",
+		"Conference Rooms",
+		"Fitness Center",
+		"Non-Smoking Rooms",
+		"Breakfast Included",
+		"Accessible Rooms",
+		"Kitchenette",
+		"Bicycle Rental",
+		"Sauna",
+		"Hot Tub",
+		"Golf Course",
+		"Tennis Court",
+		"Kids' Club",
+		"Beachfront",
+		"Casino",
+		"Nightclub",
+	];
 
 	const gettingHotelData = () => {
 		hotelAccount(user._id, token, user._id).then((data) => {
@@ -165,11 +238,7 @@ const HotelSettingsMain = () => {
 	}, [clickedFloor]);
 
 	const hotelDetailsUpdate = () => {
-		const updatedDetails = {
-			...hotelDetails,
-			pricingCalendar: pricingData,
-			hotelPhotos: hotelPhotos,
-		};
+		const updatedDetails = hotelDetails;
 
 		// Call the API to update the hotel details
 		const { user, token } = isAuthenticated(); // Assuming you have a user and token
@@ -185,6 +254,7 @@ const HotelSettingsMain = () => {
 					toast.success("Hotel Was Successfully Updated");
 					console.log("Hotel details updated successfully.");
 					setHotelDetails(updatedDetails); // Update the state with the new details
+					setFinalStepModal(true);
 				}
 			})
 			.catch((err) => console.log("Error:", err));
@@ -195,50 +265,52 @@ const HotelSettingsMain = () => {
 			return toast.error("Please Add Rooms");
 		}
 
-		// Remove duplicate rooms based on room_number
 		const uniqueRooms = Array.from(
 			new Map(hotelRooms.map((room) => [room["room_number"], room])).values()
 		);
 
-		getHotelRooms(user._id, hotelDetails._id).then((existingRoomsData) => {
-			if (existingRoomsData && existingRoomsData.error) {
-				console.error(existingRoomsData.error, "Error rendering");
-			} else {
-				// Filter out rooms that have already been added
-				const roomsToAdd = uniqueRooms.filter(
-					(newRoom) =>
-						!existingRoomsData.some(
-							(existingRoom) => existingRoom.room_number === newRoom.room_number
-						)
-				);
-
-				roomsToAdd.forEach((room, index) => {
-					setTimeout(() => {
-						setCurrentAddingRoom(room.room_number);
-						createRooms(user._id, token, room).then((data) => {
-							if (data && data.error) {
-								console.error(data.error);
-							} else {
-								if (index === roomsToAdd.length - 1) {
-									// Reset after the last room addition
-									setCurrentAddingRoom(null);
-									window.location.reload(false);
-								}
-							}
-						});
-					}, 2500 * index); // Delay each creation by 2.5 seconds
-				});
-			}
+		// Add roomColorCode based on room_type from roomCountDetails or roomTypeColors
+		const roomsWithColor = uniqueRooms.map((room) => {
+			const roomDetails = hotelDetails.roomCountDetails[room.room_type];
+			const roomColorCode =
+				roomDetails?.roomColor || roomTypeColors[room.room_type] || "#000"; // Default to black if no color is found
+			return {
+				...room,
+				roomColorCode,
+			};
 		});
+
+		createRooms(user._id, token, roomsWithColor)
+			.then((data) => {
+				if (data && data.error) {
+					console.error(data.error);
+				} else {
+					window.scrollTo({ top: 0, behavior: "smooth" });
+					toast.success("Rooms created/updated successfully");
+					setCurrentAddingRoom(null);
+					setTimeout(() => {
+						window.location.reload(false);
+					}, 2000);
+				}
+			})
+			.catch((err) => {
+				console.error("Error adding rooms:", err);
+			});
 	};
 
-	console.log(hotelRooms, "hotelRooms");
 	return (
 		<HotelSettingsMainWrapper
 			dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}
 			show={collapsed}
 			isArabic={chosenLanguage === "Arabic"}
 		>
+			<ZSuccessfulUpdate
+				modalVisible={finalStepModal}
+				setModalVisible={setFinalStepModal}
+				setStep={setCurrentStep}
+				setSelectedRoomType={setSelectedRoomType}
+				setRoomTypeSelected={setRoomTypeSelected}
+			/>
 			<div className='grid-container-main'>
 				<div className='navcontent'>
 					{chosenLanguage === "Arabic" ? (
@@ -287,6 +359,7 @@ const HotelSettingsMain = () => {
 								isActive={activeTab === "HotelDetails"}
 								onClick={() => {
 									setActiveTab("HotelDetails");
+									setCurrentStep(0);
 									history.push("/hotel-management/settings?hoteldetails"); // Programmatic navigation
 								}}
 							>
@@ -294,16 +367,18 @@ const HotelSettingsMain = () => {
 									? "تفاصيل الفندق"
 									: "Hotel Details"}
 							</Tab>
+
 							<Tab
-								isActive={activeTab === "PricingCalendar"}
+								isActive={activeTab === "UpdateRoomCount"}
 								onClick={() => {
-									setActiveTab("PricingCalendar");
-									history.push("/hotel-management/settings?pricing"); // Programmatic navigation
+									setActiveTab("UpdateRoomCount");
+									setCurrentStep(1);
+									history.push("/hotel-management/settings?roomcount"); // Programmatic navigation
 								}}
 							>
 								{chosenLanguage === "Arabic"
-									? "تقويم التسعير"
-									: "Pricing Calendar"}
+									? "تحديث عدد الغرف"
+									: "Update Room Count"}
 							</Tab>
 
 							<Tab
@@ -333,9 +408,19 @@ const HotelSettingsMain = () => {
 									chosenLanguage={chosenLanguage}
 									hotelPhotos={hotelPhotos}
 									setHotelPhotos={setHotelPhotos}
+									roomTypes={roomTypes}
+									amenitiesList={amenitiesList}
+									currentStep={currentStep}
+									setCurrentStep={setCurrentStep}
+									selectedRoomType={selectedRoomType}
+									setSelectedRoomType={setSelectedRoomType}
+									roomTypeSelected={roomTypeSelected}
+									setRoomTypeSelected={setRoomTypeSelected}
 								/>
 							</div>
-						) : activeTab === "RoomDetails" ? (
+						) : activeTab === "RoomDetails" &&
+						  hotelDetails.hotelName &&
+						  hotelDetails.roomCountDetails ? (
 							// && hotelRooms.length > 0
 							<HotelOverview
 								hotelRooms={hotelRooms}
@@ -359,6 +444,11 @@ const HotelSettingsMain = () => {
 								baseFloor={baseFloor}
 								setBaseFloor={setBaseFloor}
 								roomsAlreadyExists={roomsAlreadyExists}
+								roomTypeColors={roomTypeColors}
+								selectedRoomType={selectedRoomType}
+								setSelectedRoomType={setSelectedRoomType}
+								roomTypeSelected={roomTypeSelected}
+								setRoomTypeSelected={setRoomTypeSelected}
 							/>
 						) : activeTab === "PricingCalendar" &&
 						  hotelDetails &&
@@ -372,6 +462,30 @@ const HotelSettingsMain = () => {
 									submittingHotelDetails={hotelDetailsUpdate}
 								/>{" "}
 							</div>
+						) : null}
+
+						{activeTab === "UpdateRoomCount" &&
+						hotelDetails &&
+						hotelDetails.hotelName ? (
+							<>
+								<ZUpdateRoomCount
+									values={values}
+									setHotelDetails={setHotelDetails}
+									hotelDetails={hotelDetails}
+									submittingHotelDetails={hotelDetailsUpdate}
+									chosenLanguage={chosenLanguage}
+									hotelPhotos={hotelPhotos}
+									setHotelPhotos={setHotelPhotos}
+									roomTypes={roomTypes}
+									amenitiesList={amenitiesList}
+									currentStep={currentStep}
+									setCurrentStep={setCurrentStep}
+									selectedRoomType={selectedRoomType}
+									setSelectedRoomType={setSelectedRoomType}
+									roomTypeSelected={roomTypeSelected}
+									setRoomTypeSelected={setRoomTypeSelected}
+								/>
+							</>
 						) : null}
 					</div>
 				</div>

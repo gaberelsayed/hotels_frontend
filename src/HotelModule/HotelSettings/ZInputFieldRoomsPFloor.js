@@ -5,9 +5,12 @@ const ZInputFieldRoomsPFloor = ({
 	value,
 	handleFloorRoomsCount,
 	roomType,
+	numRoomTypes,
 }) => {
+	const columnClass = numRoomTypes <= 6 ? "col-custom mx-1" : "col-md-1";
+
 	return (
-		<div className='col-md-1'>
+		<div className={columnClass}>
 			<InputFieldStyling className='form-group' style={{ marginTop: "10px" }}>
 				<label
 					htmlFor='name'
@@ -15,6 +18,8 @@ const ZInputFieldRoomsPFloor = ({
 						fontWeight: "bold",
 						fontSize: "11px",
 						textAlign: "center",
+						marginLeft: "5px",
+						textTransform: "capitalize",
 					}}
 				>
 					{Title}
@@ -56,8 +61,7 @@ const InputFieldStyling = styled.div`
 	label:focus {
 		outline: none;
 		border: 1px solid var(--primaryColor);
-
-		box-shadow: 5px 8px 3px 0px rgba(0, 0, 0, 0.3);
+		box-shadow: 2px 5px 3px 0px rgba(0, 0, 0, 0.1);
 		transition: var(--mainTransition);
 		font-weight: bold;
 	}

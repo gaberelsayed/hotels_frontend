@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+// eslint-disable-next-line
 import ZInputFieldPrices from "./ZInputFieldPrices";
 
 const ZHotelDetailsForm = ({
@@ -24,6 +25,7 @@ const ZHotelDetailsForm = ({
 	// Usage
 	const totalRooms = getRoomCountTotal(hotelDetails.roomCountDetails);
 
+	// eslint-disable-next-line
 	const handlePriceChange = (roomType, priceType, value) => {
 		setHotelDetails({
 			...hotelDetails,
@@ -425,16 +427,16 @@ const ZHotelDetailsForm = ({
 				)}
 			</div>
 
-			<div
+			{/* <div
 				className='col-md-12 text-center my-3'
 				style={{ fontSize: "1.3rem", fontWeight: "bold" }}
 			>
 				{chosenLanguage === "Arabic"
 					? "معدلات التسعير الثابتة:"
 					: "Standard Pricing Rates:"}
-			</div>
+			</div> */}
 
-			<div className='row my-2'>
+			{/* <div className='row my-2'>
 				<div className='col-md-2 my-auto'>Standard Room Pricing</div>
 
 				<ZInputFieldPrices
@@ -453,364 +455,8 @@ const ZHotelDetailsForm = ({
 					value={hotelDetails.roomCountDetails.standardRoomsPrice.weekendPrice}
 				/>
 
-				<ZInputFieldPrices
-					targetedPricingTitle='Season Price'
-					targetedPricing='standardRoomsPrice'
-					targetedPricingProperty='seasonPrice'
-					handlePriceChange={handlePriceChange}
-					value={hotelDetails.roomCountDetails.standardRoomsPrice.seasonPrice}
-				/>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Last Min Deal Price'
-					targetedPricing='standardRoomsPrice'
-					targetedPricingProperty='lastMinuteDealPrice'
-					handlePriceChange={handlePriceChange}
-					value={
-						hotelDetails.roomCountDetails.standardRoomsPrice.lastMinuteDealPrice
-					}
-				/>
-			</div>
-
-			<div className='row my-2'>
-				<div className='col-md-2 my-auto'>Single Room Pricing</div>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Base Price'
-					targetedPricing='singleRoomsPrice'
-					targetedPricingProperty='basePrice'
-					handlePriceChange={handlePriceChange}
-					value={hotelDetails.roomCountDetails.singleRoomsPrice.basePrice}
-				/>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Weekend Price'
-					targetedPricing='singleRoomsPrice'
-					targetedPricingProperty='weekendPrice'
-					handlePriceChange={handlePriceChange}
-					value={hotelDetails.roomCountDetails.singleRoomsPrice.weekendPrice}
-				/>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Season Price'
-					targetedPricing='singleRoomsPrice'
-					targetedPricingProperty='seasonPrice'
-					handlePriceChange={handlePriceChange}
-					value={hotelDetails.roomCountDetails.singleRoomsPrice.seasonPrice}
-				/>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Last Min Deal Price'
-					targetedPricing='singleRoomsPrice'
-					targetedPricingProperty='lastMinuteDealPrice'
-					handlePriceChange={handlePriceChange}
-					value={
-						hotelDetails.roomCountDetails.singleRoomsPrice.lastMinuteDealPrice
-					}
-				/>
-			</div>
-
-			<div className='row my-2'>
-				<div className='col-md-2 my-auto'>Double Room Pricing</div>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Base Price'
-					targetedPricing='doubleRoomsPrice'
-					targetedPricingProperty='basePrice'
-					handlePriceChange={handlePriceChange}
-					value={hotelDetails.roomCountDetails.doubleRoomsPrice.basePrice}
-				/>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Weekend Price'
-					targetedPricing='doubleRoomsPrice'
-					targetedPricingProperty='weekendPrice'
-					handlePriceChange={handlePriceChange}
-					value={hotelDetails.roomCountDetails.doubleRoomsPrice.weekendPrice}
-				/>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Season Price'
-					targetedPricing='doubleRoomsPrice'
-					targetedPricingProperty='seasonPrice'
-					handlePriceChange={handlePriceChange}
-					value={hotelDetails.roomCountDetails.doubleRoomsPrice.seasonPrice}
-				/>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Last Min Deal Price'
-					targetedPricing='doubleRoomsPrice'
-					targetedPricingProperty='lastMinuteDealPrice'
-					handlePriceChange={handlePriceChange}
-					value={
-						hotelDetails.roomCountDetails.doubleRoomsPrice.lastMinuteDealPrice
-					}
-				/>
-			</div>
-
-			<div className='row my-2'>
-				<div className='col-md-2 my-auto'>Twin Room Pricing</div>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Base Price'
-					targetedPricing='twinRoomsPrice'
-					targetedPricingProperty='basePrice'
-					handlePriceChange={handlePriceChange}
-					value={hotelDetails.roomCountDetails.twinRoomsPrice.basePrice}
-				/>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Weekend Price'
-					targetedPricing='twinRoomsPrice'
-					targetedPricingProperty='weekendPrice'
-					handlePriceChange={handlePriceChange}
-					value={hotelDetails.roomCountDetails.twinRoomsPrice.weekendPrice}
-				/>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Season Price'
-					targetedPricing='twinRoomsPrice'
-					targetedPricingProperty='seasonPrice'
-					handlePriceChange={handlePriceChange}
-					value={hotelDetails.roomCountDetails.twinRoomsPrice.seasonPrice}
-				/>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Last Min Deal Price'
-					targetedPricing='twinRoomsPrice'
-					targetedPricingProperty='lastMinuteDealPrice'
-					handlePriceChange={handlePriceChange}
-					value={
-						hotelDetails.roomCountDetails.twinRoomsPrice.lastMinuteDealPrice
-					}
-				/>
-			</div>
-
-			<div className='row my-2'>
-				<div className='col-md-2 my-auto'>Queen Room Pricing</div>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Base Price'
-					targetedPricing='queenRoomsPrice'
-					targetedPricingProperty='basePrice'
-					handlePriceChange={handlePriceChange}
-					value={hotelDetails.roomCountDetails.queenRoomsPrice.basePrice}
-				/>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Weekend Price'
-					targetedPricing='queenRoomsPrice'
-					targetedPricingProperty='weekendPrice'
-					handlePriceChange={handlePriceChange}
-					value={hotelDetails.roomCountDetails.queenRoomsPrice.weekendPrice}
-				/>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Season Price'
-					targetedPricing='queenRoomsPrice'
-					targetedPricingProperty='seasonPrice'
-					handlePriceChange={handlePriceChange}
-					value={hotelDetails.roomCountDetails.queenRoomsPrice.seasonPrice}
-				/>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Last Min Deal Price'
-					targetedPricing='queenRoomsPrice'
-					targetedPricingProperty='lastMinuteDealPrice'
-					handlePriceChange={handlePriceChange}
-					value={
-						hotelDetails.roomCountDetails.queenRoomsPrice.lastMinuteDealPrice
-					}
-				/>
-			</div>
-
-			<div className='row my-2'>
-				<div className='col-md-2 my-auto'>King Room Pricing</div>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Base Price'
-					targetedPricing='kingRoomsPrice'
-					targetedPricingProperty='basePrice'
-					handlePriceChange={handlePriceChange}
-					value={hotelDetails.roomCountDetails.kingRoomsPrice.basePrice}
-				/>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Weekend Price'
-					targetedPricing='kingRoomsPrice'
-					targetedPricingProperty='weekendPrice'
-					handlePriceChange={handlePriceChange}
-					value={hotelDetails.roomCountDetails.kingRoomsPrice.weekendPrice}
-				/>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Season Price'
-					targetedPricing='kingRoomsPrice'
-					targetedPricingProperty='seasonPrice'
-					handlePriceChange={handlePriceChange}
-					value={hotelDetails.roomCountDetails.kingRoomsPrice.seasonPrice}
-				/>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Last Min Deal Price'
-					targetedPricing='kingRoomsPrice'
-					targetedPricingProperty='lastMinuteDealPrice'
-					handlePriceChange={handlePriceChange}
-					value={
-						hotelDetails.roomCountDetails.kingRoomsPrice.lastMinuteDealPrice
-					}
-				/>
-			</div>
-
-			<div className='row my-2'>
-				<div className='col-md-2 my-auto'>Triple Room Pricing</div>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Base Price'
-					targetedPricing='tripleRoomsPrice'
-					targetedPricingProperty='basePrice'
-					handlePriceChange={handlePriceChange}
-					value={hotelDetails.roomCountDetails.tripleRoomsPrice.basePrice}
-				/>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Weekend Price'
-					targetedPricing='tripleRoomsPrice'
-					targetedPricingProperty='weekendPrice'
-					handlePriceChange={handlePriceChange}
-					value={hotelDetails.roomCountDetails.tripleRoomsPrice.weekendPrice}
-				/>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Season Price'
-					targetedPricing='tripleRoomsPrice'
-					targetedPricingProperty='seasonPrice'
-					handlePriceChange={handlePriceChange}
-					value={hotelDetails.roomCountDetails.tripleRoomsPrice.seasonPrice}
-				/>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Last Min Deal Price'
-					targetedPricing='tripleRoomsPrice'
-					targetedPricingProperty='lastMinuteDealPrice'
-					handlePriceChange={handlePriceChange}
-					value={
-						hotelDetails.roomCountDetails.tripleRoomsPrice.lastMinuteDealPrice
-					}
-				/>
-			</div>
-
-			<div className='row my-2'>
-				<div className='col-md-2 my-auto'>Quad Room Pricing</div>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Base Price'
-					targetedPricing='quadRoomsPrice'
-					targetedPricingProperty='basePrice'
-					handlePriceChange={handlePriceChange}
-					value={hotelDetails.roomCountDetails.quadRoomsPrice.basePrice}
-				/>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Weekend Price'
-					targetedPricing='quadRoomsPrice'
-					targetedPricingProperty='weekendPrice'
-					handlePriceChange={handlePriceChange}
-					value={hotelDetails.roomCountDetails.quadRoomsPrice.weekendPrice}
-				/>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Season Price'
-					targetedPricing='quadRoomsPrice'
-					targetedPricingProperty='seasonPrice'
-					handlePriceChange={handlePriceChange}
-					value={hotelDetails.roomCountDetails.quadRoomsPrice.seasonPrice}
-				/>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Last Min Deal Price'
-					targetedPricing='quadRoomsPrice'
-					targetedPricingProperty='lastMinuteDealPrice'
-					handlePriceChange={handlePriceChange}
-					value={
-						hotelDetails.roomCountDetails.quadRoomsPrice.lastMinuteDealPrice
-					}
-				/>
-			</div>
-
-			<div className='row my-2'>
-				<div className='col-md-2 my-auto'>Suite Pricing</div>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Base Price'
-					targetedPricing='suitePrice'
-					targetedPricingProperty='basePrice'
-					handlePriceChange={handlePriceChange}
-					value={hotelDetails.roomCountDetails.suitePrice.basePrice}
-				/>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Weekend Price'
-					targetedPricing='suitePrice'
-					targetedPricingProperty='weekendPrice'
-					handlePriceChange={handlePriceChange}
-					value={hotelDetails.roomCountDetails.suitePrice.weekendPrice}
-				/>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Season Price'
-					targetedPricing='suitePrice'
-					targetedPricingProperty='seasonPrice'
-					handlePriceChange={handlePriceChange}
-					value={hotelDetails.roomCountDetails.suitePrice.seasonPrice}
-				/>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Last Min Deal Price'
-					targetedPricing='suitePrice'
-					targetedPricingProperty='lastMinuteDealPrice'
-					handlePriceChange={handlePriceChange}
-					value={hotelDetails.roomCountDetails.suitePrice.lastMinuteDealPrice}
-				/>
-			</div>
-
-			<div className='row my-2'>
-				<div className='col-md-2 my-auto'>Family Room Pricing</div>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Base Price'
-					targetedPricing='familyRoomsPrice'
-					targetedPricingProperty='basePrice'
-					handlePriceChange={handlePriceChange}
-					value={hotelDetails.roomCountDetails.familyRoomsPrice.basePrice}
-				/>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Weekend Price'
-					targetedPricing='familyRoomsPrice'
-					targetedPricingProperty='weekendPrice'
-					handlePriceChange={handlePriceChange}
-					value={hotelDetails.roomCountDetails.familyRoomsPrice.weekendPrice}
-				/>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Season Price'
-					targetedPricing='familyRoomsPrice'
-					targetedPricingProperty='seasonPrice'
-					handlePriceChange={handlePriceChange}
-					value={hotelDetails.roomCountDetails.familyRoomsPrice.seasonPrice}
-				/>
-
-				<ZInputFieldPrices
-					targetedPricingTitle='Last Min Deal Price'
-					targetedPricing='familyRoomsPrice'
-					targetedPricingProperty='lastMinuteDealPrice'
-					handlePriceChange={handlePriceChange}
-					value={
-						hotelDetails.roomCountDetails.familyRoomsPrice.lastMinuteDealPrice
-					}
-				/>
-			</div>
+			
+			</div> */}
 		</ZHotelDetailsFormWrapper>
 	);
 };

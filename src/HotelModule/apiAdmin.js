@@ -53,7 +53,7 @@ export const getHotelDetails = (userId) => {
 		.catch((err) => console.log(err));
 };
 
-export const createRooms = (userId, token, room) => {
+export const createRooms = (userId, token, rooms) => {
 	return fetch(`${process.env.REACT_APP_API_URL}/room/create/${userId}`, {
 		method: "POST",
 		headers: {
@@ -61,7 +61,7 @@ export const createRooms = (userId, token, room) => {
 			"Content-Type": "application/json",
 			Authorization: `Bearer ${token}`,
 		},
-		body: JSON.stringify(room),
+		body: JSON.stringify(rooms),
 	})
 		.then((response) => {
 			return response.json();

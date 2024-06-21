@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import AdminNavbar from "../AdminNavbar/AdminNavbar";
 import AdminNavbarArabic from "../AdminNavbar/AdminNavbarArabic";
 import styled from "styled-components";
@@ -54,9 +54,12 @@ const NewReservationMain = () => {
 	const [sendEmail, setSendEmail] = useState(false);
 	const [total_guests, setTotalGuests] = useState("");
 	const [allReservationsHeatMap, setAllReservationsHeatMap] = useState("");
+	const [bedNumber, setBedNumber] = useState([]);
 	const [start_date_Map, setStart_date_Map] = useState("");
 	const [end_date_Map, setEnd_date_Map] = useState("");
 	const [paidAmount, setPaidAmount] = useState("");
+	const [currentRoom, setCurrentRoom] = useState(null);
+	const [pricingByDay, setPricingByDay] = useState([]);
 	const [customer_details, setCustomer_details] = useState({
 		name: "",
 		phone: "",
@@ -206,6 +209,32 @@ const NewReservationMain = () => {
 		});
 	};
 
+	const generatePricingTable = useCallback(
+		(roomType, startDate, endDate) => {
+			const roomDetails = hotelDetails.roomCountDetails[roomType];
+			const pricingRate = roomDetails?.pricingRate || [];
+			const basePrice = roomDetails?.price?.basePrice || 0;
+
+			const daysArray = [];
+			const currentDate = moment(startDate);
+
+			while (currentDate.isBefore(endDate)) {
+				const dateString = currentDate.format("YYYY-MM-DD");
+				const pricing = pricingRate.find(
+					(price) => price.calendarDate === dateString
+				);
+				const price = pricing
+					? parseFloat(pricing.price)
+					: parseFloat(basePrice);
+				daysArray.push({ date: dateString, price });
+				currentDate.add(1, "day");
+			}
+
+			return daysArray;
+		},
+		[hotelDetails.roomCountDetails]
+	);
+
 	const gettingOverallRoomsSummary = () => {
 		if (start_date && end_date) {
 			const formattedStartDate = formatDate(start_date);
@@ -268,6 +297,52 @@ const NewReservationMain = () => {
 		// eslint-disable-next-line
 	}, [searchClicked]);
 
+	const handlePreselectRooms = useCallback(() => {
+		if (
+			searchedReservation &&
+			searchedReservation.roomId &&
+			searchedReservation.roomId.length > 0
+		) {
+			const roomIds = searchedReservation.roomId;
+			const selectedRooms = hotelRooms.filter((room) =>
+				roomIds.includes(room._id)
+			);
+
+			setPickedHotelRooms(roomIds);
+			setPickedRoomPricing(
+				selectedRooms.map((room) => {
+					const roomType = room.room_type;
+					const pricingByDay = generatePricingTable(
+						roomType,
+						start_date,
+						end_date
+					);
+					return {
+						roomId: room._id,
+						chosenPrice:
+							pricingByDay.reduce((acc, day) => acc + day.price, 0) /
+							pricingByDay.length,
+						pricingByDay,
+					};
+				})
+			);
+
+			if (selectedRooms.length > 0) {
+				setCurrentRoom(selectedRooms[0]);
+			}
+		}
+	}, [
+		searchedReservation,
+		hotelRooms,
+		start_date,
+		end_date,
+		generatePricingTable,
+	]);
+
+	useEffect(() => {
+		handlePreselectRooms();
+	}, [handlePreselectRooms]);
+
 	const calculatePickedRoomsType = () => {
 		const roomTypeCounts = new Map();
 
@@ -281,11 +356,13 @@ const NewReservationMain = () => {
 				const existing = roomTypeCounts.get(room.room_type) || {
 					count: 0,
 					chosenPrice: 0,
+					pricingByDay: [],
 				};
 				roomTypeCounts.set(room.room_type, {
 					room_type: room.room_type,
 					chosenPrice: pricing.chosenPrice,
 					count: existing.count + 1,
+					pricingByDay: pricing.pricingByDay,
 				});
 			}
 		});
@@ -406,6 +483,7 @@ const NewReservationMain = () => {
 			booking_comment: booking_comment,
 			comment: booking_comment,
 			hotelName: hotelDetails.hotelName,
+			bedNumber: bedNumber,
 			paid_amount: paidAmount
 				? Number(paidAmount)
 				: searchedReservation.paid_amount
@@ -556,7 +634,7 @@ const NewReservationMain = () => {
 									); // Programmatically navigate
 								}}
 							>
-								{chosenLanguage === "Arabic" ? "حجز الغرف" : "Reserve A Room"}
+								{chosenLanguage === "Arabic" ? "تسكين الغرف" : "Reserve A Room"}
 							</Tab>
 
 							<Tab
@@ -666,6 +744,12 @@ const NewReservationMain = () => {
 													isBoss={isBoss}
 													start_date_Map={start_date_Map}
 													end_date_Map={end_date_Map}
+													bedNumber={bedNumber}
+													setBedNumber={setBedNumber}
+													currentRoom={currentRoom}
+													setCurrentRoom={setCurrentRoom}
+													pricingByDay={pricingByDay}
+													setPricingByDay={setPricingByDay}
 												/>
 											) : null}
 										</>
@@ -744,6 +828,7 @@ const NewReservationMain = () => {
 									paymentStatus={payment_status}
 									paidAmount={paidAmount}
 									setPaidAmount={setPaidAmount}
+									setCurrentRoom={setCurrentRoom}
 								/>
 							</>
 						)}
