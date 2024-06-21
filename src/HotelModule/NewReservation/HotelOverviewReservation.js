@@ -103,7 +103,9 @@ const HotelOverviewReservation = ({
 		)?.chosenPrice;
 
 		if (priceToRemove) {
-			setTotal_Amount((prevTotal) => prevTotal - Number(priceToRemove));
+			setTotal_Amount((prevTotal) =>
+				Math.max(prevTotal - Number(priceToRemove), 0)
+			);
 		}
 
 		setPickedRoomPricing(
@@ -116,6 +118,11 @@ const HotelOverviewReservation = ({
 
 		const startDate = moment(start_date_Map);
 		const endDate = moment(end_date_Map);
+
+		if (searchedReservation && searchedReservation.roomId.includes(roomId)) {
+			// Allow clicking on the room if it matches the searched reservation
+			return false;
+		}
 
 		if (roomType === "individualBed") {
 			const bookedBedsTemp = [];
@@ -509,7 +516,13 @@ const HotelOverviewReservation = ({
 										:{" "}
 										{pricingByDay.length > 0
 											? pricingByDay.reduce((acc, day) => acc + day.price, 0) /
-											  pricingByDay.length
+													pricingByDay.length &&
+											  Number(
+													pricingByDay.reduce(
+														(acc, day) => acc + day.price,
+														0
+													) / pricingByDay.length
+											  ).toFixed(2)
 											: 0}{" "}
 										SAR
 									</strong>
@@ -524,7 +537,10 @@ const HotelOverviewReservation = ({
 											: "Overall Total"}
 										:{" "}
 										{pricingByDay.length > 0
-											? pricingByDay.reduce((acc, day) => acc + day.price, 0)
+											? pricingByDay.reduce((acc, day) => acc + day.price, 0) &&
+											  pricingByDay
+													.reduce((acc, day) => acc + day.price, 0)
+													.toFixed(2)
 											: 0}{" "}
 										SAR
 									</strong>

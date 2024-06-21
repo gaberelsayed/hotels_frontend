@@ -202,7 +202,6 @@ const ZReservationForm = ({
 		fileInput.click();
 	};
 
-	console.log(finalTotalByRoom(), "finalTotalByRoom");
 	return (
 		<ZReservationFormWrapper
 			arabic={chosenLanguage === "Arabic"}
@@ -1089,7 +1088,7 @@ const ZReservationForm = ({
 																		padding: "5px",
 																	}}
 																>
-																	{room.chosenPrice.toLocaleString()}
+																	{room.chosenPrice.toFixed(2)}
 																</div>
 															</div>
 														</div>
@@ -1193,7 +1192,10 @@ const ZReservationForm = ({
 																>
 																	{pickedRoomPricing &&
 																		pickedRoomPricing[index] &&
-																		pickedRoomPricing[index].chosenPrice}
+																		pickedRoomPricing[index].chosenPrice &&
+																		pickedRoomPricing[
+																			index
+																		].chosenPrice.toFixed(2)}
 																</div>
 															</div>
 														</div>
