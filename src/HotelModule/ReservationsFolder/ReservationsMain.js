@@ -228,7 +228,7 @@ export default ReservationsMain;
 const ReservationsMainWrapper = styled.div`
 	overflow-x: hidden;
 	/* background: #ededed; */
-	margin-top: 20px;
+	margin-top: 50px;
 	min-height: 750px;
 	/* background-color: #f0f0f0; */
 

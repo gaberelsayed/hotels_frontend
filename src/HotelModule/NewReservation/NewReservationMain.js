@@ -844,7 +844,7 @@ export default NewReservationMain;
 const NewReservationMainWrapper = styled.div`
 	overflow-x: hidden;
 	/* background: #ededed; */
-	margin-top: 20px;
+	margin-top: 46px;
 	min-height: 750px;
 	/* background-color: #f0f0f0; */
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Form, Input, Button, Select, DatePicker, message, Modal } from "antd";
+import { Form, Input, Button, Select, message } from "antd";
 import styled from "styled-components";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -7,9 +7,12 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import ImageCard from "./ImageCard";
 import ImageCardMain from "./ImageCardMain";
+import moment from "moment";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import ZCustomInput from "./ZCustomInput";
 
 const { Option } = Select;
-const { RangePicker } = DatePicker;
 
 const ZHotelDetailsForm2 = ({
 	hotelDetails,
@@ -24,10 +27,10 @@ const ZHotelDetailsForm2 = ({
 	roomTypeSelected,
 	setRoomTypeSelected,
 }) => {
-	const [selectedDateRange, setSelectedDateRange] = useState([]);
+	const [selectedDateRange, setSelectedDateRange] = useState([null, null]);
 	const [pricingRate, setPricingRate] = useState("");
 	const [customRoomType, setCustomRoomType] = useState("");
-	const [isModalVisible, setIsModalVisible] = useState(false);
+	const [priceError, setPriceError] = useState(false);
 	const calendarRef = useRef(null);
 	const priceInputRef = useRef(null);
 	const [form] = Form.useForm();
@@ -57,6 +60,21 @@ const ZHotelDetailsForm2 = ({
 			hotelFloors: hotelDetails.hotelFloors,
 		});
 	}, [form, hotelDetails]);
+
+	useEffect(() => {
+		if (selectedDateRange[0] && selectedDateRange[1]) {
+			const calendarApi = calendarRef.current.getApi();
+			const tempEvent = {
+				title: "Selected",
+				start: selectedDateRange[0].toISOString().split("T")[0],
+				end: selectedDateRange[1].toISOString().split("T")[0],
+				allDay: true,
+				backgroundColor: "lightgrey",
+			};
+			calendarApi.addEvent(tempEvent);
+		}
+		// eslint-disable-next-line
+	}, [selectedDateRange]);
 
 	const handleNext = () => {
 		form
@@ -126,6 +144,11 @@ const ZHotelDetailsForm2 = ({
 	};
 
 	const handleDateRangeSubmit = () => {
+		if (!pricingRate) {
+			setPriceError(true);
+			return;
+		}
+
 		const roomType =
 			selectedRoomType === "other" ? customRoomType : selectedRoomType;
 		const updatedRoomCountDetails = {
@@ -188,8 +211,9 @@ const ZHotelDetailsForm2 = ({
 		}));
 
 		// Clear the selected date range and pricing rate
-		setSelectedDateRange([]);
-		setPricingRate(null); // Reset the pricingRate field
+		setSelectedDateRange([null, null]);
+		setPricingRate("");
+		setPriceError(false);
 		if (priceInputRef.current) {
 			priceInputRef.current.focus();
 		}
@@ -202,20 +226,6 @@ const ZHotelDetailsForm2 = ({
 		});
 
 		message.success("Date range added successfully!");
-		setIsModalVisible(false);
-	};
-
-	const handleDateRangeChange = (dates) => {
-		if (dates && dates.length === 2) {
-			const start = dates[0]
-				? new Date(dates[0].year(), dates[0].month(), dates[0].date(), 0, 0, 0)
-				: null;
-			const end = dates[1]
-				? new Date(dates[1].year(), dates[1].month(), dates[1].date(), 0, 0, 0)
-				: null;
-			setSelectedDateRange([start, end]);
-			setIsModalVisible(true);
-		}
 	};
 
 	const predefinedColors = [
@@ -478,6 +488,7 @@ const ZHotelDetailsForm2 = ({
 										}}
 									/>
 								</Form.Item>
+
 								<Form.Item
 									name='description'
 									label={
@@ -595,25 +606,76 @@ const ZHotelDetailsForm2 = ({
 						  }))
 						: [];
 
+				const handleCalendarSelect = (info) => {
+					const selectedStart = new Date(
+						info.start.getFullYear(),
+						info.start.getMonth(),
+						info.start.getDate(),
+						0,
+						0,
+						0
+					);
+
+					const selectedEnd = new Date(
+						info.end.getFullYear(),
+						info.end.getMonth(),
+						info.end.getDate() - 1,
+						23,
+						59,
+						59
+					); // Adjust the end date
+
+					setSelectedDateRange([selectedStart, selectedEnd]);
+
+					// Update the date picker
+					const dates = [moment(selectedStart), moment(selectedEnd)];
+					form.setFieldsValue({
+						dateRange: dates,
+					});
+				};
+
+				const handleDatePickerChange = (dates) => {
+					const [start, end] = dates;
+					setSelectedDateRange([start, end]);
+
+					if (start && end) {
+						const calendarApi = calendarRef.current.getApi();
+						const tempEvent = {
+							title: "Selected",
+							start: start.toISOString().split("T")[0],
+							end: end.toISOString().split("T")[0],
+							allDay: true,
+							backgroundColor: "lightgrey",
+						};
+
+						const existingSelectedEvents = calendarApi
+							.getEvents()
+							.filter((event) => event.title === "Selected");
+						existingSelectedEvents.forEach((event) => event.remove());
+
+						calendarApi.addEvent(tempEvent);
+					}
+				};
+
+				const handleCancelSelection = () => {
+					setSelectedDateRange([null, null]);
+					setPricingRate("");
+					setPriceError(false);
+					const calendarApi = calendarRef.current.getApi();
+					const events = calendarApi.getEvents();
+					events.forEach((event) => {
+						if (event.title === "Selected") {
+							event.remove();
+						}
+					});
+					form.setFieldsValue({
+						dateRange: [],
+					});
+				};
+
 				return (
 					<div className='row'>
-						<div className='col-md-3 mx-auto'>
-							<Form.Item
-								name='dateRange'
-								label={
-									chosenLanguage === "Arabic" ? "نطاق التاريخ" : "Date Range"
-								}
-								rules={[
-									{ required: true, message: "Please select a date range" },
-								]}
-							>
-								<RangePicker
-									onChange={handleDateRangeChange}
-									disabledDate={(current) => current && current < new Date()}
-								/>
-							</Form.Item>
-						</div>
-						<div className='col-md-11 mx-auto my-4 calendar-container'>
+						<div className='col-md-9'>
 							<FullCalendar
 								ref={calendarRef}
 								plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
@@ -623,50 +685,124 @@ const ZHotelDetailsForm2 = ({
 								headerToolbar={{
 									left: "prev,next today",
 									center: "title",
-									right: "dayGridMonth,timeGridWeek,timeGridDay",
+									right: "dayGridMonth",
 								}}
-								select={(info) => {
-									const selectedStart = new Date(
-										info.start.getFullYear(),
-										info.start.getMonth(),
-										info.start.getDate(),
-										0,
-										0,
-										0
-									);
-
-									const selectedEnd = new Date(
-										info.end.getFullYear(),
-										info.end.getMonth(),
-										info.end.getDate() - 1,
-										23,
-										59,
-										59
-									); // Adjust the end date
-
-									setSelectedDateRange([selectedStart, selectedEnd]);
-									const calendarApi = info.view.calendar;
-									calendarApi.unselect();
-
-									const tempEvent = {
-										title: "Selected",
-										start: selectedStart.toISOString().split("T")[0],
-										end: selectedEnd.toISOString().split("T")[0],
-										allDay: true,
-										backgroundColor: "lightgrey",
-									};
-
-									calendarApi.addEvent(tempEvent);
-									setIsModalVisible(true);
-									if (priceInputRef.current) {
-										priceInputRef.current.focus();
-									}
-								}}
+								select={handleCalendarSelect}
 								selectAllow={() => true}
 							/>
 						</div>
+
+						<div className='col-md-3'>
+							<h4 style={{ fontSize: "1.2rem", fontWeight: "bold" }}>
+								{chosenLanguage === "Arabic"
+									? `تسعير الغرفة: ${selectedRoomType}`
+									: `Pricing for room: ${selectedRoomType}`}
+							</h4>
+							<label>
+								{" "}
+								{chosenLanguage === "Arabic" ? "نطاق التاريخ" : "Date Range"}
+							</label>
+							<Form.Item
+								dir='ltr'
+								className='w-100'
+								name='dateRange'
+								rules={[
+									{ required: true, message: "Please select a date range" },
+								]}
+							>
+								<DatePicker
+									selected={selectedDateRange[0]}
+									onChange={handleDatePickerChange}
+									startDate={selectedDateRange[0]}
+									endDate={selectedDateRange[1]}
+									className='w-100'
+									selectsRange
+									customInput={<ZCustomInput />}
+								/>
+							</Form.Item>
+							{selectedDateRange[0] && selectedDateRange[1] ? (
+								<>
+									<h4 style={{ fontSize: "1.1rem", fontWeight: "bold" }}>
+										{chosenLanguage === "Arabic"
+											? `النطاق الزمني المحدد هو من ${selectedDateRange[0].toLocaleDateString(
+													"ar-EG"
+											  )} إلى ${selectedDateRange[1].toLocaleDateString(
+													"ar-EG"
+											  )}, هل ترغب في الإلغاء؟`
+											: `The selected date range is from ${selectedDateRange[0].toLocaleDateString()} to ${selectedDateRange[1].toLocaleDateString()}, would you like to cancel?`}
+										<label className='mx-3' style={{ color: "darkred" }}>
+											<input
+												type='radio'
+												name='cancel'
+												onClick={handleCancelSelection}
+											/>
+											{chosenLanguage === "Arabic" ? "نعم" : "Yes"}
+										</label>
+									</h4>
+
+									<div>
+										<label>
+											{chosenLanguage === "Arabic"
+												? "سعر النطاق:"
+												: "Price Range:"}
+											<Input
+												type='number'
+												value={pricingRate}
+												onChange={(e) => {
+													setPricingRate(e.target.value);
+													setPriceError(false);
+												}}
+												ref={priceInputRef}
+												placeholder={
+													chosenLanguage === "Arabic"
+														? "سعر النطاق"
+														: "Price Range"
+												}
+												style={{
+													width: "100%",
+													padding: "8px",
+													marginTop: "8px",
+													fontSize: "1rem",
+													border: "1px solid #d9d9d9",
+													borderRadius: "4px",
+													backgroundColor: "#fff",
+													transition: "all 0.3s",
+													boxSizing: "border-box",
+												}}
+											/>
+										</label>
+										{priceError && (
+											<div style={{ color: "red" }}>
+												{chosenLanguage === "Arabic"
+													? "الرجاء إدخال سعر النطاق"
+													: "Please enter the price range"}
+											</div>
+										)}
+									</div>
+									<div className='text-center mt-3'>
+										<Button
+											onClick={handleDateRangeSubmit}
+											className='btn btn-primary'
+										>
+											{chosenLanguage === "Arabic"
+												? "إضافة سعر النطاق"
+												: "Add Pricing Rate Range"}
+										</Button>
+									</div>
+								</>
+							) : (
+								<div className='text-center mt-3'>
+									<Button className='btn btn-primary' disabled>
+										{chosenLanguage === "Arabic"
+											? "الرجاء تحديد نطاق تاريخ"
+											: "Please select a date range"}
+									</Button>
+								</div>
+							)}
+						</div>
 					</div>
 				);
+
 			default:
 				return null;
 		}
@@ -701,62 +837,6 @@ const ZHotelDetailsForm2 = ({
 					)}
 				</div>
 			</Form>
-			<Modal
-				title={
-					<div style={{ textAlign: "center" }}>
-						{chosenLanguage === "Arabic" ? "تسعير" : "Pricing"}:
-						{selectedDateRange.length > 0
-							? `${selectedDateRange[0].toLocaleDateString()} - ${selectedDateRange[1].toLocaleDateString()}`
-							: ""}
-					</div>
-				}
-				open={isModalVisible}
-				onOk={() => {
-					handleDateRangeSubmit();
-					setIsModalVisible(false);
-					setPricingRate(""); // Reset the pricingRate field on OK
-				}}
-				onCancel={() => {
-					setIsModalVisible(false);
-					setPricingRate(""); // Reset the pricingRate field on Cancel
-				}}
-				afterClose={() => {
-					setPricingRate(""); // Ensure pricingRate is reset after modal closes
-				}}
-			>
-				<div
-					dir='rtl'
-					style={{
-						textAlign: chosenLanguage === "Arabic" ? "right" : "left",
-						marginBottom: "16px",
-					}}
-				>
-					<label>
-						{chosenLanguage === "Arabic" ? "معدل التسعير" : "Pricing Rate"}:
-						<input
-							type='number'
-							className='w-100'
-							value={pricingRate}
-							onChange={(e) => setPricingRate(e.target.value)}
-							ref={priceInputRef}
-							placeholder={
-								chosenLanguage === "Arabic" ? "معدل التسعير" : "Pricing Rate"
-							}
-							style={{
-								width: "100%",
-								padding: "8px",
-								marginTop: "8px",
-								fontSize: "1rem",
-								border: "1px solid #d9d9d9",
-								borderRadius: "4px",
-								backgroundColor: "#fff",
-								transition: "all 0.3s",
-								boxSizing: "border-box",
-							}}
-						/>
-					</label>
-				</div>
-			</Modal>
 		</ZHotelDetailsForm2Wrapper>
 	);
 };
@@ -764,7 +844,7 @@ const ZHotelDetailsForm2 = ({
 export default ZHotelDetailsForm2;
 
 const ZHotelDetailsForm2Wrapper = styled.div`
-	max-width: 1500px;
+	max-width: 1600px;
 	margin: auto;
 	h3 {
 		font-weight: bold;
@@ -809,7 +889,7 @@ const ZHotelDetailsForm2Wrapper = styled.div`
 	textarea:focus {
 		outline: none;
 		border-color: #40a9ff;
-		box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+		box-shadow: 2px 5px 0 2px rgba(0, 0, 0, 0.5);
 	}
 
 	.col-md-2 {
@@ -833,5 +913,9 @@ const ZHotelDetailsForm2Wrapper = styled.div`
 		display: flex;
 		justify-content: center;
 		margin-top: 20px;
+	}
+
+	button {
+		text-transform: capitalize !important;
 	}
 `;

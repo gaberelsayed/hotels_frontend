@@ -17,6 +17,7 @@ import PasscodeModal from "./PasscodeModal";
 import { RoomStockReport } from "./RoomStockReport";
 import { Spin } from "antd";
 import WorldClocks from "../../ReceptionModule/WorldClocks";
+import AdminDashboard from "./AdminDashboard";
 
 const HotelManagerDashboard = () => {
 	const history = useHistory();
@@ -171,6 +172,8 @@ const HotelManagerDashboard = () => {
 				</div>
 
 				<div className='otherContentWrapper'>
+					<AdminDashboard chosenLanguage={chosenLanguage} />
+
 					<WorldClocks />
 					<div
 						style={{
@@ -189,6 +192,7 @@ const HotelManagerDashboard = () => {
 					>
 						{chosenLanguage === "English" ? "ARABIC" : "English"}
 					</div>
+
 					<div
 						onClick={() => {
 							setModalVisiblePasscode(true);
@@ -199,7 +203,7 @@ const HotelManagerDashboard = () => {
 							top: 230,
 							right: chosenLanguage === "Arabic" ? "96%" : "",
 							padding: "2px",
-							color: "#8a8a8a",
+							color: "#f7f8fc",
 						}}
 					>
 						hello
@@ -329,7 +333,7 @@ export default HotelManagerDashboard;
 const HotelManagerDashboardWrapper = styled.div`
 	overflow-x: hidden;
 	/* background: #ededed; */
-	margin-top: 20px;
+	margin-top: 70px;
 	min-height: 715px;
 	text-align: ${(props) => (props.isArabic ? "right" : "")};
 

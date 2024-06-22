@@ -17,10 +17,10 @@ import {
 	TeamOutlined,
 } from "@ant-design/icons";
 import { Button, Menu } from "antd";
-import LastAddedLogoImage from "./LastAddedLogoImage";
 import { useCartContext } from "../../cart_context";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 import { signout } from "../../auth";
+import TopNavbar from "./TopNavbar";
 
 function getItem(label, key, icon, children, type, className) {
 	return {
@@ -41,25 +41,6 @@ const handleSignout = (history) => {
 
 const items = [
 	getItem(
-		<div className='logoClass'></div>,
-		"شعار الفندق",
-		<>
-			<LastAddedLogoImage />
-		</>
-	),
-	getItem(
-		<div className='logoClass '></div>,
-		"شعار الفندق",
-		<div
-			className='logoClass no-background'
-			style={{
-				width: "100%",
-			}}
-		>
-			<hr />
-		</div>
-	),
-	getItem(
 		<Link to='/hotel-management/dashboard'>لوحة تحكم الإدارة</Link>,
 		"sub1",
 		<PieChartOutlined />
@@ -79,35 +60,26 @@ const items = [
 		"sub4",
 		<AreaChartOutlined />
 	),
-
 	getItem(
 		<Link to='/hotel-management/settings'>إعدادات الفندق</Link>,
 		"sub6",
 		<SettingOutlined />
 	),
-
 	getItem(
 		<Link to='/hotel-management/house-keeping'>هاوس كيبينج</Link>,
 		"sub7",
 		<BankTwoTone />
 	),
-
 	getItem(
 		<Link to='/hotel-management/staff'>طاقم الفندق</Link>,
 		"sub8",
-		<>
-			<TeamOutlined />
-		</>
+		<TeamOutlined />
 	),
-
 	getItem(
 		<Link to='#'>منشئ مواقع الفندق</Link>,
 		"sub10",
-		<>
-			<DollarCircleOutlined />
-		</>
+		<DollarCircleOutlined />
 	),
-
 	getItem(
 		<div className='margin-divider'></div>,
 		"divider1",
@@ -153,14 +125,12 @@ const items = [
 		<div style={{ fontWeight: "bold", textDecoration: "underline" }}>
 			Signout
 		</div>,
-		"signout", // The key used in the Menu's onClick handler
+		"signout",
 		<CreditCardOutlined />,
 		null,
 		null,
 		"reddish-bg"
 	),
-
-	// getItem("Option 3", "4", <ContainerOutlined />),
 ];
 
 const AdminNavbarArabic = ({
@@ -171,91 +141,83 @@ const AdminNavbarArabic = ({
 }) => {
 	const [clickedOn, setClickedOn] = useState(false);
 	const { chosenLanguage } = useCartContext();
-
 	const toggleCollapsed = () => {
 		setCollapsed(!collapsed);
 		setAdminMenuStatus(!collapsed);
 	};
-
 	const history = useHistory();
 
 	return (
-		<AdminNavbarWrapper
-			show={collapsed}
-			show2={clickedOn}
-			style={{
-				width: 285,
-			}}
-			dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}
-		>
-			<Button
-				type='primary'
-				onClick={toggleCollapsed}
+		<>
+			<TopNavbar />
+			<AdminNavbarWrapper
+				show={collapsed}
+				show2={clickedOn}
 				style={{
-					marginBottom: 8,
-					textAlign: "center",
-					marginLeft: chosenLanguage === "Arabic" ? 200 : 5,
-					marginTop: chosenLanguage === "Arabic" ? 10 : 10,
+					width: collapsed ? 80 : 285,
 				}}
-			>
-				{collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-			</Button>
-			<Menu
 				dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}
-				defaultSelectedKeys={
-					fromPage === "AdminDasboard"
-						? "sub1"
-						: fromPage === "Reservations"
-						  ? "sub2"
-						  : fromPage === "NewReservation"
-						    ? "sub3"
-						    : fromPage === "HotelReports"
-						      ? "sub4"
-						      : fromPage === "StoreBilling"
-						        ? "sub5"
-						        : fromPage === "HotelSettings"
-						          ? "sub6"
-						          : fromPage === "HouseKeeping"
-						            ? "sub7"
-						            : fromPage === "HotelStaff"
-						              ? "sub8"
-						              : fromPage === "Payment"
-						                ? "sub18"
-						                : fromPage === "CouponManagement"
-						                  ? "sub12"
-						                  : "sub1"
-				}
-				defaultOpenKeys={[
-					"sub1",
-
-					// fromPage === "AddGender" ||
-					// fromPage === "UpdateGender" ||
-					// fromPage === "DeleteGender"
-					// 	? "sub2"
-					// 	: null,
-
-					// "sub4",
-
-					// "sub6",
-				]}
-				mode='inline'
-				theme='dark'
-				inlineCollapsed={collapsed}
-				items={items}
-				onClick={(e) => {
-					if (e.key === "signout") {
-						handleSignout(history);
+			>
+				<Button
+					type='primary'
+					onClick={toggleCollapsed}
+					style={{
+						marginBottom: 8,
+						textAlign: "center",
+						marginLeft: chosenLanguage === "Arabic" ? 200 : 5,
+						marginTop: chosenLanguage === "Arabic" ? 10 : 10,
+						top: collapsed ? "40px" : "",
+						right: collapsed ? "10px" : "",
+						zIndex: collapsed ? "1000" : "",
+					}}
+				>
+					{collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+				</Button>
+				<Menu
+					dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}
+					defaultSelectedKeys={
+						fromPage === "AdminDasboard"
+							? "sub1"
+							: fromPage === "Reservations"
+							  ? "sub2"
+							  : fromPage === "NewReservation"
+							    ? "sub3"
+							    : fromPage === "HotelReports"
+							      ? "sub4"
+							      : fromPage === "StoreBilling"
+							        ? "sub5"
+							        : fromPage === "HotelSettings"
+							          ? "sub6"
+							          : fromPage === "HouseKeeping"
+							            ? "sub7"
+							            : fromPage === "HotelStaff"
+							              ? "sub8"
+							              : fromPage === "Payment"
+							                ? "sub18"
+							                : fromPage === "CouponManagement"
+							                  ? "sub12"
+							                  : "sub1"
 					}
+					defaultOpenKeys={["sub1"]}
+					mode='inline'
+					theme='dark'
+					inlineCollapsed={collapsed}
+					items={items}
+					onClick={(e) => {
+						if (e.key === "signout") {
+							handleSignout(history);
+						}
 
-					if (e.key === "StoreLogo") {
-						setClickedOn(true);
-					} else {
-						setClickedOn(false);
-					}
-					return <Redirect to={e.key} />;
-				}}
-			/>
-		</AdminNavbarWrapper>
+						if (e.key === "StoreLogo") {
+							setClickedOn(true);
+						} else {
+							setClickedOn(false);
+						}
+						return <Redirect to={e.key} />;
+					}}
+				/>
+			</AdminNavbarWrapper>
+		</>
 	);
 };
 
@@ -264,7 +226,8 @@ export default AdminNavbarArabic;
 const AdminNavbarWrapper = styled.div`
 	margin-bottom: 15px;
 	background: ${(props) => (props.show ? "" : "#1e1e2d")};
-	top: 0px !important;
+	top: 69px !important;
+	top: ${(props) => (props.show ? "20px" : "69px")} !important;
 	z-index: 20000;
 	overflow: auto;
 	position: absolute;

@@ -247,7 +247,7 @@ export default HouseKeepingMain;
 const HouseKeepingMainWrapper = styled.div`
 	overflow-x: hidden;
 	/* background: #ededed; */
-	margin-top: 20px;
+	margin-top: 46px;
 	min-height: 715px;
 
 	.grid-container-main {
