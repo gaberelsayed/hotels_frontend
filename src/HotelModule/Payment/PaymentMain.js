@@ -459,7 +459,7 @@ export default PaymentMain;
 const PaymentMainWrapper = styled.div`
 	overflow-x: hidden;
 	/* background: #ededed; */
-	margin-top: 20px;
+	margin-top: 70px;
 	min-height: 715px;
 
 	.grid-container-main {

@@ -11,8 +11,9 @@ import {
 	GlobalOutlined, // Import the global icon
 } from "@ant-design/icons";
 import { useCartContext } from "../../cart_context";
+import DigitalClock from "./DigitalClock"; // Import the DigitalClock component
 
-const TopNavbar = ({ onProfileClick }) => {
+const TopNavbar = ({ onProfileClick, collapsed }) => {
 	const [dropdownVisible, setDropdownVisible] = useState(false);
 	const { languageToggle, chosenLanguage } = useCartContext();
 
@@ -40,13 +41,16 @@ const TopNavbar = ({ onProfileClick }) => {
 	return (
 		<NavbarWrapper isArabic={chosenLanguage === "Arabic"}>
 			<LeftSection>
-				<Logo>
+				<Logo show={collapsed} isArabic2={chosenLanguage === "Arabic"}>
 					<img
-						src='https://res.cloudinary.com/infiniteapps/image/upload/v1707282182/janat/1707282182070.png'
+						src='https://res.cloudinary.com/infiniteapps/image/upload/v1719970937/janat/1719970937849.png'
 						alt='jannatbooking'
-						style={{ width: "100%" }}
+						style={{ width: "200px" }}
 					/>
 				</Logo>
+				<DigitalClockWrapper>
+					<DigitalClock />
+				</DigitalClockWrapper>
 			</LeftSection>
 			<RightSection>
 				<Icons>
@@ -129,6 +133,12 @@ const LeftSection = styled.div`
 const Logo = styled.div`
 	display: flex;
 	align-items: center;
+	margin-right: ${(props) =>
+		props.show && props.isArabic2 ? "50px" : ""} !important;
+`;
+
+const DigitalClockWrapper = styled.div`
+	margin-left: 20px;
 `;
 
 const RightSection = styled.div`
@@ -177,19 +187,6 @@ const NotificationDot = styled.div`
 	height: 8px;
 	background-color: orange;
 	border-radius: 50%;
-	/* animation: blink 3s infinite; */
-
-	/* @keyframes blink {
-		0%,
-		50%,
-		100% {
-			opacity: 1;
-		}
-		25%,
-		75% {
-			opacity: 0;
-		}
-	} */
 `;
 
 const NotificationDot2 = styled.div`

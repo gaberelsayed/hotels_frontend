@@ -149,7 +149,7 @@ const AdminNavbarArabic = ({
 
 	return (
 		<>
-			<TopNavbar />
+			<TopNavbar chosenLanguage={chosenLanguage} collapsed={collapsed} />
 			<AdminNavbarWrapper
 				show={collapsed}
 				show2={clickedOn}
@@ -166,9 +166,9 @@ const AdminNavbarArabic = ({
 						textAlign: "center",
 						marginLeft: chosenLanguage === "Arabic" ? 200 : 5,
 						marginTop: chosenLanguage === "Arabic" ? 10 : 10,
-						top: collapsed ? "40px" : "",
+						top: collapsed ? "10px" : "",
 						right: collapsed ? "10px" : "",
-						zIndex: collapsed ? "1000" : "",
+						zIndex: collapsed ? 1000 : "",
 					}}
 				>
 					{collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
@@ -225,14 +225,12 @@ export default AdminNavbarArabic;
 
 const AdminNavbarWrapper = styled.div`
 	margin-bottom: 15px;
-	background: ${(props) => (props.show ? "" : "#1e1e2d")};
-	top: 69px !important;
+	background: ${(props) => (props.show ? "" : "#262639")};
 	top: ${(props) => (props.show ? "20px" : "69px")} !important;
 	z-index: 20000;
 	overflow: auto;
 	position: absolute;
 	padding: 0px !important;
-
 	position: fixed; // Add this line
 	top: 0; // Adjust as needed
 	right: 0; // Since the menu is on the right hand side
@@ -242,19 +240,16 @@ const AdminNavbarWrapper = styled.div`
 		height: 90vh !important;
 	}
 
-	.logoClass {
-		display: ${(props) => (props.show ? "none " : "block")} !important;
-	}
-
-	img {
-		margin-right: 50px;
-	}
-
 	li {
 		/* margin: 20px auto; */
 		font-size: 0.9rem;
 		margin-bottom: ${(props) => (props.show ? "20px " : "15px")};
 		text-align: right;
+		color: white;
+		font-weight: bolder;
+		svg {
+			color: #69c0ff;
+		}
 	}
 
 	hr {
@@ -270,7 +265,7 @@ const AdminNavbarWrapper = styled.div`
 	.ant-menu.ant-menu-dark,
 	.ant-menu.ant-menu-dark {
 		color: rgba(255, 255, 255, 0.65);
-		background: #1e1e2d;
+		background: ${(props) => (props.show ? "" : "#262639")};
 	}
 
 	svg {
@@ -298,7 +293,7 @@ const AdminNavbarWrapper = styled.div`
 	}
 
 	@media (max-width: 1650px) {
-		background: ${(props) => (props.show ? "" : "transparent")};
+		background: ${(props) => (props.show ? "" : "")};
 
 		ul {
 			width: 250px;

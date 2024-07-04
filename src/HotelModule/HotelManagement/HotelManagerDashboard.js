@@ -11,27 +11,26 @@ import {
 	gettingDayOverDayInventory,
 	hotelAccount,
 } from "../apiAdmin";
-import MyReport from "./MyReport";
-import GeneralOverview from "./GeneralOverview";
 import PasscodeModal from "./PasscodeModal";
-import { RoomStockReport } from "./RoomStockReport";
-import { Spin } from "antd";
-import WorldClocks from "../../ReceptionModule/WorldClocks";
 import AdminDashboard from "./AdminDashboard";
 
 const HotelManagerDashboard = () => {
+	// eslint-disable-next-line
 	const history = useHistory();
 
 	const [AdminMenuStatus, setAdminMenuStatus] = useState(false);
 	const [modalVisiblePasscode, setModalVisiblePasscode] = useState(false);
 	const [collapsed, setCollapsed] = useState(false);
+	// eslint-disable-next-line
 	const [hotelDetails, setHotelDetails] = useState("");
+	// eslint-disable-next-line
 	const [reservationsToday, setReservationsToday] = useState("");
 	// eslint-disable-next-line
 	const [reservationsYesterday, setReservationsYesterday] = useState("");
-	const [activeTab, setActiveTab] = useState("Today");
-	const { languageToggle, chosenLanguage } = useCartContext();
+	const { chosenLanguage } = useCartContext();
+	// eslint-disable-next-line
 	const [dayOverDayInventory, setDayOverDayInventory] = useState([]);
+	// eslint-disable-next-line
 	const [selectedDates, setSelectedDates] = useState([]);
 
 	// eslint-disable-next-line
@@ -42,19 +41,8 @@ const HotelManagerDashboard = () => {
 			setCollapsed(true);
 		}
 
-		if (window.location.search.includes("today")) {
-			setActiveTab("Today");
-		} else if (window.location.search.includes("yesterday")) {
-			setActiveTab("Yesterday");
-		} else if (window.location.search.includes("overview")) {
-			setActiveTab("Overview");
-		} else if (window.location.search.includes("inventory")) {
-			setActiveTab("inventory");
-		} else {
-			setActiveTab("Today");
-		}
 		// eslint-disable-next-line
-	}, [activeTab]);
+	}, []);
 
 	// Helper function to format a date object into yyyy-mm-dd
 	function formatDate(date) {
@@ -174,24 +162,7 @@ const HotelManagerDashboard = () => {
 				<div className='otherContentWrapper'>
 					<AdminDashboard chosenLanguage={chosenLanguage} />
 
-					<WorldClocks />
-					<div
-						style={{
-							textAlign: chosenLanguage === "Arabic" ? "left" : "right",
-							fontWeight: "bold",
-							textDecoration: "underline",
-							cursor: "pointer",
-						}}
-						onClick={() => {
-							if (chosenLanguage === "English") {
-								languageToggle("Arabic");
-							} else {
-								languageToggle("English");
-							}
-						}}
-					>
-						{chosenLanguage === "English" ? "ARABIC" : "English"}
-					</div>
+					{/* <WorldClocks /> */}
 
 					<div
 						onClick={() => {
@@ -207,120 +178,6 @@ const HotelManagerDashboard = () => {
 						}}
 					>
 						hello
-					</div>
-
-					<div style={{ background: "#8a8a8a", padding: "1px" }}>
-						<div className='my-2 tab-grid col-md-8'>
-							<Tab
-								isActive={activeTab === "Today"}
-								onClick={() => {
-									setActiveTab("Today");
-									history.push("/hotel-management/dashboard?today"); // Programmatic navigation
-								}}
-							>
-								{chosenLanguage === "Arabic"
-									? "تقرير حجوزات اليوم"
-									: "Today's Overview"}
-							</Tab>
-
-							<Tab
-								isActive={activeTab === "Yesterday"}
-								onClick={() => {
-									setActiveTab("Yesterday");
-									history.push("/hotel-management/dashboard?yesterday"); // Programmatic navigation
-								}}
-							>
-								{chosenLanguage === "Arabic"
-									? "تقرير حجوزات الأمس"
-									: "Yesterday's Overview"}
-							</Tab>
-
-							<Tab
-								isActive={activeTab === "Overview"}
-								onClick={() => {
-									setActiveTab("Overview");
-									history.push("/hotel-management/dashboard?overview"); // Programmatic navigation
-								}}
-							>
-								{chosenLanguage === "Arabic"
-									? "لمحة عامة"
-									: "Reservations Overview"}
-							</Tab>
-							<Tab
-								isActive={activeTab === "inventory"}
-								onClick={() => {
-									setActiveTab("inventory");
-									history.push("/hotel-management/dashboard?inventory"); // Programmatically navigate
-								}}
-							>
-								{chosenLanguage === "Arabic" ? "	تقرير جرد الغرف" : "Inventory"}
-							</Tab>
-						</div>
-					</div>
-					<div className='container-wrapper'>
-						<div>
-							<h4
-								style={{
-									fontWeight: "bold",
-									textTransform: "capitalize",
-									textAlign: "center",
-								}}
-							>
-								Hotel ({hotelDetails && hotelDetails.hotelName})
-							</h4>
-						</div>
-
-						{activeTab === "Today" &&
-						reservationsToday &&
-						reservationsToday.length > 0 ? (
-							<>
-								<MyReport
-									reservations={reservationsToday}
-									fromTab='Today'
-									chosenLanguage={chosenLanguage}
-								/>
-							</>
-						) : null}
-
-						{activeTab === "Yesterday" &&
-						reservationsYesterday &&
-						reservationsYesterday.length > 0 ? (
-							<>
-								<MyReport
-									reservations={reservationsYesterday}
-									chosenLanguage={chosenLanguage}
-									fromTab='Yesterday'
-								/>
-							</>
-						) : null}
-
-						{activeTab === "Overview" && hotelDetails && hotelDetails._id ? (
-							<>
-								<GeneralOverview
-									hotelDetails={hotelDetails}
-									chosenLanguage={chosenLanguage}
-								/>
-							</>
-						) : null}
-
-						{activeTab === "inventory" ? (
-							<>
-								{dayOverDayInventory && dayOverDayInventory.length > 0 ? (
-									<RoomStockReport
-										dayOverDayInventory={dayOverDayInventory}
-										chosenLanguage={chosenLanguage}
-										setSelectedDates={setSelectedDates}
-										selectedDates={selectedDates}
-										// isBoss={isBoss}
-									/>
-								) : (
-									<div className='text-center my-5'>
-										<Spin size='large' />
-										<p>Loading Inventory...</p>
-									</div>
-								)}
-							</>
-						) : null}
 					</div>
 				</div>
 			</div>
@@ -358,26 +215,4 @@ const HotelManagerDashboardWrapper = styled.div`
 	@media (max-width: 1400px) {
 		background: white;
 	}
-`;
-
-const Tab = styled.div`
-	cursor: pointer;
-	margin: 0 3px; /* 3px margin between tabs */
-	padding: 15px 5px; /* Adjust padding as needed */
-	font-weight: ${(props) => (props.isActive ? "bold" : "bold")};
-	background-color: ${(props) =>
-		props.isActive
-			? "transparent"
-			: "#bbbbbb"}; /* Light grey for unselected tabs */
-	box-shadow: ${(props) =>
-		props.isActive ? "inset 5px 5px 5px rgba(0, 0, 0, 0.3)" : "none"};
-	transition: all 0.3s ease; /* Smooth transition for changes */
-	min-width: 25px; /* Minimum width of the tab */
-	width: 100%; /* Full width within the container */
-	text-align: center; /* Center the text inside the tab */
-	/* Additional styling for tabs */
-	z-index: 100;
-	font-size: 1.2rem;
-
-	color: ${(props) => (props.isActive ? "white" : "black")};
 `;
