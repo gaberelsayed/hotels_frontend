@@ -45,13 +45,13 @@ const items = [
 		"sub1",
 		<PieChartOutlined />
 	),
+	// getItem(
+	// 	<Link to='/hotel-management/reservation-history'>الحجوزات</Link>,
+	// 	"sub2",
+	// 	<AreaChartOutlined />
+	// ),
 	getItem(
-		<Link to='/hotel-management/reservation-history'>الحجوزات</Link>,
-		"sub2",
-		<AreaChartOutlined />
-	),
-	getItem(
-		<Link to='/hotel-management/new-reservation'>إضافة حجز جديد</Link>,
+		<Link to='/hotel-management/new-reservation'>الحجوزات</Link>,
 		"sub3",
 		<ShopOutlined />
 	),
@@ -75,11 +75,11 @@ const items = [
 		"sub8",
 		<TeamOutlined />
 	),
-	getItem(
-		<Link to='#'>منشئ مواقع الفندق</Link>,
-		"sub10",
-		<DollarCircleOutlined />
-	),
+	// getItem(
+	// 	<Link to='#'>منشئ مواقع الفندق</Link>,
+	// 	"sub10",
+	// 	<DollarCircleOutlined />
+	// ),
 	getItem(
 		<div className='margin-divider'></div>,
 		"divider1",

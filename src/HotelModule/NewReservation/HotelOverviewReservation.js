@@ -3,6 +3,7 @@ import styled, { keyframes } from "styled-components";
 import { InputNumber, Modal, Table, Tooltip } from "antd";
 import moment from "moment";
 import { toast } from "react-toastify";
+import HotelMapFilters from "./HotelMapFilters"; // Ensure this path is correct
 
 const HotelOverviewReservation = ({
 	hotelRooms,
@@ -35,6 +36,10 @@ const HotelOverviewReservation = ({
 	const [bookedBeds, setBookedBeds] = useState([]);
 	const [totalAmountPerBed, setTotalAmountPerBed] = useState(0);
 	const [overallTotal, setOverallTotal] = useState(0);
+	const [selectedRoomType, setSelectedRoomType] = useState(null);
+	const [selectedAvailability, setSelectedAvailability] = useState(null);
+	const [selectedFloor, setSelectedFloor] = useState(null);
+	const [selectedRoomStatus, setSelectedRoomStatus] = useState(null);
 
 	useEffect(() => {
 		const handleScroll = () => {
@@ -73,10 +78,8 @@ const HotelOverviewReservation = ({
 	}, [currentRoom, start_date_Map, end_date_Map, allReservations]);
 
 	const { hotelFloors, parkingLot } = hotelDetails;
-	const floors = Array.from(
-		{ length: hotelFloors },
-		(_, index) => hotelFloors - index
-	);
+	const floors = Array.from({ length: hotelFloors }, (_, index) => index + 1);
+	const floorsDesc = [...floors].reverse(); // Descending order for display on the canvas
 
 	const handleRoomClick = (roomId, show, room) => {
 		if (!roomId || !room) return;
@@ -320,19 +323,46 @@ const HotelOverviewReservation = ({
 		},
 	];
 
-	const handleSelectAllClick = () => {
-		setPickedHotelRooms(hotelRooms.map((room) => room._id));
+	const handleFilterChange = (filterType, value) => {
+		if (filterType === "availability") {
+			setSelectedAvailability(value);
+		} else if (filterType === "roomType") {
+			setSelectedRoomType(value);
+		} else if (filterType === "floor") {
+			setSelectedFloor(value);
+		} else if (filterType === "roomStatus") {
+			setSelectedRoomStatus(value);
+		}
 	};
 
-	const handleRoomTypeClick = (roomType) => {
-		setPickedHotelRooms(
-			hotelRooms
-				.filter((room) => room.room_type === roomType)
-				.map((room) => room._id)
+	const handleResetFilters = () => {
+		setSelectedAvailability(null);
+		setSelectedRoomType(null);
+		setSelectedFloor(null);
+		setSelectedRoomStatus(null);
+	};
+
+	const filteredRooms = hotelRooms.filter((room) => {
+		const isAvailabilityMatch =
+			selectedAvailability === null ||
+			(selectedAvailability === "occupied" &&
+				isRoomBooked(room._id, room.room_type, room.bedsNumber)) ||
+			(selectedAvailability === "vacant" &&
+				!isRoomBooked(room._id, room.room_type, room.bedsNumber));
+		const isRoomTypeMatch =
+			selectedRoomType === null || room.room_type === selectedRoomType;
+		const isFloorMatch = selectedFloor === null || room.floor === selectedFloor;
+		const isRoomStatusMatch =
+			selectedRoomStatus === null ||
+			(selectedRoomStatus === "clean" && room.cleanRoom) ||
+			(selectedRoomStatus === "dirty" && !room.cleanRoom);
+		return (
+			isAvailabilityMatch &&
+			isRoomTypeMatch &&
+			isFloorMatch &&
+			isRoomStatusMatch
 		);
-	};
-
-	const filteredRooms = hotelRooms;
+	});
 
 	const distinctRoomTypesWithColors =
 		hotelRooms &&
@@ -346,69 +376,207 @@ const HotelOverviewReservation = ({
 			return accumulator;
 		}, []);
 
+	const getRoomImage = (roomType) => {
+		const room = hotelDetails.roomCountDetails[roomType];
+		if (room && room.photos && room.photos.length > 0) {
+			return room.photos[0].url;
+		}
+		return null;
+	};
+
 	return (
 		<HotelOverviewWrapper fixIt={fixIt}>
+			<HotelMapFilters
+				chosenLanguage={chosenLanguage}
+				distinctRoomTypesWithColors={distinctRoomTypesWithColors}
+				floors={floors}
+				handleFilterChange={handleFilterChange}
+				handleResetFilters={handleResetFilters}
+				selectedAvailability={selectedAvailability}
+				selectedRoomType={selectedRoomType}
+				selectedFloor={selectedFloor}
+				selectedRoomStatus={selectedRoomStatus}
+				fromComponent='Taskeen'
+			/>
 			<div className='canvas-grid'>
 				<div>
 					<FloorsContainer>
-						{floors.map((floor, index) => (
-							<Floor key={index} delay={index * 0.3}>
-								<h2 className='mb-4'>
-									{chosenLanguage === "Arabic" ? "الطابق" : "Floor"} {floor}
-								</h2>
-								<div style={{ display: "flex", flexWrap: "wrap" }}>
-									{filteredRooms &&
-										filteredRooms
-											.filter((room) => room.floor === floor)
-											.map((room, idx) => {
-												const roomIsBooked = isRoomBooked(
-													room._id,
-													room.room_type,
-													room.bedsNumber
-												);
-												return (
-													<Tooltip
-														title={
-															<span style={{ textTransform: "capitalize" }}>
-																{room.room_type}
-															</span>
-														}
-														key={idx}
-													>
-														<RoomSquare
-															key={idx}
-															color={
-																roomIsBooked
-																	? "#e7e7e7" // Grey color for booked rooms
-																	: pickedHotelRooms.includes(room._id)
-																	  ? "darkgreen" // Dark green for selected rooms
-																	  : room.roomColorCode // Default room color
-															}
-															onClick={() => {
-																if (!roomIsBooked) {
-																	handleRoomClick(room._id, true, room);
+						{selectedFloor === null
+							? floorsDesc.map((floor, index) => (
+									<Floor key={index} delay={index * 0.3}>
+										<h2
+											className='mb-4'
+											style={{
+												fontWeight: "bold",
+												fontSize: "1.5rem",
+												color: "#4a4a4a",
+											}}
+										>
+											{chosenLanguage === "Arabic" ? "الطابق" : "Floor"} {floor}
+										</h2>
+										<div style={{ display: "flex", flexWrap: "wrap" }}>
+											{filteredRooms &&
+												filteredRooms
+													.filter((room) => room.floor === floor)
+													.map((room, idx) => {
+														const { isBooked } = isRoomBooked(
+															room._id,
+															room.room_type,
+															room.bedsNumber
+														);
+														const roomImage = getRoomImage(room.room_type);
+														return (
+															<Tooltip
+																title={
+																	<div
+																		style={{
+																			textAlign: "center",
+																			color: "darkgrey",
+																		}}
+																	>
+																		{roomImage && (
+																			<img
+																				src={roomImage}
+																				alt={room.room_type}
+																				style={{
+																					width: "100%",
+																					marginBottom: "5px",
+																				}}
+																			/>
+																		)}
+																		<div>Room #: {room.room_number}</div>
+																		<div
+																			style={{ textTransform: "capitalize" }}
+																		>
+																			Room Type: {room.room_type}
+																		</div>
+																		<div>
+																			Occupied: {isBooked ? "Yes" : "No"}
+																		</div>
+																		<div>
+																			Clean: {room.cleanRoom ? "Yes" : "No"}
+																		</div>
+																	</div>
 																}
-															}}
-															picked={pickedHotelRooms.includes(room._id)}
-															reserved={roomIsBooked}
-															style={{
-																cursor: roomIsBooked
-																	? "not-allowed"
-																	: "pointer",
-																opacity: roomIsBooked ? 0.5 : 1, // Reduce opacity for booked rooms
-																textDecoration: roomIsBooked
-																	? "line-through"
-																	: "none", // Line-through for booked rooms
-															}}
-														>
-															{room.room_number}
-														</RoomSquare>
-													</Tooltip>
-												);
-											})}
-								</div>
-							</Floor>
-						))}
+																key={idx}
+																overlayStyle={{ zIndex: 100000000 }}
+																color='white'
+															>
+																<RoomSquare
+																	key={idx}
+																	color={room.roomColorCode}
+																	picked={pickedHotelRooms.includes(room._id)}
+																	reserved={isBooked}
+																	style={{
+																		cursor: isBooked
+																			? "not-allowed"
+																			: "pointer",
+																		opacity: isBooked ? 0.5 : 1,
+																		textDecoration: isBooked
+																			? "line-through"
+																			: "none",
+																	}}
+																	onClick={() =>
+																		handleRoomClick(room._id, true, room)
+																	}
+																>
+																	{room.room_number}
+																</RoomSquare>
+															</Tooltip>
+														);
+													})}
+										</div>
+									</Floor>
+							  ))
+							: floorsDesc
+									.filter((floor) => floor === selectedFloor)
+									.map((floor, index) => (
+										<Floor key={index} delay={index * 0.3}>
+											<h2
+												className='mb-4'
+												style={{
+													fontWeight: "bold",
+													fontSize: "1.5rem",
+													color: "#4a4a4a",
+												}}
+											>
+												{chosenLanguage === "Arabic" ? "الطابق" : "Floor"}{" "}
+												{floor}
+											</h2>
+											<div style={{ display: "flex", flexWrap: "wrap" }}>
+												{filteredRooms &&
+													filteredRooms
+														.filter((room) => room.floor === floor)
+														.map((room, idx) => {
+															const { isBooked } = isRoomBooked(
+																room._id,
+																room.room_type,
+																room.bedsNumber
+															);
+															const roomImage = getRoomImage(room.room_type);
+															return (
+																<Tooltip
+																	title={
+																		<div
+																			style={{
+																				textAlign: "center",
+																				color: "darkgrey",
+																			}}
+																		>
+																			{roomImage && (
+																				<img
+																					src={roomImage}
+																					alt={room.room_type}
+																					style={{
+																						width: "100%",
+																						marginBottom: "5px",
+																					}}
+																				/>
+																			)}
+																			<div>Room #: {room.room_number}</div>
+																			<div
+																				style={{ textTransform: "capitalize" }}
+																			>
+																				Room Type: {room.room_type}
+																			</div>
+																			<div>
+																				Occupied: {isBooked ? "Yes" : "No"}
+																			</div>
+																			<div>
+																				Clean: {room.cleanRoom ? "Yes" : "No"}
+																			</div>
+																		</div>
+																	}
+																	key={idx}
+																	overlayStyle={{ zIndex: 100000000 }}
+																	color='white'
+																>
+																	<RoomSquare
+																		key={idx}
+																		color={room.roomColorCode}
+																		picked={pickedHotelRooms.includes(room._id)}
+																		reserved={isBooked}
+																		style={{
+																			cursor: isBooked
+																				? "not-allowed"
+																				: "pointer",
+																			opacity: isBooked ? 0.5 : 1,
+																			textDecoration: isBooked
+																				? "line-through"
+																				: "none",
+																		}}
+																		onClick={() =>
+																			handleRoomClick(room._id, true, room)
+																		}
+																	>
+																		{room.room_number}
+																	</RoomSquare>
+																</Tooltip>
+															);
+														})}
+											</div>
+										</Floor>
+									))}
 						{parkingLot && <ParkingLot>Parking Lot</ParkingLot>}
 					</FloorsContainer>
 
@@ -582,50 +750,6 @@ const HotelOverviewReservation = ({
 						</div>
 					</Modal>
 				</div>
-
-				<div className='colors-grid mt-3'>
-					<div
-						style={{ textAlign: "center", cursor: "pointer" }}
-						onClick={handleSelectAllClick}
-					>
-						<div
-							style={{
-								width: "20px",
-								height: "20px",
-								backgroundColor: "grey",
-								margin: "0 auto",
-								marginBottom: "5px",
-							}}
-						></div>
-						<span style={{ textTransform: "capitalize", fontSize: "13px" }}>
-							{chosenLanguage === "Arabic" ? "اختر الكل" : "Select All"}
-						</span>
-					</div>
-					{distinctRoomTypesWithColors &&
-						distinctRoomTypesWithColors.map((room, i) => (
-							<div
-								key={i}
-								style={{
-									textAlign: "center",
-									cursor: "pointer",
-								}}
-								onClick={() => handleRoomTypeClick(room.room_type)}
-							>
-								<div
-									style={{
-										width: "20px",
-										height: "20px",
-										backgroundColor: room.roomColorCode,
-										margin: "0 auto",
-										marginBottom: "5px",
-									}}
-								></div>
-								<span style={{ textTransform: "capitalize", fontSize: "13px" }}>
-									{room.room_type.replace(/([A-Z])/g, " $1").trim()}
-								</span>
-							</div>
-						))}
-				</div>
 			</div>
 		</HotelOverviewWrapper>
 	);
@@ -651,20 +775,11 @@ const HotelOverviewWrapper = styled.div`
 
 	.canvas-grid {
 		display: grid;
-		grid-template-columns: 95% 5%;
+		grid-template-columns: 1fr;
 	}
 
 	.colors-grid {
-		display: grid;
-		grid-template-columns: repeat(2, 1fr); // Two columns layout
-		gap: 10px;
-		margin-left: 20px; // Adjust based on your layout
-		position: sticky;
-		top: 0;
-		align-self: start;
-		position: ${(props) => (props.fixIt ? "fixed" : "")};
-		top: ${(props) => (props.fixIt ? "20%" : "")};
-		left: ${(props) => (props.fixIt ? "2%" : "")};
+		display: none;
 	}
 `;
 
@@ -676,10 +791,10 @@ const FloorsContainer = styled.div`
 
 const Floor = styled.div`
 	margin: 10px;
-	padding: 50px;
-	background-color: lightblue;
-	border: 1px solid #ccc;
-	width: 90%;
+	padding: 30px;
+	background-color: rgba(237, 237, 237, 0.3);
+	border: 1px solid rgba(237, 237, 237, 1);
+	width: 100%;
 	text-align: center;
 	font-weight: bold;
 	cursor: pointer;

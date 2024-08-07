@@ -51,6 +51,7 @@ import PaymentMainFinance from "./Finance/Payment/PaymentMainFinance";
 import OwnerRoute from "./auth/OwnerRoute";
 import OwnerDashboardMain from "./OwnerContent/OwnerDashboardMain";
 import ClientPayVirtualCard from "./AdminModule/HotelModule/ClientPay/ClientPayVirtualCard";
+import MainHotelDashboard from "./HotelModule/MainHotelDashboard";
 //Conf #: 197875718, 198354414, 199118009, 198501575, 198787549, 197674274, 195732024
 
 function App() {
@@ -158,7 +159,11 @@ function App() {
 					/>
 
 					{/*End of Admin Routes for Hotels  */}
-
+					<HotelRoute
+						path='/hotel-management/main-dashboard'
+						exact
+						component={MainHotelDashboard}
+					/>
 					<HotelRoute
 						path='/hotel-management/dashboard'
 						exact

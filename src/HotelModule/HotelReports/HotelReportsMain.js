@@ -193,7 +193,7 @@ const HotelReportsMain = () => {
 						{chosenLanguage === "English" ? "ARABIC" : "English"}
 					</div>
 
-					<div style={{ background: "#8a8a8a", padding: "1px" }}>
+					<div style={{ background: "#ededed", padding: "1px" }}>
 						<div className='my-2 tab-grid col-md-8'>
 							<Tab
 								isActive={activeTab === "general"}
@@ -216,18 +216,6 @@ const HotelReportsMain = () => {
 								{chosenLanguage === "Arabic"
 									? "Checkout Report"
 									: "Checkout Report"}
-							</Tab>
-
-							<Tab
-								isActive={activeTab === "assign-financials"}
-								onClick={() => {
-									setActiveTab("assign-financials");
-									history.push(
-										"/hotel-management/hotel-reports?assign-financials"
-									);
-								}}
-							>
-								{chosenLanguage === "Arabic" ? "Financials" : "Financials"}
 							</Tab>
 						</div>
 					</div>
@@ -338,7 +326,7 @@ const Tab = styled.div`
 	background-color: ${(props) =>
 		props.isActive
 			? "transparent"
-			: "#bbbbbb"}; /* Light grey for unselected tabs */
+			: "#e0e0e0"}; /* Light grey for unselected tabs */
 	box-shadow: ${(props) =>
 		props.isActive ? "inset 5px 5px 5px rgba(0, 0, 0, 0.3)" : "none"};
 	transition: all 0.3s ease; /* Smooth transition for changes */
@@ -348,5 +336,5 @@ const Tab = styled.div`
 	/* Additional styling for tabs */
 	z-index: 100;
 	font-size: 1.2rem;
-	color: ${(props) => (props.isActive ? "white" : "black")};
+	color: ${(props) => (props.isActive ? "black" : "black")};
 `;

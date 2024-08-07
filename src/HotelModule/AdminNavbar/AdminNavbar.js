@@ -46,11 +46,11 @@ const items = [
 		"sub1",
 		<PieChartOutlined />
 	),
-	getItem(
-		<Link to='/hotel-management/reservation-history'>Reservations</Link>,
-		"sub2",
-		<AreaChartOutlined />
-	),
+	// getItem(
+	// 	<Link to='/hotel-management/reservation-history'>Reservations</Link>,
+	// 	"sub2",
+	// 	<AreaChartOutlined />
+	// ),
 	getItem(
 		<Link to='/hotel-management/new-reservation'>Make A New Reservation</Link>,
 		"sub3",
@@ -82,13 +82,13 @@ const items = [
 		</>
 	),
 
-	getItem(
-		<Link to='#'>Hotel Website Builder</Link>,
-		"sub10",
-		<>
-			<DollarCircleOutlined />
-		</>
-	),
+	// getItem(
+	// 	<Link to='#'>Hotel Website Builder</Link>,
+	// 	"sub10",
+	// 	<>
+	// 		<DollarCircleOutlined />
+	// 	</>
+	// ),
 
 	getItem(
 		<div className='margin-divider'></div>,

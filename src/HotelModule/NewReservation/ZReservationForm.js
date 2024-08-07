@@ -1015,7 +1015,7 @@ const ZReservationForm = ({
 														<div key={index} className='inner-grid'>
 															{index === 0 ? (
 																<div>
-																	<div>
+																	<div style={{ fontSize: "14px" }}>
 																		{customer_details && customer_details.name}
 																	</div>
 																	<div className='mx-auto mt-2'>
@@ -1045,6 +1045,7 @@ const ZReservationForm = ({
 																		width: "85%",
 																		padding: "5px",
 																		textTransform: "capitalize",
+																		fontSize: "14px",
 																	}}
 																>
 																	{room.room_type}
@@ -1088,7 +1089,9 @@ const ZReservationForm = ({
 																		padding: "5px",
 																	}}
 																>
-																	{room.chosenPrice.toFixed(2)}
+																	{room &&
+																		Number(room.chosenPrice) &&
+																		Number(room.chosenPrice).toFixed(2)}
 																</div>
 															</div>
 														</div>
@@ -1196,6 +1199,26 @@ const ZReservationForm = ({
 																		pickedRoomPricing[
 																			index
 																		].chosenPrice.toFixed(2)}
+																</div>
+															</div>
+															<div>
+																{index === 0 ? (
+																	<div>
+																		{chosenLanguage === "Arabic"
+																			? "رقم الغرفة"
+																			: "Room Number"}{" "}
+																	</div>
+																) : null}
+
+																<div
+																	className='mx-auto mt-1'
+																	style={{
+																		background: "white",
+																		width: "85%",
+																		padding: "5px",
+																	}}
+																>
+																	{room.room_number ? room.room_number : "N/A"}
 																</div>
 															</div>
 														</div>
@@ -1374,13 +1397,13 @@ const ZReservationFormWrapper = styled.div`
 
 	.review-grid {
 		display: grid;
-		grid-template-columns: 35% 35%;
+		grid-template-columns: 35% 45%;
 		padding: 20px;
 	}
 
 	.fixed-section {
 		position: fixed;
-		top: 0;
+		top: 70px;
 		width: 100%;
 		background-color: darkgrey;
 		z-index: 10;
@@ -1394,7 +1417,7 @@ const ZReservationFormWrapper = styled.div`
 
 	.inner-grid {
 		display: grid;
-		grid-template-columns: 160px 150px 150px 150px;
+		grid-template-columns: 180px 200px 100px 150px 100px;
 	}
 
 	.inner-grid > div > div {
