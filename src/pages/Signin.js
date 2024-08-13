@@ -90,7 +90,7 @@ const Signin = ({ history }) => {
 
 	const redirectUser = () => {
 		if (redirectToReferrer) {
-			history.push("/hotel-management/dashboard");
+			history.push("/hotel-management/main-dashboard");
 		}
 
 		if (
@@ -98,7 +98,7 @@ const Signin = ({ history }) => {
 			isAuthenticated().user &&
 			isAuthenticated().user.role === 2000
 		) {
-			history.push("/hotel-management/dashboard");
+			history.push("/hotel-management/main-dashboard");
 		}
 
 		if (

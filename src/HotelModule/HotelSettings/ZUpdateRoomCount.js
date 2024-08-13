@@ -17,20 +17,26 @@ const ZUpdateRoomCount = ({
 	roomTypeSelected,
 	setRoomTypeSelected,
 }) => {
-	const roomCountDetails = hotelDetails.roomCountDetails;
-	const addedRooms = Object.entries(roomCountDetails).filter(
-		([key, value]) => value.count > 0
-	);
+	// Extract the roomCountDetails array from hotelDetails
+	const roomCountDetails = hotelDetails.roomCountDetails || [];
 
-	const handleRoomClick = (roomType) => {
-		setSelectedRoomType(roomType);
+	// Handle when a room is clicked
+	const handleRoomClick = (roomType, displayName) => {
+		setSelectedRoomType({ roomType, displayName });
 		setCurrentStep(1); // Start from step 1 when a room is clicked
 	};
 
+	// Render the selected room details using ZHotelDetailsForm2
 	const renderRoomDetails = () => {
 		if (!selectedRoomType) return null;
 
-		const roomDetails = roomCountDetails[selectedRoomType];
+		// Find the details of the selected room type and display name
+		const roomDetails = roomCountDetails.find(
+			(room) =>
+				room.roomType === selectedRoomType.roomType &&
+				room.displayName === selectedRoomType.displayName
+		);
+
 		return (
 			<ZHotelDetailsForm2
 				roomDetails={roomDetails}
@@ -45,43 +51,46 @@ const ZUpdateRoomCount = ({
 				setSelectedRoomType={setSelectedRoomType}
 				roomTypeSelected={roomTypeSelected}
 				setRoomTypeSelected={setRoomTypeSelected}
+				fromPage={"Updating"}
 			/>
 		);
 	};
 
 	return (
-		<>
-			<ZUpdateRoomCountWrapper
-				dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}
-			>
-				<RoomsListWrapper isArabic={chosenLanguage === "Arabic"}>
-					{addedRooms.map(([roomType, details]) => (
+		<ZUpdateRoomCountWrapper dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}>
+			<RoomsListWrapper isArabic={chosenLanguage === "Arabic"}>
+				{roomCountDetails
+					.filter((room) => room.roomType && room.displayName) // Filter out undefined or falsy room types or display names
+					.map((room) => (
 						<RoomItem
-							key={roomType}
-							onClick={() => handleRoomClick(roomType)}
-							isActive={roomType === selectedRoomType}
+							key={`${room.roomType}-${room.displayName}`} // Unique key using both roomType and displayName
+							onClick={() => handleRoomClick(room.roomType, room.displayName)}
+							isActive={
+								room.roomType === selectedRoomType?.roomType &&
+								room.displayName === selectedRoomType?.displayName
+							}
 						>
-							{roomType.replace(/([A-Z])/g, " $1").trim()}
+							{room.displayName ||
+								room.roomType.replace(/([A-Z])/g, " $1").trim()}
 						</RoomItem>
 					))}
-				</RoomsListWrapper>
-				<RoomDetailsWrapper isArabic={chosenLanguage === "Arabic"}>
-					<div className='details-content'>{renderRoomDetails()}</div>
-					{selectedRoomType ? (
-						<div className='update-button'>
-							<button
-								onClick={() => {
-									submittingHotelDetails();
-								}}
-								className='btn btn-primary'
-							>
-								Update Hotel Details
-							</button>
-						</div>
-					) : null}
-				</RoomDetailsWrapper>
-			</ZUpdateRoomCountWrapper>
-		</>
+			</RoomsListWrapper>
+			<RoomDetailsWrapper isArabic={chosenLanguage === "Arabic"}>
+				<div className='details-content'>{renderRoomDetails()}</div>
+				{selectedRoomType ? (
+					<div className='update-button'>
+						<button
+							onClick={() => {
+								submittingHotelDetails();
+							}}
+							className='btn btn-primary'
+						>
+							Update Hotel Details
+						</button>
+					</div>
+				) : null}
+			</RoomDetailsWrapper>
+		</ZUpdateRoomCountWrapper>
 	);
 };
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { Menu, Dropdown } from "antd";
 import {
@@ -8,20 +8,50 @@ import {
 	BellOutlined,
 	MessageOutlined,
 	SettingOutlined,
-	GlobalOutlined, // Import the global icon
+	GlobalOutlined,
 } from "@ant-design/icons";
 import { useCartContext } from "../../cart_context";
-import DigitalClock from "./DigitalClock"; // Import the DigitalClock component
+import DigitalClock from "./DigitalClock";
+import { isAuthenticated, signout } from "../../auth";
+import { useLocation, useHistory } from "react-router-dom";
 
-const TopNavbar = ({ onProfileClick, collapsed }) => {
+const TopNavbar = ({ collapsed }) => {
 	const [dropdownVisible, setDropdownVisible] = useState(false);
 	const { languageToggle, chosenLanguage } = useCartContext();
+	const [hotelName, setHotelName] = useState("");
+
+	const location = useLocation();
+	const history = useHistory();
+	const { user } = isAuthenticated();
+
+	useEffect(() => {
+		const selectedHotel =
+			JSON.parse(localStorage.getItem("selectedHotel")) || {};
+		const userId = user._id;
+		const hotelId = selectedHotel._id;
+
+		const pathContainsUserIdAndHotelId =
+			location.pathname.includes(userId) && location.pathname.includes(hotelId);
+		if (pathContainsUserIdAndHotelId) {
+			setHotelName(selectedHotel.hotelName);
+		} else {
+			setHotelName("");
+		}
+	}, [location, user]);
 
 	const handleMenuClick = ({ key }) => {
-		if (key === "logout") {
-			// Handle logout action
+		if (key === "profile") {
+			history.push("/hotel-management/main-dashboard");
+		} else if (key === "logout") {
+			handleSignout();
 		}
 		setDropdownVisible(false);
+	};
+
+	const handleSignout = () => {
+		signout(() => {
+			history.push("/");
+		});
 	};
 
 	const menu = (
@@ -38,6 +68,22 @@ const TopNavbar = ({ onProfileClick, collapsed }) => {
 		</Menu>
 	);
 
+	const handleSettingsClick = () => {
+		const selectedHotel =
+			JSON.parse(localStorage.getItem("selectedHotel")) || {};
+		const userId = user._id;
+		const hotelId = selectedHotel._id;
+
+		// Check if both userId and hotelId are in the current path
+		const pathContainsUserIdAndHotelId =
+			location.pathname.includes(userId) && location.pathname.includes(hotelId);
+
+		if (pathContainsUserIdAndHotelId) {
+			window.location.href = `/hotel-management/settings/${userId}/${hotelId}`;
+		}
+		// If not, do nothing
+	};
+
 	return (
 		<NavbarWrapper isArabic={chosenLanguage === "Arabic"}>
 			<LeftSection>
@@ -52,6 +98,9 @@ const TopNavbar = ({ onProfileClick, collapsed }) => {
 					<DigitalClock />
 				</DigitalClockWrapper>
 			</LeftSection>
+			<MiddleSection>
+				{hotelName && <HotelName>{hotelName}</HotelName>}
+			</MiddleSection>
 			<RightSection>
 				<Icons>
 					<IconWrapper
@@ -67,7 +116,7 @@ const TopNavbar = ({ onProfileClick, collapsed }) => {
 							{chosenLanguage === "English" ? "عربي" : "En"}
 						</LanguageText>
 					</IconWrapper>
-					<IconWrapper>
+					<IconWrapper onClick={handleSettingsClick}>
 						<SettingOutlined />
 					</IconWrapper>
 					<IconWrapper
@@ -93,10 +142,10 @@ const TopNavbar = ({ onProfileClick, collapsed }) => {
 						visible={dropdownVisible}
 						onVisibleChange={(flag) => setDropdownVisible(flag)}
 					>
-						<Profile onClick={onProfileClick}>
+						<Profile>
 							<img src='https://via.placeholder.com/40' alt='Profile' />
 							<div>
-								<span>Ya modeer</span>
+								<span>Hi {user.name.split(" ")[0]}</span>
 								<small>Superadmin</small>
 							</div>
 						</Profile>
@@ -139,6 +188,18 @@ const Logo = styled.div`
 
 const DigitalClockWrapper = styled.div`
 	margin-left: 20px;
+`;
+
+const MiddleSection = styled.div`
+	flex: 1;
+	text-align: center;
+	text-transform: capitalize;
+`;
+
+const HotelName = styled.span`
+	font-weight: bold;
+	color: white;
+	font-size: 24px;
 `;
 
 const RightSection = styled.div`

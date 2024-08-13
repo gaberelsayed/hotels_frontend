@@ -6,7 +6,7 @@ import { useHistory } from "react-router-dom";
 import { useCartContext } from "../../cart_context";
 import {
 	createRooms,
-	getHotelDetails,
+	getHotelById,
 	getHotelRooms,
 	hotelAccount,
 	updateHotelDetails,
@@ -51,7 +51,9 @@ const HotelSettingsMain = () => {
 	const [roomTypeSelected, setRoomTypeSelected] = useState(false);
 
 	//For Rooms
-	const [floorDetails, setFloorDetails] = useState(defaultHotelDetails);
+	const [floorDetails, setFloorDetails] = useState({
+		roomCountDetails: {}, // Initialize as an object to hold counts by _id
+	});
 	const [modalVisible, setModalVisible] = useState(false);
 	const [modalVisible2, setModalVisible2] = useState(false);
 	const [clickedFloor, setClickedFloor] = useState("");
@@ -123,6 +125,7 @@ const HotelSettingsMain = () => {
 	];
 
 	const amenitiesList = [
+		// Basic Amenities
 		"WiFi",
 		"TV",
 		"Air Conditioning",
@@ -152,41 +155,74 @@ const HotelSettingsMain = () => {
 		"Kids' Club",
 		"Beachfront",
 		"Casino",
-		"Nightclub",
+
+		// Views
+		"Sea View",
+		"Street View",
+		"Garden View",
+		"City View",
+		"Mountain View",
+		"Holy Haram View",
+
+		// Smoking Preferences
+		"Smoking",
+		"Non-Smoking",
+
+		// Additional Amenities for Makkah, KSA
+		"Prayer Mat",
+		"Qibla Direction Indicator",
+		"Holy Quran",
+		"Islamic Television Channels",
+		"Dedicated Prayer Room",
+		"Shuttle Service to Haram",
+		"Nearby Souks/Markets",
+		"Arabic Coffee & Dates Service",
+		"Cultural Tours/Guides",
+		"Private Pilgrimage Services",
+		"Complimentary Zamzam Water",
+		"Halal-certified Restaurant",
+		"Hajj & Umrah Booking Assistance",
 	];
 
 	const gettingHotelData = () => {
+		const selectedHotel =
+			JSON.parse(localStorage.getItem("selectedHotel")) || {};
+		const hotelId = selectedHotel._id;
+
+		console.log(hotelId, "hotelId");
+
+		// Fetching user account details
 		hotelAccount(user._id, token, user._id).then((data) => {
 			if (data && data.error) {
 				console.log(data.error, "Error rendering");
 			} else {
 				setValues(data);
 
-				getHotelDetails(data._id).then((data2) => {
+				// Fetching hotel details by hotelId
+				getHotelById(hotelId).then((data2) => {
 					if (data2 && data2.error) {
 						console.log(data2.error, "Error rendering");
 					} else {
-						if (data && data.name && data._id && data2 && data2.length > 0) {
-							setHotelDetails(data2[0]);
-							console.log(data2[0], "data2[0]");
+						console.log(data2, "data2");
+						if (data && data.name && data._id && data2 && data2._id) {
+							setHotelDetails(data2);
+
 							// other state updates...
 							setHotelPhotos(
-								data2[0] &&
-									data2[0].hotelPhotos &&
-									data2[0].hotelPhotos.length > 0
-									? data2[0].hotelPhotos
+								data2.hotelPhotos && data2.hotelPhotos.length > 0
+									? data2.hotelPhotos
 									: []
 							);
 
 							setPricingData(
-								data2[0] &&
-									data2[0].pricingCalendar &&
-									data2[0].pricingCalendar.length > 0
-									? data2[0].pricingCalendar
+								data2.pricingCalendar && data2.pricingCalendar.length > 0
+									? data2.pricingCalendar
 									: []
 							);
+							console.log(data2, "data2");
 
-							getHotelRooms(data2[0]._id, user._id).then((data4) => {
+							// Fetching hotel rooms
+							getHotelRooms(data2._id, user._id).then((data4) => {
 								if (data4 && data4.error) {
 									console.log(data4.error);
 								} else {
@@ -196,7 +232,6 @@ const HotelSettingsMain = () => {
 									if (hotelRooms.length === 0) {
 										setHotelRooms(data4);
 									}
-									// setHotelRooms([]);
 
 									if (clickedFloor && modalVisible) {
 										// Aggregate room types for the clicked floor
@@ -237,8 +272,9 @@ const HotelSettingsMain = () => {
 		// eslint-disable-next-line
 	}, [clickedFloor]);
 
-	const hotelDetailsUpdate = () => {
-		const updatedDetails = hotelDetails;
+	const hotelDetailsUpdate = (fromPage) => {
+		console.log(fromPage, "fromPage");
+		const updatedDetails = { ...hotelDetails, fromPage };
 
 		// Call the API to update the hotel details
 		const { user, token } = isAuthenticated(); // Assuming you have a user and token
@@ -360,7 +396,9 @@ const HotelSettingsMain = () => {
 								onClick={() => {
 									setActiveTab("HotelDetails");
 									setCurrentStep(0);
-									history.push("/hotel-management/settings?hoteldetails"); // Programmatic navigation
+									history.push(
+										`/hotel-management/settings/${user._id}/${hotelDetails._id}?hoteldetails`
+									); // Programmatic navigation
 								}}
 							>
 								{chosenLanguage === "Arabic"
@@ -373,7 +411,9 @@ const HotelSettingsMain = () => {
 								onClick={() => {
 									setActiveTab("UpdateRoomCount");
 									setCurrentStep(1);
-									history.push("/hotel-management/settings?roomcount"); // Programmatic navigation
+									history.push(
+										`/hotel-management/settings/${user._id}/${hotelDetails._id}?roomcount`
+									); // Programmatic navigation
 								}}
 							>
 								{chosenLanguage === "Arabic"
@@ -385,7 +425,9 @@ const HotelSettingsMain = () => {
 								isActive={activeTab === "RoomDetails"}
 								onClick={() => {
 									setActiveTab("RoomDetails");
-									history.push("/hotel-management/settings?roomdetails"); // Programmatic navigation
+									history.push(
+										`/hotel-management/settings/${user._id}/${hotelDetails._id}?roomdetails`
+									); // Programmatic navigation
 								}}
 							>
 								{chosenLanguage === "Arabic"
@@ -416,6 +458,7 @@ const HotelSettingsMain = () => {
 									setSelectedRoomType={setSelectedRoomType}
 									roomTypeSelected={roomTypeSelected}
 									setRoomTypeSelected={setRoomTypeSelected}
+									fromPage='AddNew'
 								/>
 							</div>
 						) : activeTab === "RoomDetails" &&

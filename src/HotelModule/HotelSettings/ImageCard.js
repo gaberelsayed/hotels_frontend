@@ -15,13 +15,15 @@ const ImageCard = ({
 	chosenLanguage,
 }) => {
 	const { user, token } = isAuthenticated();
-	const roomPhotos = hotelDetails.roomCountDetails[roomType]?.photos || [];
+	const roomPhotos =
+		hotelDetails.roomCountDetails.find((room) => room.roomType === roomType)
+			?.photos || [];
 	const [photos, setPhotos] = useState(roomPhotos);
 
 	useEffect(() => {
-		// Ensure photos are in sync with hotelDetails.roomCountDetails
 		const updatedRoomPhotos =
-			hotelDetails.roomCountDetails[roomType]?.photos || [];
+			hotelDetails.roomCountDetails.find((room) => room.roomType === roomType)
+				?.photos || [];
 		setPhotos(updatedRoomPhotos);
 	}, [hotelDetails, roomType]);
 
@@ -72,14 +74,25 @@ const ImageCard = ({
 				setPhotos(updatedPhotos);
 
 				setHotelDetails((prevDetails) => {
-					const updatedRoomCountDetails = {
-						...prevDetails.roomCountDetails,
-						[roomType]: {
-							...prevDetails.roomCountDetails[roomType],
-							photos: updatedPhotos,
-						},
+					const roomCountDetailsArray = Array.isArray(
+						prevDetails.roomCountDetails
+					)
+						? prevDetails.roomCountDetails
+						: [];
+
+					const updatedRoomCountDetails = roomCountDetailsArray.map((room) =>
+						room.roomType === roomType
+							? {
+									...room,
+									photos: updatedPhotos,
+							  }
+							: room
+					);
+
+					return {
+						...prevDetails,
+						roomCountDetails: updatedRoomCountDetails,
 					};
-					return { ...prevDetails, roomCountDetails: updatedRoomCountDetails };
 				});
 			});
 		}
@@ -100,13 +113,21 @@ const ImageCard = ({
 					setPhotos(updatedPhotos);
 
 					setHotelDetails((prevDetails) => {
-						const updatedRoomCountDetails = {
-							...prevDetails.roomCountDetails,
-							[roomType]: {
-								...prevDetails.roomCountDetails[roomType],
-								photos: updatedPhotos,
-							},
-						};
+						const roomCountDetailsArray = Array.isArray(
+							prevDetails.roomCountDetails
+						)
+							? prevDetails.roomCountDetails
+							: [];
+
+						const updatedRoomCountDetails = roomCountDetailsArray.map((room) =>
+							room.roomType === roomType
+								? {
+										...room,
+										photos: updatedPhotos,
+								  }
+								: room
+						);
+
 						return {
 							...prevDetails,
 							roomCountDetails: updatedRoomCountDetails,
@@ -128,14 +149,23 @@ const ImageCard = ({
 
 		setPhotos(items);
 		setHotelDetails((prevDetails) => {
-			const updatedRoomCountDetails = {
-				...prevDetails.roomCountDetails,
-				[roomType]: {
-					...prevDetails.roomCountDetails[roomType],
-					photos: items,
-				},
+			const roomCountDetailsArray = Array.isArray(prevDetails.roomCountDetails)
+				? prevDetails.roomCountDetails
+				: [];
+
+			const updatedRoomCountDetails = roomCountDetailsArray.map((room) =>
+				room.roomType === roomType
+					? {
+							...room,
+							photos: items,
+					  }
+					: room
+			);
+
+			return {
+				...prevDetails,
+				roomCountDetails: updatedRoomCountDetails,
 			};
-			return { ...prevDetails, roomCountDetails: updatedRoomCountDetails };
 		});
 	};
 

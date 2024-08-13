@@ -84,27 +84,30 @@ const HotelHeatMap = ({
 	const floors = Array.from({ length: hotelFloors }, (_, index) => index + 1); // Ascending order
 	const floorsDesc = [...floors].reverse(); // Descending order for display on the canvas
 
-	const filteredRooms = hotelRooms.filter((room) => {
-		const isAvailabilityMatch =
-			selectedAvailability === null ||
-			(selectedAvailability === "occupied" &&
-				isRoomBooked(room._id, room.room_type, room.bedsNumber).isBooked) ||
-			(selectedAvailability === "vacant" &&
-				!isRoomBooked(room._id, room.room_type, room.bedsNumber).isBooked);
-		const isRoomTypeMatch =
-			selectedRoomType === null || room.room_type === selectedRoomType;
-		const isFloorMatch = selectedFloor === null || room.floor === selectedFloor;
-		const isRoomStatusMatch =
-			selectedRoomStatus === null ||
-			(selectedRoomStatus === "clean" && room.cleanRoom) ||
-			(selectedRoomStatus === "dirty" && !room.cleanRoom);
-		return (
-			isAvailabilityMatch &&
-			isRoomTypeMatch &&
-			isFloorMatch &&
-			isRoomStatusMatch
-		);
-	});
+	const filteredRooms =
+		hotelRooms &&
+		hotelRooms.filter((room) => {
+			const isAvailabilityMatch =
+				selectedAvailability === null ||
+				(selectedAvailability === "occupied" &&
+					isRoomBooked(room._id, room.room_type, room.bedsNumber).isBooked) ||
+				(selectedAvailability === "vacant" &&
+					!isRoomBooked(room._id, room.room_type, room.bedsNumber).isBooked);
+			const isRoomTypeMatch =
+				selectedRoomType === null || room.room_type === selectedRoomType;
+			const isFloorMatch =
+				selectedFloor === null || room.floor === selectedFloor;
+			const isRoomStatusMatch =
+				selectedRoomStatus === null ||
+				(selectedRoomStatus === "clean" && room.cleanRoom) ||
+				(selectedRoomStatus === "dirty" && !room.cleanRoom);
+			return (
+				isAvailabilityMatch &&
+				isRoomTypeMatch &&
+				isFloorMatch &&
+				isRoomStatusMatch
+			);
+		});
 
 	const distinctRoomTypesWithColors =
 		hotelRooms &&

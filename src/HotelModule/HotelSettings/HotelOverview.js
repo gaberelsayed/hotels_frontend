@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import styled, { keyframes } from "styled-components";
-import { Spin } from "antd";
+import { Tooltip, Spin } from "antd";
 import FloorsModal from "./FloorsModal";
 import ZSingleRoomModal from "./ZSingleRoomModal";
 import ZInheritRoomsModal from "./ZInheritRoomsModal";
@@ -34,7 +34,7 @@ const HotelOverview = ({
 	const { hotelFloors, parkingLot, hotelName } = hotelDetails;
 	const floors = Array.from(
 		{ length: hotelFloors },
-		(_, index) => hotelFloors - index
+		(_, index) => index + 1 // Ascending order
 	);
 
 	const [hideAddRooms, setHideAddRooms] = useState(false);
@@ -52,27 +52,22 @@ const HotelOverview = ({
 		}
 
 		const newHotelRooms = floors.flatMap((floorNumber) => {
-			// If the current floor is the base floor, return the rooms as is
 			if (Number(floorNumber) === Number(baseFloorNumber)) {
 				return baseFloorRooms;
 			}
 
-			// For other floors, map the base floor rooms to the current floor
 			return baseFloorRooms.map((room) => {
-				// Generate new room number based on the floor number
 				const newRoomNumber = `${floorNumber}${room.room_number.substring(
 					room.room_number.length - 2
 				)}`;
 
-				// Create a new room object with the updated floor and room number
 				const newRoom = {
 					...room,
 					floor: floorNumber,
 					room_number: newRoomNumber,
-					_id: undefined, // Reset room id if necessary to avoid duplicates
+					_id: undefined, // Reset room id to avoid duplicates
 				};
 
-				// If the room type is individualBed, generate the bedsNumber array
 				if (room.room_type === "individualBed") {
 					newRoom.bedsNumber = Array.from(
 						{ length: room.bedsNumber.length },
@@ -91,10 +86,17 @@ const HotelOverview = ({
 		);
 	};
 
-	const roomCountDetails = hotelDetails.roomCountDetails || {};
-	const roomTypesCount = Object.entries(roomCountDetails).filter(
-		([, details]) => details.count > 0
+	// Ensure roomCountDetails is treated as an array
+	const roomCountDetails = Array.isArray(hotelDetails.roomCountDetails)
+		? hotelDetails.roomCountDetails
+		: [];
+
+	// Get room types count where count > 0
+	const roomTypesCount = roomCountDetails.filter(
+		(details) => details.count > 0
 	).length;
+
+	console.log(hotelRooms, "hotelRooms");
 
 	return (
 		<HotelOverviewWrapper>
@@ -134,6 +136,7 @@ const HotelOverview = ({
 				setBaseFloor={setBaseFloor}
 				applyInheritance={applyInheritance}
 			/>
+
 			<div className='mx-auto text-center my-4'>
 				{hotelRooms && hotelRooms.length > 0 ? (
 					<button
@@ -149,38 +152,43 @@ const HotelOverview = ({
 					</button>
 				) : null}
 			</div>
+
 			<div
 				className={`colors-grid mt-3 mx-auto text-center ${
 					roomTypesCount <= 7 ? "expanded" : ""
 				}`}
 			>
-				{Object.entries(roomCountDetails)
-					.filter(([roomType, details]) => details.count > 0)
-					.map(([roomType, details], i) => (
+				{roomCountDetails
+					.filter((details) => details.count > 0)
+					.map((details, i) => (
 						<div className='' key={i} style={{ textAlign: "center" }}>
 							<div
 								style={{
 									width: "20px",
 									height: "20px",
 									backgroundColor:
-										details.roomColor || roomTypeColors[roomType] || "#ddd", // Use roomTypeColors as default
+										details.roomColor ||
+										roomTypeColors[details.roomType] ||
+										"#ddd",
 									margin: "0 auto",
 									marginBottom: "5px",
 								}}
 							></div>
 							<span style={{ textTransform: "capitalize", fontSize: "13px" }}>
-								{roomType.replace(/([A-Z])/g, " $1").trim()} ({details.count})
+								{details.displayName ||
+									details.roomType.replace(/([A-Z])/g, " $1").trim()}{" "}
+								({details.count})
 							</span>
 						</div>
 					))}
 			</div>
 
 			<FloorsContainer>
-				{floors.map((floor, index) => {
+				{floors.reverse().map((floor, index) => {
 					const roomsOnFloor =
 						hotelRooms &&
 						hotelRooms.filter((room) => room.floor === floor && !room._id);
-					// Determine the floor number from the current adding room
+
 					let currentAddingFloor = null;
 					if (currentAddingRoom) {
 						currentAddingFloor =
@@ -191,25 +199,52 @@ const HotelOverview = ({
 
 					return (
 						<Floor key={index} delay={index * 0.3}>
-							Floor {floor}{" "}
+							<h2
+								className='mb-4'
+								style={{
+									fontWeight: "bold",
+									fontSize: "1.5rem",
+									color: "#4a4a4a",
+								}}
+							>
+								Floor {floor}
+							</h2>
 							<div style={{ display: "flex", flexWrap: "wrap" }}>
 								{hotelRooms &&
 									hotelRooms
 										.filter((room) => room.floor === floor)
 										.map((room, idx) => (
-											<RoomSquare
+											<Tooltip
+												title={
+													<div
+														style={{ textAlign: "center", color: "darkgrey" }}
+													>
+														<div>Room #: {room.room_number}</div>
+														<div style={{ textTransform: "capitalize" }}>
+															Room Type: {room.room_type}
+														</div>
+														<div>
+															Occupied: {room.isOccupied ? "Yes" : "No"}
+														</div>
+														<div>Clean: {room.cleanRoom ? "Yes" : "No"}</div>
+													</div>
+												}
 												key={idx}
-												color={room.roomColorCode}
-												onClick={() => {
-													setClickedRoom(room);
-													setClickedFloor(floor);
-													// if (room && room._id) {
-													setModalVisible2(true);
-													// }
-												}}
+												overlayStyle={{ zIndex: 100000000 }}
+												color='white'
 											>
-												{room.room_number}
-											</RoomSquare>
+												<RoomSquare
+													key={idx}
+													color={room.roomColorCode}
+													onClick={() => {
+														setClickedRoom(room);
+														setClickedFloor(floor);
+														setModalVisible2(true);
+													}}
+												>
+													{room.room_number}
+												</RoomSquare>
+											</Tooltip>
 										))}
 							</div>
 							<span
@@ -246,7 +281,6 @@ const HotelOverview = ({
 									</div>
 								</>
 							)}
-							{/* Check if the current floor has any rooms */}
 						</Floor>
 					);
 				})}
@@ -265,6 +299,7 @@ const fadeIn = keyframes`
 `;
 
 const HotelOverviewWrapper = styled.div`
+	margin-top: 30px;
 	h3 {
 		font-weight: bold;
 		font-size: 2rem;
@@ -274,19 +309,16 @@ const HotelOverviewWrapper = styled.div`
 
 	.colors-grid {
 		display: grid;
-		justify-content: center; /* Center the grid container */
+		justify-content: center;
 		align-items: center;
 		align-content: center;
 		grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-		gap: 2px; /* Adds some space between grid items */
-		justify-items: center; /* Center the grid items horizontally */
+		gap: 2px;
+		justify-items: center;
 	}
 	.colors-grid.expanded {
-		gap: 10px; /* Increase the gap if there are 7 or fewer room types */
-		grid-template-columns: repeat(
-			auto-fit,
-			minmax(120px, 1fr)
-		); /* Make columns wider */
+		gap: 10px;
+		grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
 	}
 `;
 
@@ -298,10 +330,10 @@ const FloorsContainer = styled.div`
 
 const Floor = styled.div`
 	margin: 10px;
-	padding: 50px;
-	background-color: lightblue;
-	border: 1px solid #ccc;
-	width: 85%;
+	padding: 30px;
+	background-color: rgba(237, 237, 237, 0.3);
+	border: 1px solid rgba(237, 237, 237, 1);
+	width: 100%;
 	text-align: center;
 	font-weight: bold;
 	cursor: pointer;
@@ -316,7 +348,7 @@ const ParkingLot = styled.div`
 	padding: 40px;
 	background-color: lightgreen;
 	border: 1px solid #ccc;
-	width: 70%;
+	width: 75%;
 	text-align: center;
 	font-weight: bold;
 `;
@@ -333,4 +365,10 @@ const RoomSquare = styled.div`
 	align-items: center;
 	justify-content: center;
 	font-size: 0.7rem;
+	cursor: pointer;
+	transition:
+		width 0.3s ease-in-out,
+		height 0.3s ease-in-out,
+		background-color 0.3s ease-in-out,
+		color 0.3s ease-in-out;
 `;

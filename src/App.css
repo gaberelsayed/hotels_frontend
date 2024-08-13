@@ -17,45 +17,74 @@ body {
 }
 
 :root {
-	--primaryColor: #5fb7ea;
-	--primaryRGBA: rgba(0, 0, 0, 0.3);
-	--mainGrey: #fafafa;
-	--darkGrey: #5f5e5e;
-	--mainWhite: #fff;
-	--mainBlack: #222;
-	--mainTransition: all 0.3s ease-in-out;
-	--mainSpacing: 0.3rem;
-	--mainRed: #c40000;
-	--clr-primary-1: hsl(22, 28%, 21%);
-	--clr-primary-2: hsl(22, 28%, 29%);
-	--clr-primary-3: hsl(22, 28%, 37%);
-	--clr-primary-4: hsl(22, 28%, 45%);
-	/* primary/main color */
-	--clr-primary-5: hsl(22, 31%, 52%);
-	/* lighter shades of primary color */
-	--clr-primary-6: hsl(22, 31%, 60%);
-	--clr-primary-7: hsl(22, 31%, 67%);
-	--clr-primary-8: hsl(20, 31%, 74%);
-	--clr-primary-9: hsl(22, 31%, 81%);
-	--clr-primary-10: hsl(22, 31%, 88%);
-	/* darkest grey - used for headings */
-	--clr-grey-1: hsl(209, 61%, 16%);
-	--clr-grey-2: hsl(211, 39%, 23%);
-	--clr-grey-3: hsl(209, 34%, 30%);
-	--clr-grey-4: hsl(209, 28%, 39%);
-	/* grey used for paragraphs */
-	--clr-grey-5: hsl(210, 22%, 49%);
-	--clr-grey-6: hsl(209, 23%, 60%);
-	--clr-grey-7: hsl(211, 27%, 70%);
-	--clr-grey-8: hsl(210, 31%, 80%);
-	--clr-grey-9: hsl(212, 33%, 89%);
-	--clr-grey-10: hsl(210, 36%, 96%);
-	--clr-white: #fff;
-	--clr-red-dark: hsl(360, 67%, 44%);
-	--clr-red-light: hsl(360, 71%, 66%);
-	--clr-green-dark: hsl(125, 67%, 44%);
-	--clr-green-light: hsl(125, 71%, 66%);
-	--clr-black: #222;
+	/* Primary Colors */
+	--primary-color-blue: #1e88e5;
+	--primary-color-light-blue: #e3f2fd;
+	--primary-color-lightest-blue: #e8f5e9;
+	--primary-color-dark-blue: #1565c0;
+	--primary-color-darker-blue: #0d47a1;
+
+	/* Secondary Colors */
+	--secondary-color-pink: #f3e5f5;
+	--secondary-color-light-pink: #ffebee;
+	--secondary-color-lighter-pink: #ffe0e0;
+	--secondary-color-dark-pink: #e91e63;
+	--secondary-color-darker-pink: #d81b60;
+
+	/* Accent Colors */
+	--accent-color-yellow: #fffde7;
+	--accent-color-orange: #ffcc80;
+	--accent-color-green: #66bb6a;
+	--accent-color-dark-green: #388e3c;
+	--accent-color-purple: #b39ddb;
+	--accent-color-dark-purple: #512da8;
+	--accent-color-red: #ff5252;
+	--accent-color-light-red: #ff8a80;
+
+	/* Neutral Colors */
+	--neutral-light-gray: #f7f8fc;
+	--neutral-medium-gray: #cfcfcf;
+	--neutral-dark-gray: #888888;
+	--neutral-darker-gray: #707070;
+	--neutral-lightest-gray: #ffffff;
+	--neutral-darkest-gray: #3f3f3f;
+
+	/* Text Colors */
+	--text-color-primary: #000000;
+	--text-color-secondary: #707070;
+	--text-color-light: #f0f0f0;
+	--text-color-dark: #333333;
+	--text-color-accent: #1e88e5;
+
+	/* Background Colors */
+	--background-light: #f7f8fc;
+	--background-dark: #3f3f3f;
+	--background-accent-blue: #e3f2fd;
+	--background-accent-yellow: #fffde7;
+
+	/* Button Colors */
+	--button-bg-primary: #1e88e5;
+	--button-bg-primary-light: #e3f2fd;
+	--button-bg-secondary: #f3e5f5;
+	--button-font-color: #ffffff;
+	--button-bg-accent: #ffcc80;
+
+	/* Border Colors */
+	--border-color-light: #e0e0e0;
+	--border-color-dark: #707070;
+
+	/* Badge Colors */
+	--badge-bg-blue: #1e88e5;
+	--badge-bg-green: #66bb6a;
+	--badge-bg-red: #ff5252;
+
+	/* Shadows */
+	--box-shadow-light: 0 4px 8px rgba(0, 0, 0, 0.1);
+	--box-shadow-dark: 0 4px 8px rgba(0, 0, 0, 0.3);
+
+	/* Transitions */
+	--main-transition: all 0.3s ease-in-out;
+	--main-spacing: 0.3rem;
 }
 
 .submitForm:hover {

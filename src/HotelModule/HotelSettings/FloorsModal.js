@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components";
 import { Modal } from "antd";
 import ZInputFieldRoomsPFloor from "./ZInputFieldRoomsPFloor";
@@ -16,9 +16,28 @@ const FloorsModal = ({
 	setRooms,
 	values,
 }) => {
+	// Prepopulate the floorDetails based on existing rooms data
+	useEffect(() => {
+		if (rooms && rooms.length > 0) {
+			const newFloorDetails = { ...floorDetails, roomCountDetails: {} };
+
+			rooms.forEach((room) => {
+				if (room.floor === clickedFloor) {
+					const key = `${room.room_type}_${room.display_name}`;
+					if (newFloorDetails.roomCountDetails[key]) {
+						newFloorDetails.roomCountDetails[key] += 1;
+					} else {
+						newFloorDetails.roomCountDetails[key] = 1;
+					}
+				}
+			});
+
+			setFloorDetails(newFloorDetails);
+		}
+	}, [rooms, clickedFloor, setFloorDetails, floorDetails]);
+
 	const getRoomCountTotal = (roomCountDetails) => {
 		return Object.values(roomCountDetails).reduce((total, count) => {
-			// Convert count to a number and validate it
 			const numericCount = Number(count);
 			if (isNaN(numericCount)) {
 				console.warn(`Invalid count value: ${count}`);
@@ -30,14 +49,16 @@ const FloorsModal = ({
 
 	const totalRooms = getRoomCountTotal(floorDetails.roomCountDetails);
 
-	const handleRoomCountChange = (roomType, value) => {
+	const handleRoomCountChange = (key, value) => {
 		const newRoomCount = Number(value);
-		const maxRoomCount = hotelDetails.roomCountDetails[roomType];
+
+		const maxRoomCount =
+			hotelDetails.roomCountDetails.find(
+				(detail) => `${detail.roomType}_${detail.displayName}` === key
+			)?.count || 0;
 
 		if (newRoomCount > maxRoomCount) {
-			toast.error(
-				`Cannot add more than ${maxRoomCount} rooms for ${roomType}.`
-			);
+			toast.error(`Cannot add more than ${maxRoomCount} rooms for ${key}.`);
 			return;
 		}
 
@@ -45,15 +66,9 @@ const FloorsModal = ({
 			...floorDetails,
 			roomCountDetails: {
 				...floorDetails.roomCountDetails,
-				[roomType]: newRoomCount,
+				[key]: newRoomCount,
 			},
 		};
-
-		// Automatically update pricing if room count is changed
-		if (newRoomCount > 0 && hotelDetails.roomCountDetails[`${roomType}Price`]) {
-			newFloorDetails.roomCountDetails[`${roomType}Price`] =
-				hotelDetails.roomCountDetails[`${roomType}Price`];
-		}
 
 		setFloorDetails(newFloorDetails);
 	};
@@ -64,44 +79,55 @@ const FloorsModal = ({
 
 		let currentRoomNumber = 1;
 
-		roomTypes.forEach((type) => {
-			if (type.endsWith("Price")) return;
+		roomTypes.forEach((key) => {
+			const count = floorDetails.roomCountDetails[key];
+			const roomDetails = hotelDetails.roomCountDetails.find(
+				(detail) => `${detail.roomType}_${detail.displayName}` === key
+			);
 
-			const count = floorDetails.roomCountDetails[type];
-			const priceObject = floorDetails.roomCountDetails[`${type}Price`];
+			if (!roomDetails) return;
+
 			const roomColor =
-				hotelDetails.roomCountDetails[type]?.roomColor ||
-				roomTypeColors[type] ||
-				"#000";
+				roomDetails.roomColor || roomTypeColors[roomDetails.roomType] || "#000";
+			const amenities = roomDetails.amenities || [];
 
 			for (let i = 0; i < count; i++) {
 				const roomNumber = `${clickedFloor}${String(currentRoomNumber).padStart(
 					2,
 					"0"
 				)}`;
-				newRoomsForCurrentFloor.push({
+
+				const newRoom = {
 					room_number: roomNumber,
-					room_type: type,
-					room_pricing: priceObject,
-					roomColorCode: roomColor, // Use roomColor from hotelDetails or fall back to roomTypeColors
+					room_type: roomDetails.roomType,
+					display_name: roomDetails.displayName || roomNumber,
+					room_features: amenities,
+					roomColorCode: roomColor,
 					floor: clickedFloor,
 					hotelId: hotelDetails._id,
 					belongsTo: values._id,
-				});
+				};
+
+				if (roomDetails.roomType === "individualBed") {
+					newRoom.individualBeds = true;
+					newRoom.bedsNumber = Array.from(
+						{ length: roomDetails.count },
+						(_, i) => `${roomNumber}${String.fromCharCode(97 + i)}`
+					);
+				}
+
+				newRoomsForCurrentFloor.push(newRoom);
 				currentRoomNumber++;
 			}
 		});
 
-		// Remove old rooms for the current floor
 		const updatedRooms = rooms.filter((room) => room.floor !== clickedFloor);
-
-		// Add new rooms for the current floor
 		setRooms([...updatedRooms, ...newRoomsForCurrentFloor]);
 	};
 
 	const mainForm = () => {
-		const roomTypesCount = Object.entries(hotelDetails.roomCountDetails).filter(
-			([, details]) => details.count > 0
+		const roomTypesCount = hotelDetails.roomCountDetails.filter(
+			(details) => details.count > 0
 		).length;
 
 		return (
@@ -110,18 +136,24 @@ const FloorsModal = ({
 					Room Types & Count In Floor #{clickedFloor}
 				</h3>
 				<div className={`row ${roomTypesCount <= 6 ? "centered-grid" : ""}`}>
-					{Object.entries(hotelDetails.roomCountDetails)
-						.filter(([roomType, details]) => details.count > 0)
-						.map(([roomType, details], i) => (
-							<ZInputFieldRoomsPFloor
-								key={i}
-								Title={roomType.replace(/([A-Z])/g, " $1").trim()}
-								value={floorDetails.roomCountDetails[roomType]}
-								handleFloorRoomsCount={handleRoomCountChange}
-								roomType={roomType}
-								numRoomTypes={roomTypesCount}
-							/>
-						))}
+					{hotelDetails.roomCountDetails
+						.filter((details) => details.count > 0)
+						.map((details, i) => {
+							const key = `${details.roomType}_${details.displayName}`;
+							return (
+								<ZInputFieldRoomsPFloor
+									key={i}
+									Title={
+										details.displayName ||
+										details.roomType.replace(/([A-Z])/g, " $1").trim()
+									}
+									value={floorDetails.roomCountDetails[key] || 0}
+									handleFloorRoomsCount={handleRoomCountChange}
+									keyValue={key}
+									numRoomTypes={roomTypesCount}
+								/>
+							);
+						})}
 					<div className='col-md-2 my-auto total-rooms'>
 						<h5>
 							Total: {totalRooms ? totalRooms : 0} Rooms In Floor #
@@ -143,9 +175,7 @@ const FloorsModal = ({
 			<Modal
 				width='70%'
 				title={
-					<div className='modal-title'>
-						{`Floor ${clickedFloor} Rooms Builder`}
-					</div>
+					<div className='modal-title'>{`Floor ${clickedFloor} Rooms Builder`}</div>
 				}
 				open={modalVisible}
 				onOk={() => {

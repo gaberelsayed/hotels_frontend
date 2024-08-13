@@ -294,6 +294,7 @@ export const getGeneralReportReservations = (
 	showCheckedout,
 	payment
 ) => {
+	console.log("From API Admin getGeneralReportReservations", hotelId);
 	return fetch(
 		`${process.env.REACT_APP_API_URL}/general-report-reservations/list/${hotelId}/${channel}/${startDate}/${endDate}/${dateBy}/${noshow}/${cancel}/${inhouse}/${showCheckedout}/${payment}`,
 		{
@@ -344,6 +345,8 @@ export const checkedoutReservationsTotalRecords = (
 	hotelId,
 	channel
 ) => {
+	console.log("From API Admin checkedoutReservationsTotalRecords", hotelId);
+
 	return fetch(
 		`${process.env.REACT_APP_API_URL}/reservations-summary-checkedout/${hotelId}/${channel}/${startDate}/${endDate}`,
 		{
@@ -531,7 +534,7 @@ export const cloudinaryUpload1 = (userId, token, image) => {
 
 export const updateHotelDetails = (hotelId, userId, token, details) => {
 	return fetch(
-		`${process.env.REACT_APP_API_URL}/hotel-details-update/${hotelId}/${userId}`,
+		`${process.env.REACT_APP_API_URL}/hotel-details/update/${hotelId}/${userId}`,
 		{
 			method: "PUT",
 			headers: {
@@ -543,6 +546,21 @@ export const updateHotelDetails = (hotelId, userId, token, details) => {
 			body: JSON.stringify(details),
 		}
 	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
+export const getHotelById = (hotelId) => {
+	return fetch(`${process.env.REACT_APP_API_URL}/hotel-details/${hotelId}`, {
+		method: "GET",
+		headers: {
+			// content type?
+			"Content-Type": "application/json",
+			Accept: "application/json",
+		},
+	})
 		.then((response) => {
 			return response.json();
 		})
@@ -898,4 +916,28 @@ export const gettingCommissionPaidReservations = (page, records, hotelId) => {
 			return response.json();
 		})
 		.catch((err) => console.log(err));
+};
+
+export const PropertySignup = (userData) => {
+	console.log(userData, "userData");
+	return fetch(`${process.env.REACT_APP_API_URL}/property-listing`, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+			Accept: "application/json",
+		},
+		body: JSON.stringify(userData),
+	})
+		.then((response) => {
+			if (!response.ok) {
+				return response.text().then((text) => {
+					throw new Error(text);
+				});
+			}
+			return response.json();
+		})
+		.catch((err) => {
+			console.log(err);
+			throw err;
+		});
 };

@@ -1,4 +1,3 @@
-// eslint-disable-next-line
 import React, { useState } from "react";
 import styled from "styled-components";
 import { Redirect, Link } from "react-router-dom";
@@ -17,9 +16,8 @@ import {
 	TeamOutlined,
 } from "@ant-design/icons";
 import { Button, Menu } from "antd";
-// import LastAddedLogoImage from "./LastAddedLogoImage";
 import { useCartContext } from "../../cart_context";
-import { signout } from "../../auth";
+import { signout, isAuthenticated } from "../../auth";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 import TopNavbar from "./TopNavbar";
 
@@ -40,118 +38,6 @@ const handleSignout = (history) => {
 	});
 };
 
-const items = [
-	getItem(
-		<Link to='/hotel-management/dashboard'>Admin Dashboard</Link>,
-		"sub1",
-		<PieChartOutlined />
-	),
-	// getItem(
-	// 	<Link to='/hotel-management/reservation-history'>Reservations</Link>,
-	// 	"sub2",
-	// 	<AreaChartOutlined />
-	// ),
-	getItem(
-		<Link to='/hotel-management/new-reservation'>Make A New Reservation</Link>,
-		"sub3",
-		<ShopOutlined />
-	),
-	getItem(
-		<Link to='/hotel-management/hotel-reports'>Hotel Reports</Link>,
-		"sub4",
-		<AreaChartOutlined />
-	),
-
-	getItem(
-		<Link to='/hotel-management/settings'>Hotel Settings</Link>,
-		"sub6",
-		<SettingOutlined />
-	),
-
-	getItem(
-		<Link to='/hotel-management/house-keeping'>House Keeping</Link>,
-		"sub7",
-		<BankTwoTone />
-	),
-
-	getItem(
-		<Link to='/hotel-management/staff'>Hotel Staff</Link>,
-		"sub8",
-		<>
-			<TeamOutlined />
-		</>
-	),
-
-	// getItem(
-	// 	<Link to='#'>Hotel Website Builder</Link>,
-	// 	"sub10",
-	// 	<>
-	// 		<DollarCircleOutlined />
-	// 	</>
-	// ),
-
-	getItem(
-		<div className='margin-divider'></div>,
-		"divider1",
-		null,
-		null,
-		"divider"
-	),
-	getItem(
-		"Inbound Management",
-		"sub13",
-		<ImportOutlined />,
-		null,
-		null,
-		"black-bg"
-	),
-	getItem("CRM", "sub14", <CustomerServiceOutlined />, null, null, "black-bg"),
-	getItem("POS & Products", "sub15", <ShopOutlined />, null, null, "black-bg"),
-	getItem(
-		"Financials",
-		"sub16",
-		<DollarCircleOutlined />,
-		null,
-		null,
-		"black-bg"
-	),
-	getItem(
-		"Employee Accounts",
-		"sub17",
-		<TeamOutlined />,
-		null,
-		null,
-		"black-bg"
-	),
-	getItem(
-		<div className='margin-divider'></div>,
-		"divider2",
-		null,
-		null,
-		"divider2"
-	),
-	getItem(
-		<Link to='/hotel-management-payment'>Payment</Link>,
-		"sub18",
-		<CreditCardOutlined />,
-		null,
-		null,
-		"red-bg"
-	),
-	getItem(
-		<div style={{ fontWeight: "bold", textDecoration: "underline" }}>
-			Signout
-		</div>,
-		"signout", // The key used in the Menu's onClick handler
-		<CreditCardOutlined />,
-		null,
-		null,
-		"reddish-bg"
-	),
-
-	// getItem("Option 3", "4", <ContainerOutlined />),
-];
-
 const AdminNavbar = ({
 	fromPage,
 	setAdminMenuStatus,
@@ -160,13 +46,138 @@ const AdminNavbar = ({
 }) => {
 	const [clickedOn, setClickedOn] = useState(false);
 	const { chosenLanguage } = useCartContext();
+	const history = useHistory();
+
+	// Retrieve user and selectedHotel details
+	const { user } = isAuthenticated();
+	const selectedHotel = JSON.parse(localStorage.getItem("selectedHotel")) || {};
+
+	const userId = user._id;
+	const hotelId = selectedHotel._id;
 
 	const toggleCollapsed = () => {
 		setCollapsed(!collapsed);
 		setAdminMenuStatus(!collapsed);
 	};
 
-	const history = useHistory();
+	const items = [
+		getItem(
+			<Link to={`/hotel-management/dashboard/${userId}/${hotelId}`}>
+				Admin Dashboard
+			</Link>,
+			"sub1",
+			<PieChartOutlined />
+		),
+		getItem(
+			<Link to={`/hotel-management/new-reservation/${userId}/${hotelId}`}>
+				Reservations
+			</Link>,
+			"sub3",
+			<ShopOutlined />
+		),
+		getItem(
+			<Link to={`/hotel-management/hotel-reports/${userId}/${hotelId}`}>
+				Hotel Reports
+			</Link>,
+			"sub4",
+			<AreaChartOutlined />
+		),
+		getItem(
+			<Link to={`/hotel-management/settings/${userId}/${hotelId}`}>
+				Hotel Settings
+			</Link>,
+			"sub6",
+			<SettingOutlined />
+		),
+		getItem(
+			<Link to={`/hotel-management/house-keeping/${userId}/${hotelId}`}>
+				House Keeping
+			</Link>,
+			"sub7",
+			<BankTwoTone />
+		),
+		getItem(
+			<Link to={`/hotel-management/staff/${userId}/${hotelId}`}>
+				Hotel Staff
+			</Link>,
+			"sub8",
+			<TeamOutlined />
+		),
+		getItem(
+			<div className='margin-divider'></div>,
+			"divider1",
+			null,
+			null,
+			"divider"
+		),
+		getItem(
+			"Inbound Management",
+			"sub13",
+			<ImportOutlined />,
+			null,
+			null,
+			"black-bg"
+		),
+		getItem(
+			"CRM",
+			"sub14",
+			<CustomerServiceOutlined />,
+			null,
+			null,
+			"black-bg"
+		),
+		getItem(
+			"POS & Products",
+			"sub15",
+			<ShopOutlined />,
+			null,
+			null,
+			"black-bg"
+		),
+		getItem(
+			"Financials",
+			"sub16",
+			<DollarCircleOutlined />,
+			null,
+			null,
+			"black-bg"
+		),
+		getItem(
+			"Employee Accounts",
+			"sub17",
+			<TeamOutlined />,
+			null,
+			null,
+			"black-bg"
+		),
+		getItem(
+			<div className='margin-divider'></div>,
+			"divider2",
+			null,
+			null,
+			"divider2"
+		),
+		getItem(
+			<Link to={`/hotel-management-payment/${userId}/${hotelId}`}>
+				Payment
+			</Link>,
+			"sub18",
+			<CreditCardOutlined />,
+			null,
+			null,
+			"red-bg"
+		),
+		getItem(
+			<div style={{ fontWeight: "bold", textDecoration: "underline" }}>
+				Signout
+			</div>,
+			"signout", // The key used in the Menu's onClick handler
+			<CreditCardOutlined />,
+			null,
+			null,
+			"reddish-bg"
+		),
+	];
 
 	return (
 		<>
@@ -219,19 +230,7 @@ const AdminNavbar = ({
 							                  ? "sub12"
 							                  : "sub1"
 					}
-					defaultOpenKeys={[
-						"sub1",
-
-						// fromPage === "AddGender" ||
-						// fromPage === "UpdateGender" ||
-						// fromPage === "DeleteGender"
-						// 	? "sub2"
-						// 	: null,
-
-						// "sub4",
-
-						// "sub6",
-					]}
+					defaultOpenKeys={["sub1"]}
 					mode='inline'
 					theme='dark'
 					inlineCollapsed={collapsed}
@@ -267,7 +266,7 @@ const AdminNavbarWrapper = styled.div`
 	padding: 0px !important;
 	position: fixed; // Add this line
 	top: 0; // Adjust as needed
-	left: 0; // Since the menu is on the right hand side
+	left: 0; // Since the menu is on the left hand side
 	height: 100vh; // Make it full height
 
 	ul {

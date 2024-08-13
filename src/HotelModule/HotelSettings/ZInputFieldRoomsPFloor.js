@@ -4,7 +4,7 @@ const ZInputFieldRoomsPFloor = ({
 	Title,
 	value,
 	handleFloorRoomsCount,
-	roomType,
+	keyValue, // Use concatenated key here
 	numRoomTypes,
 }) => {
 	const columnClass = numRoomTypes <= 6 ? "col-custom mx-1" : "col-md-1";
@@ -27,7 +27,7 @@ const ZInputFieldRoomsPFloor = ({
 				<input
 					type='number'
 					value={value}
-					onChange={(e) => handleFloorRoomsCount(roomType, e.target.value)}
+					onChange={(e) => handleFloorRoomsCount(keyValue, e.target.value)}
 					required
 				/>
 			</InputFieldStyling>

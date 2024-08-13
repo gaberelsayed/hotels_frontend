@@ -165,28 +165,28 @@ function App() {
 						component={MainHotelDashboard}
 					/>
 					<HotelRoute
-						path='/hotel-management/dashboard'
+						path='/hotel-management/dashboard/:userId/:hotelId'
 						exact
 						component={HotelManagerDashboard}
 					/>
 					<HotelRoute
-						path='/hotel-management/reservation-history'
+						path='/hotel-management/reservation-history/:userId/:hotelId'
 						exact
 						component={ReservationsMain}
 					/>
 					<HotelRoute
-						path='/hotel-management/new-reservation'
+						path='/hotel-management/new-reservation/:userId/:hotelId'
 						exact
 						component={NewReservationMain}
 					/>
 					<HotelRoute
-						path='/hotel-management/settings'
+						path='/hotel-management/settings/:userId/:hotelId'
 						exact
 						component={HotelSettingsMain}
 					/>
 
 					<HotelRoute
-						path='/hotel-management/staff'
+						path='/hotel-management/staff/:userId/:hotelId'
 						exact
 						component={SignupNew}
 					/>
@@ -198,18 +198,18 @@ function App() {
 					/>
 
 					<HotelRoute
-						path='/hotel-management-payment'
+						path='/hotel-management-payment/:userId/:hotelId'
 						exact
 						component={PaymentMain}
 					/>
 					<HotelRoute
-						path='/hotel-management/house-keeping'
+						path='/hotel-management/house-keeping/:userId/:hotelId'
 						exact
 						component={HouseKeepingMain}
 					/>
 					<HotelRoute path='/receipt' exact component={ReceiptPDF} />
 					<HotelRoute
-						path='/hotel-management/hotel-reports'
+						path='/hotel-management/hotel-reports/:userId/:hotelId'
 						exact
 						component={HotelReportsMain}
 					/>

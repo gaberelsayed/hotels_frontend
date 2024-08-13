@@ -7,7 +7,7 @@ import { useCartContext } from "../../cart_context";
 import {
 	checkedoutReservationsList,
 	checkedoutReservationsTotalRecords,
-	getHotelDetails,
+	getHotelById,
 	hotelAccount,
 } from "../apiAdmin";
 import { isAuthenticated } from "../../auth";
@@ -85,15 +85,25 @@ const HotelReportsMain = () => {
 		const formattedStartDate = formatDate(startDate);
 		const formattedEndDate = formatDate(endDate);
 
+		const selectedHotel =
+			JSON.parse(localStorage.getItem("selectedHotel")) || {};
+
+		if (!selectedHotel || !selectedHotel._id) {
+			console.log("No hotel selected");
+			return;
+		}
+
+		const hotelId = selectedHotel._id;
+
 		hotelAccount(user._id, token, user._id).then((data) => {
 			if (data && data.error) {
 				console.log(data.error, "Error rendering");
 			} else {
-				getHotelDetails(data._id).then((data2) => {
+				getHotelById(hotelId).then((data2) => {
 					if (data2 && data2.error) {
 						console.log(data2.error, "Error rendering");
 					} else {
-						setHotelDetails(data2[0]);
+						setHotelDetails(data2);
 
 						// Use the formatted start and end dates for API calls
 						checkedoutReservationsList(
@@ -101,7 +111,7 @@ const HotelReportsMain = () => {
 							recordsPerPage,
 							formattedStartDate,
 							formattedEndDate,
-							data2[0]._id,
+							hotelId,
 							selectedChannel
 						).then((data3) => {
 							if (data3 && data3.error) {
@@ -116,7 +126,7 @@ const HotelReportsMain = () => {
 						checkedoutReservationsTotalRecords(
 							formattedStartDate,
 							formattedEndDate,
-							data2[0]._id,
+							hotelId,
 							selectedChannel
 						).then((data4) => {
 							if (data4 && data4.error) {

@@ -1,157 +1,228 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import styled from "styled-components";
-import { useHistory } from "react-router-dom";
+import { Button, Modal, Card, message } from "antd";
+import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
+import { PlusOutlined, EditOutlined } from "@ant-design/icons";
 import { useCartContext } from "../cart_context";
 import { isAuthenticated } from "../auth";
-import {
-	getHotelDetails,
-	gettingDateReport,
-	gettingDayOverDayInventory,
-	hotelAccount,
-} from "./apiAdmin";
-import PasscodeModal from "./HotelManagement/PasscodeModal";
+import { hotelAccount, updateHotelDetails } from "./apiAdmin";
 import TopNavbar from "./AdminNavbar/TopNavbar";
+import AddHotelForm from "./AddHotelForm";
+import EditHotelForm from "./EditHotelForm";
 
 const MainHotelDashboard = () => {
-	// eslint-disable-next-line
-	const history = useHistory();
-
 	const [AdminMenuStatus, setAdminMenuStatus] = useState(false);
-	const [modalVisiblePasscode, setModalVisiblePasscode] = useState(false);
 	const [collapsed, setCollapsed] = useState(false);
-	// eslint-disable-next-line
-	const [hotelDetails, setHotelDetails] = useState("");
-	// eslint-disable-next-line
-	const [reservationsToday, setReservationsToday] = useState("");
-	// eslint-disable-next-line
-	const [reservationsYesterday, setReservationsYesterday] = useState("");
 	const { chosenLanguage } = useCartContext();
-	// eslint-disable-next-line
-	const [dayOverDayInventory, setDayOverDayInventory] = useState([]);
-	// eslint-disable-next-line
-	const [selectedDates, setSelectedDates] = useState([]);
+	const [userData, setUserData] = useState("");
+	const [addHotelModalVisible, setAddHotelModalVisible] = useState(false);
+	const [editHotelModalVisible, setEditHotelModalVisible] = useState(false);
+	const [currentHotel, setCurrentHotel] = useState(null);
 
-	// eslint-disable-next-line
 	const { user, token } = isAuthenticated();
 
-	useEffect(() => {
-		if (window.innerWidth <= 1000) {
-			setCollapsed(true);
-		}
-
-		// eslint-disable-next-line
-	}, []);
-
-	// Helper function to format a date object into yyyy-mm-dd
-	function formatDate(date) {
-		const d = new Date(date),
-			month = "" + (d.getMonth() + 1),
-			day = "" + d.getDate(),
-			year = d.getFullYear();
-
-		return [year, month.padStart(2, "0"), day.padStart(2, "0")].join("-");
-	}
-
-	const gettingHotelData = () => {
+	const gettingHotelData = useCallback(() => {
 		hotelAccount(user._id, token, user._id).then((data) => {
 			if (data && data.error) {
 				console.log(data.error, "Error rendering");
 			} else {
-				getHotelDetails(data._id).then((data2) => {
-					if (data2 && data2.error) {
-						console.log(data2.error, "Error rendering");
-					} else {
-						if (data && data.name && data._id && data2 && data2.length > 0) {
-							setHotelDetails(data2[0]);
-
-							// Format today's date
-							const today = new Date();
-							const formattedToday = formatDate(today);
-
-							// Get yesterday's date
-							const yesterday = new Date(today);
-							yesterday.setDate(yesterday.getDate() - 1);
-							const formattedYesterday = formatDate(yesterday);
-
-							// Get today's report
-							gettingDateReport(formattedToday, data2[0]._id, data._id).then(
-								(data3) => {
-									if (data3 && data3.error) {
-										console.log(data3.error);
-									} else {
-										setReservationsToday(
-											data3.filter(
-												(i) => !i.reservation_status.includes("cancelled")
-											)
-										);
-									}
-								}
-							);
-
-							// Get yesterday's report
-							gettingDateReport(
-								formattedYesterday,
-								data2[0]._id,
-								data._id
-							).then((data4) => {
-								if (data4 && data4.error) {
-									console.log(data4.error);
-								} else {
-									setReservationsYesterday(
-										data4.filter(
-											(i) => !i.reservation_status.includes("cancelled")
-										)
-									);
-								}
-							});
-						}
-
-						gettingDayOverDayInventory(data._id, data2[0]._id).then((data5) => {
-							if (data5 && data5.error) {
-								console.log("Data not received");
-							} else {
-								setDayOverDayInventory(data5);
-							}
-						});
-					}
-				});
+				setUserData(data);
 			}
 		});
-	};
+	}, [user._id, token]);
 
 	useEffect(() => {
 		gettingHotelData();
-		// eslint-disable-next-line
-	}, [selectedDates]);
+	}, [gettingHotelData]);
+
+	const openAddHotelModal = () => {
+		setAddHotelModalVisible(true);
+	};
+
+	const closeAddHotelModal = () => {
+		setAddHotelModalVisible(false);
+	};
+
+	const openEditHotelModal = (hotel) => {
+		setCurrentHotel(hotel);
+		setEditHotelModalVisible(true);
+	};
+
+	const closeEditHotelModal = () => {
+		setEditHotelModalVisible(false);
+		setCurrentHotel(null);
+	};
+
+	const handleHotelClick = (hotel) => {
+		if (!userData.activeUser) {
+			message.error(
+				"Your Account was deactivated, please reach out to XHotel's Administration"
+			);
+			return;
+		}
+
+		// Store the selected hotel details in local storage
+		localStorage.setItem("selectedHotel", JSON.stringify(hotel));
+
+		// Redirect to the dashboard
+		window.location.href = `/hotel-management/dashboard/${user._id}/${hotel._id}`;
+	};
+
+	const renderHotelStatus = (hotel) => {
+		const roomCountDetailsAdded =
+			hotel.roomCountDetails && hotel.roomCountDetails.length > 0;
+		const locationAdded =
+			hotel.location &&
+			hotel.location.coordinates &&
+			!(
+				hotel.location.coordinates[0] === 0 &&
+				hotel.location.coordinates[1] === 0
+			);
+		const hotelPhotosAdded = hotel.hotelPhotos && hotel.hotelPhotos.length > 0;
+
+		const redirectToSettings = () => {
+			window.location.href = `/hotel-management/settings/${user._id}/${hotel._id}`;
+		};
+
+		return (
+			<StatusWrapper>
+				{!roomCountDetailsAdded ? (
+					<StatusItem onClick={redirectToSettings}>
+						<CloseOutlined style={{ color: "red", marginRight: "5px" }} />
+						<p style={{ color: "red", fontWeight: "bold" }}>
+							Please Add Rooms/Pricing
+						</p>
+					</StatusItem>
+				) : (
+					<StatusItem>
+						<CheckOutlined style={{ color: "green", marginRight: "5px" }} />
+						<p style={{ color: "green", fontWeight: "bold" }}>Rooms Added</p>
+					</StatusItem>
+				)}
+
+				{!locationAdded ? (
+					<StatusItem onClick={redirectToSettings}>
+						<CloseOutlined style={{ color: "red", marginRight: "5px" }} />
+						<p style={{ color: "red", fontWeight: "bold" }}>
+							Please Add Exact Location
+						</p>
+					</StatusItem>
+				) : (
+					<StatusItem>
+						<CheckOutlined style={{ color: "green", marginRight: "5px" }} />
+						<p style={{ color: "green", fontWeight: "bold" }}>
+							Exact Location Added
+						</p>
+					</StatusItem>
+				)}
+
+				{!hotelPhotosAdded ? (
+					<StatusItem onClick={redirectToSettings}>
+						<CloseOutlined style={{ color: "red", marginRight: "5px" }} />
+						<p style={{ color: "red", fontWeight: "bold" }}>
+							Please Add Hotel Photos
+						</p>
+					</StatusItem>
+				) : (
+					<StatusItem>
+						<CheckOutlined style={{ color: "green", marginRight: "5px" }} />
+						<p style={{ color: "green", fontWeight: "bold" }}>
+							Hotel Photos Added
+						</p>
+					</StatusItem>
+				)}
+			</StatusWrapper>
+		);
+	};
 
 	return (
-		<MainHotelDashboardWrapper
-			dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}
-			show={collapsed}
-			isArabic={chosenLanguage === "Arabic"}
-		>
-			<PasscodeModal
-				setModalVisiblePasscode={setModalVisiblePasscode}
-				modalVisiblePasscode={modalVisiblePasscode}
+		<MainHotelDashboardWrapper isArabic={chosenLanguage === "Arabic"}>
+			<TopNavbar
+				fromPage='AdminDasboard'
+				AdminMenuStatus={AdminMenuStatus}
+				setAdminMenuStatus={setAdminMenuStatus}
+				collapsed={collapsed}
+				setCollapsed={setCollapsed}
+				chosenLanguage={chosenLanguage}
 			/>
-			<div className='grid-container-main'>
-				<div className='navcontent'>
-					<TopNavbar
-						fromPage='AdminDasboard'
-						AdminMenuStatus={AdminMenuStatus}
-						setAdminMenuStatus={setAdminMenuStatus}
-						collapsed={collapsed}
-						setCollapsed={setCollapsed}
-						chosenLanguage={chosenLanguage}
-					/>
-				</div>
 
-				<div className='otherContentWrapper'>
-					<div>Hello There Yaba From Hotel Main Dashboard</div>
+			<ContentWrapper className='container'>
+				{userData &&
+				userData.hotelIdsOwner &&
+				userData.hotelIdsOwner.length > 0 ? (
+					userData.hotelIdsOwner.map((hotel, index) => (
+						<StyledCard
+							key={index}
+							title={
+								<HotelTitle onClick={() => handleHotelClick(hotel)}>
+									<div>{hotel.hotelName}</div>
+									<EditIcon
+										onClick={(e) => {
+											e.stopPropagation();
+											openEditHotelModal(hotel);
+										}}
+									/>
+								</HotelTitle>
+							}
+						>
+							<DetailsWrapper>
+								<DetailsColumn onClick={() => handleHotelClick(hotel)}>
+									{hotel.hotelCountry && <p>Country: {hotel.hotelCountry}</p>}
+									{hotel.hotelState && <p>State: {hotel.hotelState}</p>}
+									{hotel.hotelCity && <p>City: {hotel.hotelCity}</p>}
+									{hotel.phone && <p>Phone: {hotel.phone}</p>}
+									{hotel.hotelAddress && <p>Address: {hotel.hotelAddress}</p>}
+									{hotel.hotelFloors !== undefined && (
+										<p>Floors: {hotel.hotelFloors}</p>
+									)}
+								</DetailsColumn>
+								{renderHotelStatus(hotel)}
+							</DetailsWrapper>
+						</StyledCard>
+					))
+				) : (
+					<p>No hotels found.</p>
+				)}
+				<Button
+					type='primary'
+					icon={<PlusOutlined />}
+					onClick={openAddHotelModal}
+					style={{
+						backgroundColor: "var(--button-bg-primary)",
+						borderColor: "var(--button-bg-primary)",
+						color: "var(--button-font-color)",
+						width: "50%",
+						textAlign: "center",
+						margin: "auto",
+					}}
+				>
+					Add Another Property
+				</Button>
+			</ContentWrapper>
 
-					{/* <WorldClocks /> */}
-				</div>
-			</div>
+			<Modal
+				title='Add New Property'
+				open={addHotelModalVisible}
+				onCancel={closeAddHotelModal}
+				footer={null}
+			>
+				<AddHotelForm closeAddHotelModal={closeAddHotelModal} />
+			</Modal>
+
+			<Modal
+				title='Edit Property'
+				open={editHotelModalVisible}
+				onCancel={closeEditHotelModal}
+				footer={null}
+			>
+				<EditHotelForm
+					closeEditHotelModal={closeEditHotelModal}
+					hotelData={currentHotel}
+					updateHotelDetails={updateHotelDetails}
+					token={token}
+					userId={user._id}
+				/>
+			</Modal>
 		</MainHotelDashboardWrapper>
 	);
 };
@@ -160,30 +231,82 @@ export default MainHotelDashboard;
 
 const MainHotelDashboardWrapper = styled.div`
 	overflow-x: hidden;
-	/* background: #ededed; */
 	margin-top: 70px;
-	min-height: 715px;
-	text-align: ${(props) => (props.isArabic ? "right" : "")};
+	min-height: 100vh;
+	padding: 24px;
+	background-color: var(--background-light);
+`;
 
-	.grid-container-main {
-		display: grid;
-		grid-template-columns: ${(props) => (props.show ? "5% 90%" : "15% 84%")};
+const ContentWrapper = styled.div`
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 16px;
+`;
+
+const StyledCard = styled(Card)`
+	margin-bottom: 10px;
+	padding: 10px;
+	cursor: pointer;
+	transition: transform 0.2s;
+	font-size: 14px; /* Smaller font size */
+	color: var(--text-color-secondary);
+	box-shadow: var(--box-shadow-light);
+	&:hover {
+		transform: scale(1.02);
 	}
 
-	.container-wrapper {
-		border: 2px solid lightgrey;
-		padding: 20px;
-		border-radius: 20px;
-		background: white;
-		margin: 0px 10px;
+	.ant-card-head-title {
+		font-size: 24px;
+		color: var(--primary-color-blue);
+		text-transform: capitalize;
 	}
 
-	.tab-grid {
-		display: flex;
-		/* Additional styling for grid layout */
+	.ant-card-body {
+		padding: 5px !important;
 	}
 
-	@media (max-width: 1400px) {
-		background: white;
+	p {
+		margin: 1px 0;
+		font-size: 14px; /* Adjusted font size */
+		color: var(--text-color-secondary);
+		font-weight: bold;
+		text-transform: capitalize;
 	}
+`;
+
+const HotelTitle = styled.div`
+	display: flex;
+	align-items: center;
+`;
+
+const EditIcon = styled(EditOutlined)`
+	margin-left: 20px;
+	color: var(--primary-color-dark-blue);
+	cursor: pointer;
+`;
+
+const StatusWrapper = styled.div`
+	display: flex;
+	flex-direction: column;
+	justify-content: space-around;
+`;
+
+const StatusItem = styled.div`
+	display: flex;
+	align-items: center;
+	cursor: pointer;
+	margin-top: 8px;
+	&:hover {
+		text-decoration: underline;
+	}
+`;
+
+const DetailsWrapper = styled.div`
+	display: flex;
+	justify-content: space-between;
+`;
+
+const DetailsColumn = styled.div`
+	display: flex;
+	flex-direction: column;
 `;

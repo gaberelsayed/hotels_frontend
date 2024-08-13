@@ -22,6 +22,7 @@ const ZHotelDetails = ({
 	selectedRoomType,
 	roomTypeSelected,
 	setRoomTypeSelected,
+	fromPage,
 }) => {
 	return (
 		<ZAddHotelSettingsWrapper>
@@ -38,12 +39,13 @@ const ZHotelDetails = ({
 					selectedRoomType={selectedRoomType}
 					roomTypeSelected={roomTypeSelected}
 					setRoomTypeSelected={setRoomTypeSelected}
+					submittingHotelDetails={submittingHotelDetails}
 				/>
 
 				<div className='mx-auto text-center mt-4'>
 					<button
 						onClick={() => {
-							submittingHotelDetails();
+							submittingHotelDetails(fromPage);
 						}}
 						className='btn btn-primary'
 					>

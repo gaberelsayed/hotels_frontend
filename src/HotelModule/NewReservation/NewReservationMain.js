@@ -9,7 +9,6 @@ import moment from "moment";
 import ZReservationForm from "./ZReservationForm";
 import {
 	createNewReservation,
-	getHotelDetails,
 	getHotelRooms,
 	hotelAccount,
 	getHotelReservations,
@@ -17,6 +16,7 @@ import {
 	getReservationSearch,
 	updateSingleReservation,
 	gettingRoomInventory,
+	getHotelById,
 } from "../apiAdmin";
 import { isAuthenticated } from "../../auth";
 import { toast } from "react-toastify";
@@ -81,6 +81,8 @@ const NewReservationMain = () => {
 	const [days_of_residence, setDays_of_residence] = useState(0);
 
 	const { user, token } = isAuthenticated();
+	const selectedHotelLocalStorage =
+		JSON.parse(localStorage.getItem("selectedHotel")) || {};
 
 	const { languageToggle, chosenLanguage } = useCartContext();
 
@@ -136,6 +138,7 @@ const NewReservationMain = () => {
 				console.log(data.error, "Error rendering");
 			} else {
 				setValues(data);
+
 				// eslint-disable-next-line
 				const formattedStartDate = moment(formatDate(new Date(start_date)));
 				// eslint-disable-next-line
@@ -143,23 +146,33 @@ const NewReservationMain = () => {
 
 				const endDate = new Date();
 				const startDate = new Date();
-				startDate.setDate(endDate.getDate()); // Subtracint -1 days
+				startDate.setDate(endDate.getDate()); // Subtracting -1 days
 				const heatMapStartDate = formatDate(startDate);
 
-				endDate.setDate(endDate.getDate() + 60); // Adding 15 days
+				endDate.setDate(endDate.getDate() + 60); // Adding 60 days
 				const heatMapEndDate = formatDate(endDate);
 
 				setStart_date_Map(moment(heatMapStartDate));
 				setEnd_date_Map(moment(heatMapEndDate));
 
-				getHotelDetails(data._id).then((data2) => {
+				const selectedHotel =
+					JSON.parse(localStorage.getItem("selectedHotel")) || {};
+
+				if (!selectedHotel || !selectedHotel._id) {
+					console.log("No hotel selected");
+					return;
+				}
+
+				const hotelId = selectedHotel._id;
+
+				getHotelById(hotelId).then((data2) => {
 					if (data2 && data2.error) {
 						console.log(data2.error, "Error rendering");
 					} else {
-						if (data && data.name && data._id && data2 && data2.length > 0) {
+						if (data && data.name && data._id && data2) {
 							if (heatMapStartDate && heatMapEndDate) {
 								getHotelReservations(
-									data2[0]._id,
+									hotelId,
 									user._id,
 									heatMapStartDate,
 									heatMapEndDate
@@ -167,14 +180,13 @@ const NewReservationMain = () => {
 									if (data3 && data3.error) {
 										console.log(data3.error);
 									} else {
-										// console.log(data3, "data3");
 										setAllReservations(data3 && data3.length > 0 ? data3 : []);
 									}
 								});
 							}
 
 							getHotelReservations(
-								data2[0]._id,
+								hotelId,
 								user._id,
 								heatMapStartDate,
 								heatMapEndDate
@@ -182,7 +194,6 @@ const NewReservationMain = () => {
 								if (data4 && data4.error) {
 									console.log(data4.error);
 								} else {
-									// console.log(data4, "data4");
 									setAllReservationsHeatMap(
 										data4 && data4.length > 0 ? data4 : []
 									);
@@ -190,11 +201,11 @@ const NewReservationMain = () => {
 							});
 
 							if (!hotelDetails) {
-								setHotelDetails(data2[0]);
+								setHotelDetails(data2);
 							}
 
 							if (!hotelRooms || hotelRooms.length === 0) {
-								getHotelRooms(data2[0]._id, user._id).then((data3) => {
+								getHotelRooms(hotelId, user._id).then((data3) => {
 									if (data3 && data3.error) {
 										console.log(data3.error);
 									} else {
@@ -569,9 +580,6 @@ const NewReservationMain = () => {
 		// eslint-disable-next-line
 	}, [start_date, end_date]);
 
-	console.log(end_date_Map, "end_date_Map");
-	console.log(start_date_Map, "start_date_Map");
-
 	return (
 		<NewReservationMainWrapper
 			dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}
@@ -629,7 +637,9 @@ const NewReservationMain = () => {
 								isActive={activeTab === "heatmap"}
 								onClick={() => {
 									setActiveTab("heatmap");
-									history.push("/hotel-management/new-reservation?heatmap"); // Programmatically navigate
+									history.push(
+										`/hotel-management/new-reservation/${user._id}/${selectedHotelLocalStorage._id}?heatmap`
+									); // Programmatically navigate
 								}}
 							>
 								{chosenLanguage === "Arabic"
@@ -641,7 +651,7 @@ const NewReservationMain = () => {
 								onClick={() => {
 									setActiveTab("reserveARoom");
 									history.push(
-										"/hotel-management/new-reservation?reserveARoom"
+										`/hotel-management/new-reservation/${user._id}/${selectedHotelLocalStorage._id}?reserveARoom`
 									); // Programmatically navigate
 								}}
 							>
@@ -653,7 +663,7 @@ const NewReservationMain = () => {
 								onClick={() => {
 									setActiveTab("newReservation");
 									history.push(
-										"/hotel-management/new-reservation?newReservation"
+										`/hotel-management/new-reservation/${user._id}/${selectedHotelLocalStorage._id}?newReservation`
 									); // Programmatically navigate
 								}}
 							>
@@ -666,7 +676,9 @@ const NewReservationMain = () => {
 								isActive={activeTab === "list"}
 								onClick={() => {
 									setActiveTab("list");
-									history.push("/hotel-management/new-reservation?list"); // Programmatically navigate
+									history.push(
+										`/hotel-management/new-reservation/${user._id}/${selectedHotelLocalStorage._id}?list`
+									); // Programmatically navigate
 								}}
 							>
 								{chosenLanguage === "Arabic"
@@ -679,7 +691,7 @@ const NewReservationMain = () => {
 								onClick={() => {
 									setActiveTab("housingreport");
 									history.push(
-										"/hotel-management/new-reservation?housingreport"
+										`/hotel-management/new-reservation/${user._id}/${selectedHotelLocalStorage._id}?housingreport`
 									); // Programmatically navigate
 								}}
 							>

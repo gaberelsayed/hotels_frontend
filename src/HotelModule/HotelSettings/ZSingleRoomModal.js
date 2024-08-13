@@ -1,5 +1,3 @@
-/** @format */
-
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { Modal } from "antd";
@@ -33,10 +31,9 @@ const ZSingleRoomModal = ({
 		}
 	}, [clickedRoom]);
 
-	const roomTypes = Object.keys(hotelDetails.roomCountDetails || {}).filter(
-		(type) =>
-			!type.endsWith("Price") && hotelDetails.roomCountDetails[type].count > 0
-	);
+	const roomTypes = hotelDetails.roomCountDetails
+		.filter((detail) => detail.count > 0)
+		.map((detail) => detail.roomType);
 
 	const updatingSingleRoom = () => {
 		// Update the bedsNumber array and individualBeds flag if the room type is individualBed
@@ -135,7 +132,7 @@ const ZSingleRoomModal = ({
 				</h3>
 
 				<div className='row'>
-					<div className=' col-md-2 form-group' style={{ marginTop: "10px" }}>
+					<div className='col-md-2 form-group' style={{ marginTop: "10px" }}>
 						<label
 							htmlFor='name'
 							style={{
@@ -152,7 +149,9 @@ const ZSingleRoomModal = ({
 							onChange={(e) => {
 								const newRoomType = e.target.value;
 								const newColorCode =
-									hotelDetails.roomCountDetails[newRoomType]?.roomColor ||
+									hotelDetails.roomCountDetails.find(
+										(detail) => detail.roomType === newRoomType
+									)?.roomColor ||
 									roomTypeColors[newRoomType] ||
 									"#000";
 								setClickedRoom({
@@ -172,7 +171,7 @@ const ZSingleRoomModal = ({
 					</div>
 
 					{clickedRoom && clickedRoom.room_type === "individualBed" && (
-						<div className=' col-md-2 form-group' style={{ marginTop: "10px" }}>
+						<div className='col-md-2 form-group' style={{ marginTop: "10px" }}>
 							<label
 								htmlFor='bedsNumber'
 								style={{
@@ -192,7 +191,7 @@ const ZSingleRoomModal = ({
 						</div>
 					)}
 
-					<div className=' col-md-2 form-group' style={{ marginTop: "10px" }}>
+					<div className='col-md-2 form-group' style={{ marginTop: "10px" }}>
 						<label
 							htmlFor='bedSize'
 							style={{
@@ -205,21 +204,14 @@ const ZSingleRoomModal = ({
 						</label>
 						<select
 							style={{ textTransform: "capitalize" }}
-							value={
-								clickedRoom.room_features &&
-								clickedRoom.room_features[0] &&
-								clickedRoom.room_features[0].bedSize
-							}
+							value={clickedRoom.room_features?.bedSize || ""}
 							onChange={(e) => {
 								setClickedRoom({
 									...clickedRoom,
-									room_features: Array.isArray(clickedRoom.room_features)
-										? clickedRoom.room_features.map((feature, index) =>
-												index === 0
-													? { ...feature, bedSize: e.target.value }
-													: feature
-										  )
-										: [{ bedSize: e.target.value }], // If it's not an array, create a new array with the bedSize
+									room_features: {
+										...clickedRoom.room_features,
+										bedSize: e.target.value,
+									},
 								});
 							}}
 						>
@@ -232,7 +224,7 @@ const ZSingleRoomModal = ({
 						</select>
 					</div>
 
-					<div className=' col-md-2 form-group' style={{ marginTop: "10px" }}>
+					<div className='col-md-2 form-group' style={{ marginTop: "10px" }}>
 						<label
 							htmlFor='view'
 							style={{
@@ -241,24 +233,18 @@ const ZSingleRoomModal = ({
 								textAlign: "center",
 							}}
 						>
-							Bed View
+							Room View
 						</label>
 						<select
 							style={{ textTransform: "capitalize" }}
-							value={
-								clickedRoom.room_features &&
-								clickedRoom.room_features[0] &&
-								clickedRoom.room_features[0].view
-							}
+							value={clickedRoom.room_features?.view || ""}
 							onChange={(e) => {
 								setClickedRoom({
 									...clickedRoom,
-									room_features: clickedRoom.room_features.map(
-										(feature, index) =>
-											index === 0
-												? { ...feature, view: e.target.value }
-												: feature
-									),
+									room_features: {
+										...clickedRoom.room_features,
+										view: e.target.value,
+									},
 								});
 							}}
 						>
@@ -271,7 +257,7 @@ const ZSingleRoomModal = ({
 						</select>
 					</div>
 
-					<div className=' col-md-2 form-group' style={{ marginTop: "10px" }}>
+					<div className='col-md-2 form-group' style={{ marginTop: "10px" }}>
 						<label
 							htmlFor='smoking'
 							style={{
@@ -285,9 +271,7 @@ const ZSingleRoomModal = ({
 						<select
 							style={{ textTransform: "capitalize" }}
 							value={
-								clickedRoom.room_features &&
-								clickedRoom.room_features[0] &&
-								clickedRoom.room_features[0].smoking
+								clickedRoom.room_features?.smoking
 									? "For Smokers"
 									: "No Smoking"
 							}
@@ -295,12 +279,10 @@ const ZSingleRoomModal = ({
 								const smokingValue = e.target.value === "For Smokers";
 								setClickedRoom({
 									...clickedRoom,
-									room_features: clickedRoom.room_features.map(
-										(feature, index) =>
-											index === 0
-												? { ...feature, smoking: smokingValue }
-												: feature
-									),
+									room_features: {
+										...clickedRoom.room_features,
+										smoking: smokingValue,
+									},
 								});
 							}}
 						>
