@@ -40,6 +40,7 @@ const ZHotelDetails = ({
 					roomTypeSelected={roomTypeSelected}
 					setRoomTypeSelected={setRoomTypeSelected}
 					submittingHotelDetails={submittingHotelDetails}
+					fromPage={fromPage}
 				/>
 
 				<div className='mx-auto text-center mt-4'>

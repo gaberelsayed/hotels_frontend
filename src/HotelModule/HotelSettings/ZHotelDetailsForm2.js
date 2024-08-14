@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Form, Input, Button, Select, message, Modal } from "antd";
 import styled from "styled-components";
 import FullCalendar from "@fullcalendar/react";
@@ -14,6 +14,27 @@ import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
 
 const { Option } = Select;
 
+const predefinedColors = [
+	"#1e90ff",
+	"#6495ed",
+	"#87ceeb",
+	"#b0c4de",
+	"#d3d3d3",
+	"#f08080",
+	"#dda0dd",
+	"#ff6347",
+	"#4682b4",
+	"#32cd32",
+	"#ff4500",
+	"#7b68ee",
+	"#00fa9a",
+	"#ffa07a",
+	"#8a2be2",
+];
+
+let colorIndex = 0;
+const priceColorMapping = new Map();
+
 const ZHotelDetailsForm2 = ({
 	hotelDetails,
 	setHotelDetails,
@@ -28,6 +49,7 @@ const ZHotelDetailsForm2 = ({
 	setRoomTypeSelected,
 	submittingHotelDetails,
 	fromPage,
+	existingRoomDetails,
 }) => {
 	const [selectedDateRange, setSelectedDateRange] = useState([null, null]);
 	const [pricingRate, setPricingRate] = useState("");
@@ -37,7 +59,7 @@ const ZHotelDetailsForm2 = ({
 	const [markerPosition, setMarkerPosition] = useState({
 		lat: 24.7136,
 		lng: 46.6753,
-	}); // Default to Riyadh, Saudi Arabia
+	});
 	const [address, setAddress] = useState("");
 	const calendarRef = useRef(null);
 	const priceInputRef = useRef(null);
@@ -51,7 +73,17 @@ const ZHotelDetailsForm2 = ({
 		setGeocoder(new window.google.maps.Geocoder());
 	};
 
-	// Update form fields when selectedRoomType changes
+	const getColorForPrice = useCallback((price, dateRange) => {
+		const key = `${price}-${dateRange}`;
+		if (!priceColorMapping.has(key)) {
+			const assignedColor =
+				predefinedColors[colorIndex % predefinedColors.length];
+			priceColorMapping.set(key, assignedColor);
+			colorIndex++;
+		}
+		return priceColorMapping.get(key);
+	}, []);
+
 	useEffect(() => {
 		if (selectedRoomType && fromPage === "Updating") {
 			const { roomType, displayName } = selectedRoomType;
@@ -60,35 +92,61 @@ const ZHotelDetailsForm2 = ({
 				? hotelDetails.roomCountDetails
 				: [];
 
-			// Find the room details using both roomType and displayName
 			const existingRoomDetails =
 				roomCountDetailsArray.find(
 					(room) =>
 						room.roomType === roomType && room.displayName === displayName
 				) || {};
 
-			// Pre-populate form fields with the existing room details
+			// Prepopulate the form with the existing room details or set default values
 			form.setFieldsValue({
 				roomType,
-				customRoomType: roomType === "other" ? customRoomType : "",
+				customRoomType:
+					roomType === "other" ? existingRoomDetails.roomType || "" : "", // Populate if 'other'
 				displayName: existingRoomDetails.displayName || "",
 				roomCount: existingRoomDetails.count || 0,
 				basePrice: existingRoomDetails.price?.basePrice || 0,
 				description: existingRoomDetails.description || "",
 				amenities: existingRoomDetails.amenities || [],
 			});
+
+			// Set roomTypeSelected to true to indicate that a room type has been selected
 			setRoomTypeSelected(true);
+
+			// Clear any existing events from the calendar and add the new ones based on pricing rates
+			if (calendarRef.current) {
+				const calendarApi = calendarRef.current.getApi();
+				calendarApi.getEvents().forEach((event) => event.remove());
+
+				if (
+					existingRoomDetails.pricingRate &&
+					existingRoomDetails.pricingRate.length > 0
+				) {
+					const pricingEvents = existingRoomDetails.pricingRate.map((rate) => ({
+						title: `${existingRoomDetails.displayName || displayName}: ${
+							rate.price
+						} SAR`,
+						start: rate.calendarDate,
+						end: rate.calendarDate,
+						allDay: true,
+						backgroundColor:
+							rate.color || getColorForPrice(rate.price, rate.calendarDate),
+					}));
+
+					pricingEvents.forEach((event) => calendarApi.addEvent(event));
+				}
+			}
 		}
 	}, [
 		fromPage,
 		selectedRoomType,
-		customRoomType,
 		form,
 		hotelDetails,
 		setRoomTypeSelected,
+		getColorForPrice,
+		calendarRef,
 	]);
 
-	// Update form fields with existing hotel details
 	useEffect(() => {
 		form.setFieldsValue({
 			parkingLot: hotelDetails.parkingLot ? "1" : "0",
@@ -96,7 +154,6 @@ const ZHotelDetailsForm2 = ({
 		});
 	}, [form, hotelDetails]);
 
-	// Handle date range selection in the calendar
 	useEffect(() => {
 		if (selectedDateRange[0] && selectedDateRange[1]) {
 			const calendarApi = calendarRef.current.getApi();
@@ -111,10 +168,8 @@ const ZHotelDetailsForm2 = ({
 		}
 	}, [selectedDateRange]);
 
-	// Handle input field change and update map
 	const handleAddressChange = (e) => {
 		setAddress(e.target.value);
-
 		if (geocoder) {
 			geocodeAddress(e.target.value);
 		} else {
@@ -122,7 +177,6 @@ const ZHotelDetailsForm2 = ({
 		}
 	};
 
-	// Geocode the address to get the coordinates
 	const geocodeAddress = (address) => {
 		if (!geocoder) {
 			console.error("Geocoder is not initialized");
@@ -152,7 +206,6 @@ const ZHotelDetailsForm2 = ({
 		});
 	};
 
-	// Handle map click to set marker position
 	const handleMapClick = (e) => {
 		const lat = e.latLng.lat();
 		const lng = e.latLng.lng();
@@ -160,7 +213,6 @@ const ZHotelDetailsForm2 = ({
 		reverseGeocode(lat, lng);
 	};
 
-	// Reverse geocode to get the address from the coordinates
 	const reverseGeocode = (lat, lng) => {
 		if (!geocoder) {
 			console.error("Geocoder is not initialized");
@@ -186,7 +238,6 @@ const ZHotelDetailsForm2 = ({
 		});
 	};
 
-	// Handle location modal OK button click
 	const handleLocationModalOk = () => {
 		geocoder.geocode(
 			{ location: { lat: markerPosition.lat, lng: markerPosition.lng } },
@@ -229,12 +280,10 @@ const ZHotelDetailsForm2 = ({
 		setLocationModalVisible(false);
 	};
 
-	// Handle location modal cancel button click
 	const handleLocationModalCancel = () => {
 		setLocationModalVisible(false);
 	};
 
-	// Handle next step in the form
 	const handleNext = () => {
 		form
 			.validateFields()
@@ -267,12 +316,12 @@ const ZHotelDetailsForm2 = ({
 					roomColor,
 					pricingRate:
 						existingRoomIndex > -1
-							? updatedRoomCountDetails[existingRoomIndex].pricingRate
-							: [], // Preserve existing pricing rates
+							? updatedRoomCountDetails[existingRoomIndex].pricingRate || []
+							: [],
 					photos:
 						existingRoomIndex > -1
-							? updatedRoomCountDetails[existingRoomIndex].photos
-							: [], // Preserve existing photos
+							? updatedRoomCountDetails[existingRoomIndex].photos || []
+							: [],
 				};
 
 				if (existingRoomIndex > -1) {
@@ -296,12 +345,10 @@ const ZHotelDetailsForm2 = ({
 			});
 	};
 
-	// Handle previous step in the form
 	const handlePrev = () => {
 		setCurrentStep(currentStep - 1);
 	};
 
-	// Handle form submission
 	const handleFinish = (values) => {
 		setHotelDetails((prevDetails) => ({
 			...prevDetails,
@@ -310,7 +357,6 @@ const ZHotelDetailsForm2 = ({
 		message.success("Hotel details updated successfully!");
 	};
 
-	// Generate date range array for pricing
 	const generateDateRangeArray = (startDate, endDate) => {
 		const dateArray = [];
 		let currentDate = new Date(
@@ -333,7 +379,6 @@ const ZHotelDetailsForm2 = ({
 		return dateArray;
 	};
 
-	// Function to map room types to colors
 	const getRoomColor = (roomType) => {
 		const predefinedRoomColors = {
 			standardRooms: "#003366", // Dark Blue
@@ -350,38 +395,14 @@ const ZHotelDetailsForm2 = ({
 			familyRooms: "#A52A2A", // Brown
 		};
 
-		if (predefinedRoomColors[roomType]) {
-			return predefinedRoomColors[roomType];
-		}
-
 		return (
-			"#" +
-			Math.floor(Math.random() * 16777215)
+			predefinedRoomColors[roomType] ||
+			`#${Math.floor(Math.random() * 16777215)
 				.toString(16)
-				.padStart(6, "0")
+				.padStart(6, "0")}`
 		);
 	};
 
-	// Function to get color for price ranges
-	const predefinedColors = [
-		"#1e90ff",
-		"#6495ed",
-		"#87ceeb",
-		"#b0c4de",
-		"#d3d3d3",
-	];
-	const priceColorMapping = {};
-	const getColorForPrice = (price) => {
-		if (!priceColorMapping[price]) {
-			priceColorMapping[price] =
-				predefinedColors[
-					Object.keys(priceColorMapping).length % predefinedColors.length
-				];
-		}
-		return priceColorMapping[price];
-	};
-
-	// Function to open the location modal
 	const handleOpenLocationModal = () => {
 		if (
 			hotelDetails.location &&
@@ -389,31 +410,29 @@ const ZHotelDetailsForm2 = ({
 			hotelDetails.location.coordinates[0] !== 0 &&
 			hotelDetails.location.coordinates[1] !== 0
 		) {
-			// Use the existing location coordinates to set the map's initial center
 			setMarkerPosition({
-				lat: hotelDetails.location.coordinates[1], // latitude
-				lng: hotelDetails.location.coordinates[0], // longitude
+				lat: hotelDetails.location.coordinates[1],
+				lng: hotelDetails.location.coordinates[0],
 			});
 		} else if (hotelDetails.hotelCountry && hotelDetails.hotelCity) {
-			// Use the address to set the map's initial center if country and city are available
 			const address = `${hotelDetails.hotelCity}, ${hotelDetails.hotelCountry}`;
 			geocodeAddress(address);
 		} else {
-			// Default to KSA if no location is available in hotelDetails
-			setMarkerPosition({ lat: 24.7136, lng: 46.6753 }); // Coordinates for Riyadh, Saudi Arabia
+			setMarkerPosition({ lat: 24.7136, lng: 46.6753 });
 		}
 		setLocationModalVisible(true);
 	};
 
 	const handleDatePickerChange = (dates) => {
 		const [start, end] = dates;
-		if (end) {
+		setSelectedDateRange([start, end]);
+
+		if (start && end) {
 			const adjustedEnd = new Date(end);
-			adjustedEnd.setDate(adjustedEnd.getDate() + 1); // Make end date inclusive
+			adjustedEnd.setDate(adjustedEnd.getDate() + 1);
 
 			const calendarApi = calendarRef.current.getApi();
 
-			// Remove any existing grey "Selected" events
 			const existingSelectedEvents = calendarApi
 				.getEvents()
 				.filter((event) => event.title === "Selected");
@@ -422,17 +441,15 @@ const ZHotelDetailsForm2 = ({
 			const tempEvent = {
 				title: "Selected",
 				start: start.toISOString().split("T")[0],
-				end: adjustedEnd.toISOString().split("T")[0], // Use adjusted end date
+				end: adjustedEnd.toISOString().split("T")[0],
 				allDay: true,
 				backgroundColor: "lightgrey",
 			};
 
 			calendarApi.addEvent(tempEvent);
-			setSelectedDateRange([start, adjustedEnd]);
 		}
 	};
 
-	// Render the step content based on the current step
 	const renderStepContent = () => {
 		switch (currentStep) {
 			case 0:
@@ -498,7 +515,6 @@ const ZHotelDetailsForm2 = ({
 							/>
 						</Form.Item>
 
-						{/* Display message based on location coordinates */}
 						<div
 							dir='ltr'
 							style={{
@@ -630,25 +646,11 @@ const ZHotelDetailsForm2 = ({
 										) || {};
 
 									form.setFieldsValue({
-										displayName:
-											(existingRoomDetails.displayName &&
-												fromPage === "Updating") ||
-											"",
-										roomCount:
-											(existingRoomDetails.count && fromPage === "Updating") ||
-											0,
-										basePrice:
-											(existingRoomDetails.price?.basePrice &&
-												fromPage === "Updating") ||
-											0,
-										description:
-											(existingRoomDetails.description &&
-												fromPage === "Updating") ||
-											"",
-										amenities:
-											(existingRoomDetails.amenities &&
-												fromPage === "Updating") ||
-											[],
+										displayName: existingRoomDetails.displayName || "",
+										roomCount: existingRoomDetails.count || 0,
+										basePrice: existingRoomDetails.price?.basePrice || 0,
+										description: existingRoomDetails.description || "",
+										amenities: existingRoomDetails.amenities || [],
 									});
 								}}
 							>
@@ -987,26 +989,28 @@ const ZHotelDetailsForm2 = ({
 				);
 			case 3:
 				const pricingEvents =
-					(selectedRoomType &&
-						hotelDetails.roomCountDetails &&
-						hotelDetails.roomCountDetails
-							.find(
-								(room) =>
-									room.roomType ===
-									(selectedRoomType === "other"
-										? customRoomType
-										: selectedRoomType)
-							)
-							?.pricingRate?.map((rate) => ({
-								title: `${selectedRoomType}: ${rate.price} SAR`,
-								start: rate.calendarDate,
-								end: rate.calendarDate,
-								allDay: true,
-								backgroundColor: getColorForPrice(rate.price),
-							}))) ||
-					[];
+					selectedRoomType && hotelDetails.roomCountDetails
+						? hotelDetails.roomCountDetails
+								.find(
+									(room) =>
+										room.roomType ===
+										(selectedRoomType === "other"
+											? customRoomType
+											: selectedRoomType)
+								)
+								?.pricingRate?.map((rate) => ({
+									title: `${
+										(form.getFieldValue("displayName").length > 8
+											? form.getFieldValue("displayName").slice(0, 8) + "..."
+											: form.getFieldValue("displayName")) || selectedRoomType
+									}: ${rate.price} SAR`,
+									start: rate.calendarDate,
+									end: rate.calendarDate,
+									allDay: true,
+									backgroundColor: rate.color || getColorForPrice(rate.price),
+								})) || [] // Default to an empty array if no pricingRate is available
+						: [];
 
-				// Handling calendar date selection
 				const handleCalendarSelect = (info) => {
 					const selectedStart = new Date(
 						info.start.getFullYear(),
@@ -1028,14 +1032,12 @@ const ZHotelDetailsForm2 = ({
 
 					setSelectedDateRange([selectedStart, selectedEnd]);
 
-					// Update the date picker
 					const dates = [moment(selectedStart), moment(selectedEnd)];
 					form.setFieldsValue({
 						dateRange: dates,
 					});
 				};
 
-				// Handling date range submission for pricing
 				const handleDateRangeSubmit = () => {
 					if (!pricingRate) {
 						setPriceError(true);
@@ -1044,15 +1046,18 @@ const ZHotelDetailsForm2 = ({
 
 					const roomType =
 						selectedRoomType === "other" ? customRoomType : selectedRoomType;
+					const fullDisplayName = form.getFieldValue("displayName");
 
-					// Find the index of the existing room in roomCountDetails
+					const truncatedDisplayName =
+						fullDisplayName.length > 8
+							? fullDisplayName.slice(0, 8) + "..."
+							: fullDisplayName;
+
 					const roomIndex = hotelDetails.roomCountDetails.findIndex(
 						(room) =>
-							room.roomType === roomType &&
-							room.displayName === form.getFieldValue("displayName")
+							room.roomType === roomType && room.displayName === fullDisplayName
 					);
 
-					// Prepare new pricing rates for the selected date range
 					const newPricingRates = generateDateRangeArray(
 						selectedDateRange[0],
 						selectedDateRange[1]
@@ -1060,26 +1065,22 @@ const ZHotelDetailsForm2 = ({
 						calendarDate: date.toISOString().split("T")[0],
 						room_type: roomType,
 						price: pricingRate,
-						color: getColorForPrice(pricingRate),
+						color: getColorForPrice(pricingRate, selectedDateRange.join("-")), // Ensure unique color for this range
 					}));
 
-					// Update roomCountDetails with the new pricing
 					const updatedRoomCountDetails = [...hotelDetails.roomCountDetails];
 
 					if (roomIndex > -1) {
 						let existingRates =
 							updatedRoomCountDetails[roomIndex].pricingRate || [];
 
-						// Remove overlapping rates and add the new rates
 						existingRates = existingRates.filter(
 							(rate) =>
-								rate.calendarDate <
-									selectedDateRange[0].toISOString().split("T")[0] ||
-								rate.calendarDate >
-									selectedDateRange[1].toISOString().split("T")[0]
+								!newPricingRates.some(
+									(newRate) => newRate.calendarDate === rate.calendarDate
+								)
 						);
 
-						// Merge the new pricing rates
 						updatedRoomCountDetails[roomIndex].pricingRate = [
 							...existingRates,
 							...newPricingRates,
@@ -1087,24 +1088,41 @@ const ZHotelDetailsForm2 = ({
 					} else {
 						updatedRoomCountDetails.push({
 							roomType,
-							displayName: form.getFieldValue("displayName"),
+							displayName: fullDisplayName, // Save the full displayName here
 							pricingRate: newPricingRates,
 						});
 					}
 
-					// Update state
 					setHotelDetails((prevDetails) => ({
 						...prevDetails,
 						roomCountDetails: updatedRoomCountDetails,
 					}));
 
-					// Clear selection and reset state
+					const calendarApi = calendarRef.current.getApi();
+					newPricingRates.forEach((rate) => {
+						const existingEvents = calendarApi
+							.getEvents()
+							.filter(
+								(event) =>
+									event.startStr === rate.calendarDate &&
+									event.title.includes(truncatedDisplayName)
+							);
+						existingEvents.forEach((event) => event.remove());
+
+						calendarApi.addEvent({
+							title: `${truncatedDisplayName}: ${rate.price} SAR`,
+							start: rate.calendarDate,
+							end: rate.calendarDate,
+							allDay: true,
+							backgroundColor: rate.color,
+						});
+					});
+
 					handleCancelSelection();
 
 					message.success("Date range added successfully!");
 				};
 
-				// Handle canceling of selection
 				const handleCancelSelection = () => {
 					setSelectedDateRange([null, null]);
 					setPricingRate("");
@@ -1138,8 +1156,8 @@ const ZHotelDetailsForm2 = ({
 						<div className='col-md-3'>
 							<h4 style={{ fontSize: "1.2rem", fontWeight: "bold" }}>
 								{chosenLanguage === "Arabic"
-									? `تسعير الغرفة: ${selectedRoomType}`
-									: `Pricing for room: ${selectedRoomType}`}
+									? `تسعير الغرفة: ${form.getFieldValue("displayName")}`
+									: `Pricing for room: ${form.getFieldValue("displayName")}`}
 							</h4>
 							<label>
 								{chosenLanguage === "Arabic" ? "نطاق التاريخ" : "Date Range"}

@@ -37,9 +37,11 @@ const ZUpdateRoomCount = ({
 				room.displayName === selectedRoomType.displayName
 		);
 
+		console.log(roomDetails, "roomDetails");
+
 		return (
 			<ZHotelDetailsForm2
-				roomDetails={roomDetails}
+				existingRoomDetails={roomDetails}
 				hotelDetails={hotelDetails}
 				setHotelDetails={setHotelDetails}
 				chosenLanguage={chosenLanguage}
@@ -52,6 +54,7 @@ const ZUpdateRoomCount = ({
 				roomTypeSelected={roomTypeSelected}
 				setRoomTypeSelected={setRoomTypeSelected}
 				fromPage={"Updating"}
+				submittingHotelDetails={submittingHotelDetails}
 			/>
 		);
 	};
