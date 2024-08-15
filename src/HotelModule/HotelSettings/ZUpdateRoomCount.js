@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import styled from "styled-components";
-import ZHotelDetailsForm2 from "./ZHotelDetailsForm2";
+import ZUpdateHotelDetailsForm2 from "./ZUpdateHotelDetailsForm2";
 
 const ZUpdateRoomCount = ({
 	values,
@@ -16,79 +16,97 @@ const ZUpdateRoomCount = ({
 	submittingHotelDetails,
 	roomTypeSelected,
 	setRoomTypeSelected,
+	fromPage,
 }) => {
-	// Extract the roomCountDetails array from hotelDetails
-	const roomCountDetails = hotelDetails.roomCountDetails || [];
+	const [roomDetails, setRoomDetails] = useState(null); // Local state to hold room details
+	const [photos, setPhotos] = useState([]); // Move photos state here
+
+	// Memoize roomCountDetails to avoid recalculating it on every render
+	const roomCountDetails = useMemo(
+		() => hotelDetails.roomCountDetails || [],
+		[hotelDetails.roomCountDetails]
+	);
 
 	// Handle when a room is clicked
-	const handleRoomClick = (roomType, displayName) => {
-		setSelectedRoomType({ roomType, displayName });
+	const handleRoomClick = (roomId) => {
+		setSelectedRoomType(roomId);
 		setCurrentStep(1); // Start from step 1 when a room is clicked
 	};
 
-	// Render the selected room details using ZHotelDetailsForm2
-	const renderRoomDetails = () => {
-		if (!selectedRoomType) return null;
-
-		// Find the details of the selected room type and display name
-		const roomDetails = roomCountDetails.find(
-			(room) =>
-				room.roomType === selectedRoomType.roomType &&
-				room.displayName === selectedRoomType.displayName
+	// Update roomDetails whenever selectedRoomType changes
+	useEffect(() => {
+		const selectedRoom = roomCountDetails.find(
+			(room) => room._id === selectedRoomType
 		);
 
-		console.log(roomDetails, "roomDetails");
-
-		return (
-			<ZHotelDetailsForm2
-				existingRoomDetails={roomDetails}
-				hotelDetails={hotelDetails}
-				setHotelDetails={setHotelDetails}
-				chosenLanguage={chosenLanguage}
-				roomTypes={roomTypes}
-				amenitiesList={amenitiesList}
-				currentStep={currentStep}
-				setCurrentStep={setCurrentStep}
-				selectedRoomType={selectedRoomType}
-				setSelectedRoomType={setSelectedRoomType}
-				roomTypeSelected={roomTypeSelected}
-				setRoomTypeSelected={setRoomTypeSelected}
-				fromPage={"Updating"}
-				submittingHotelDetails={submittingHotelDetails}
-			/>
-		);
-	};
+		// Update room details and photos state when a new room is selected
+		setRoomDetails(selectedRoom);
+		setPhotos(selectedRoom ? selectedRoom.photos : []);
+	}, [selectedRoomType, roomCountDetails]);
 
 	return (
 		<ZUpdateRoomCountWrapper dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}>
 			<RoomsListWrapper isArabic={chosenLanguage === "Arabic"}>
-				{roomCountDetails
-					.filter((room) => room.roomType && room.displayName) // Filter out undefined or falsy room types or display names
-					.map((room) => (
-						<RoomItem
-							key={`${room.roomType}-${room.displayName}`} // Unique key using both roomType and displayName
-							onClick={() => handleRoomClick(room.roomType, room.displayName)}
-							isActive={
-								room.roomType === selectedRoomType?.roomType &&
-								room.displayName === selectedRoomType?.displayName
-							}
-						>
-							{room.displayName ||
-								room.roomType.replace(/([A-Z])/g, " $1").trim()}
-						</RoomItem>
-					))}
+				{roomCountDetails.map((room) => (
+					<RoomItem
+						key={room._id} // Use _id as the unique key
+						onClick={() => handleRoomClick(room._id)}
+						isActive={room._id === selectedRoomType}
+					>
+						{room.displayName
+							? room.displayName
+							: room.roomType
+							  ? room.roomType.replace(/([A-Z])/g, " $1").trim()
+							  : "Unknown Room Type"}
+					</RoomItem>
+				))}
 			</RoomsListWrapper>
 			<RoomDetailsWrapper isArabic={chosenLanguage === "Arabic"}>
-				<div className='details-content'>{renderRoomDetails()}</div>
-				{selectedRoomType ? (
+				<div className='details-content'>
+					{roomDetails ? (
+						<ZUpdateHotelDetailsForm2
+							existingRoomDetails={roomDetails}
+							hotelDetails={hotelDetails}
+							setHotelDetails={setHotelDetails}
+							chosenLanguage={chosenLanguage}
+							roomTypes={roomTypes}
+							amenitiesList={amenitiesList}
+							currentStep={currentStep}
+							setCurrentStep={setCurrentStep}
+							selectedRoomType={selectedRoomType}
+							setSelectedRoomType={setSelectedRoomType}
+							roomTypeSelected={roomTypeSelected}
+							setRoomTypeSelected={setRoomTypeSelected}
+							submittingHotelDetails={submittingHotelDetails}
+							fromPage={fromPage}
+							photos={photos} // Pass photos state
+							setPhotos={setPhotos} // Pass setPhotos function
+						/>
+					) : (
+						<p
+							style={{
+								textAlign: chosenLanguage === "Arabic" ? "right" : "",
+								fontWeight: "bold",
+								fontSize: "18px",
+							}}
+						>
+							{chosenLanguage === "Arabic"
+								? "الرجاء اختيار غرفة للتحديث"
+								: "Choose a room to update"}
+						</p>
+					)}
+				</div>
+				{selectedRoomType && roomDetails ? (
 					<div className='update-button'>
 						<button
 							onClick={() => {
-								submittingHotelDetails();
+								submittingHotelDetails(fromPage);
 							}}
 							className='btn btn-primary'
 						>
-							Update Hotel Details
+							{chosenLanguage === "Arabic"
+								? "تحديث تفاصيل الفندق"
+								: "Update Hotel Details"}
 						</button>
 					</div>
 				) : null}

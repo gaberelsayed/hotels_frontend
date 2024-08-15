@@ -1,18 +1,16 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Form, Input, Button, Select, message, Modal } from "antd";
+import { Form, Input, Button, message } from "antd";
 import styled from "styled-components";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import ImageCard from "./ImageCard";
-import ImageCardMain from "./ImageCardMain";
 import moment from "moment";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import ZCustomInput from "./ZCustomInput";
-import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
-
-const { Option } = Select;
+import ZCase0 from "./ZCase0";
+import ZCase1 from "./ZCase1";
+import ZCase2 from "./ZCase2";
 
 const predefinedColors = [
 	"#1e90ff",
@@ -67,11 +65,9 @@ const ZHotelDetailsForm2 = ({
 	const [hotelPhotos, setHotelPhotos] = useState(
 		hotelDetails.hotelPhotos || []
 	);
-	const [geocoder, setGeocoder] = useState(null);
+	const [photos, setPhotos] = useState([]); // Always starts with an empty array
 
-	const handleLoad = () => {
-		setGeocoder(new window.google.maps.Geocoder());
-	};
+	const [geocoder, setGeocoder] = useState(null);
 
 	const getColorForPrice = useCallback((price, dateRange) => {
 		const key = `${price}-${dateRange}`;
@@ -168,122 +164,6 @@ const ZHotelDetailsForm2 = ({
 		}
 	}, [selectedDateRange]);
 
-	const handleAddressChange = (e) => {
-		setAddress(e.target.value);
-		if (geocoder) {
-			geocodeAddress(e.target.value);
-		} else {
-			console.error("Geocoder is not initialized");
-		}
-	};
-
-	const geocodeAddress = (address) => {
-		if (!geocoder) {
-			console.error("Geocoder is not initialized");
-			return;
-		}
-
-		geocoder.geocode({ address }, (results, status) => {
-			if (status === "OK" && results[0]) {
-				const location = results[0].geometry.location;
-				setMarkerPosition({
-					lat: location.lat(),
-					lng: location.lng(),
-				});
-				setHotelDetails((prevDetails) => ({
-					...prevDetails,
-					location: {
-						type: "Point",
-						coordinates: [location.lng(), location.lat()],
-					},
-					hotelAddress: results[0].formatted_address,
-				}));
-			} else if (status !== "OK" && status !== "ZERO_RESULTS") {
-				message.error(
-					"Geocode was not successful for the following reason: " + status
-				);
-			}
-		});
-	};
-
-	const handleMapClick = (e) => {
-		const lat = e.latLng.lat();
-		const lng = e.latLng.lng();
-		setMarkerPosition({ lat, lng });
-		reverseGeocode(lat, lng);
-	};
-
-	const reverseGeocode = (lat, lng) => {
-		if (!geocoder) {
-			console.error("Geocoder is not initialized");
-			return;
-		}
-
-		geocoder.geocode({ location: { lat, lng } }, (results, status) => {
-			if (status === "OK" && results[0]) {
-				setAddress(results[0].formatted_address);
-				setHotelDetails((prevDetails) => ({
-					...prevDetails,
-					location: {
-						type: "Point",
-						coordinates: [lng, lat],
-					},
-					hotelAddress: results[0].formatted_address,
-				}));
-			} else {
-				message.error(
-					"Geocode was not successful for the following reason: " + status
-				);
-			}
-		});
-	};
-
-	const handleLocationModalOk = () => {
-		geocoder.geocode(
-			{ location: { lat: markerPosition.lat, lng: markerPosition.lng } },
-			(results, status) => {
-				if (status === "OK" && results[0]) {
-					const addressComponents = results[0].address_components;
-					const hotelCountry = addressComponents.find((comp) =>
-						comp.types.includes("country")
-					)?.long_name;
-					const hotelCity = addressComponents.find((comp) =>
-						comp.types.includes("locality")
-					)?.long_name;
-					const hotelState = addressComponents.find((comp) =>
-						comp.types.includes("administrative_area_level_1")
-					)?.long_name;
-
-					setHotelDetails((prevDetails) => ({
-						...prevDetails,
-						location: {
-							type: "Point",
-							coordinates: [markerPosition.lng, markerPosition.lat],
-						},
-						hotelAddress: results[0].formatted_address,
-						hotelCountry: hotelCountry || prevDetails.hotelCountry,
-						hotelCity: hotelCity || prevDetails.hotelCity,
-						hotelState: hotelState || prevDetails.hotelState,
-					}));
-					message.success(
-						chosenLanguage === "Arabic"
-							? "تم تحديث موقع الفندق بنجاح!"
-							: "Hotel location updated successfully!"
-					);
-				} else {
-					message.error(
-						"Geocode was not successful for the following reason: " + status
-					);
-				}
-			}
-		);
-		setLocationModalVisible(false);
-	};
-
-	const handleLocationModalCancel = () => {
-		setLocationModalVisible(false);
-	};
-
 	const handleNext = () => {
 		form
 			.validateFields()
@@ -292,20 +172,14 @@ const ZHotelDetailsForm2 = ({
 					values.roomType === "other" ? customRoomType : values.roomType;
 				const roomColor = getRoomColor(roomType);
 
-				const roomCountDetailsArray = Array.isArray(
-					hotelDetails.roomCountDetails
-				)
-					? hotelDetails.roomCountDetails
-					: [];
-
-				const existingRoomIndex = roomCountDetailsArray.findIndex(
+				// Check if this room type and display name already exist
+				const existingRoomIndex = hotelDetails.roomCountDetails.findIndex(
 					(room) =>
 						room.roomType === roomType &&
 						room.displayName === values.displayName
 				);
 
-				const updatedRoomCountDetails = [...roomCountDetailsArray];
-
+				// Prepare the new room details
 				const newRoomDetails = {
 					roomType,
 					displayName: values.displayName,
@@ -314,29 +188,27 @@ const ZHotelDetailsForm2 = ({
 					description: values.description,
 					amenities: values.amenities,
 					roomColor,
-					pricingRate:
-						existingRoomIndex > -1
-							? updatedRoomCountDetails[existingRoomIndex].pricingRate || []
-							: [],
-					photos:
-						existingRoomIndex > -1
-							? updatedRoomCountDetails[existingRoomIndex].photos || []
-							: [],
+					pricingRate: [], // Initialize pricingRate here
+					photos: [], // Initialize photos array here
 				};
 
 				if (existingRoomIndex > -1) {
-					updatedRoomCountDetails[existingRoomIndex] = {
-						...updatedRoomCountDetails[existingRoomIndex],
-						...newRoomDetails,
-					};
+					// If room exists, replace it with updated details
+					setHotelDetails((prevDetails) => {
+						const updatedRoomCountDetails = [...prevDetails.roomCountDetails];
+						updatedRoomCountDetails[existingRoomIndex] = newRoomDetails;
+						return {
+							...prevDetails,
+							roomCountDetails: updatedRoomCountDetails,
+						};
+					});
 				} else {
-					updatedRoomCountDetails.push(newRoomDetails);
+					// If room doesn't exist, add it
+					setHotelDetails((prevDetails) => ({
+						...prevDetails,
+						roomCountDetails: [...prevDetails.roomCountDetails, newRoomDetails],
+					}));
 				}
-
-				setHotelDetails((prevDetails) => ({
-					...prevDetails,
-					roomCountDetails: updatedRoomCountDetails,
-				}));
 
 				setCurrentStep(currentStep + 1);
 			})
@@ -403,26 +275,6 @@ const ZHotelDetailsForm2 = ({
 		);
 	};
 
-	const handleOpenLocationModal = () => {
-		if (
-			hotelDetails.location &&
-			hotelDetails.location.coordinates.length === 2 &&
-			hotelDetails.location.coordinates[0] !== 0 &&
-			hotelDetails.location.coordinates[1] !== 0
-		) {
-			setMarkerPosition({
-				lat: hotelDetails.location.coordinates[1],
-				lng: hotelDetails.location.coordinates[0],
-			});
-		} else if (hotelDetails.hotelCountry && hotelDetails.hotelCity) {
-			const address = `${hotelDetails.hotelCity}, ${hotelDetails.hotelCountry}`;
-			geocodeAddress(address);
-		} else {
-			setMarkerPosition({ lat: 24.7136, lng: 46.6753 });
-		}
-		setLocationModalVisible(true);
-	};
-
 	const handleDatePickerChange = (dates) => {
 		const [start, end] = dates;
 		setSelectedDateRange([start, end]);
@@ -450,542 +302,92 @@ const ZHotelDetailsForm2 = ({
 		}
 	};
 
+	useEffect(() => {
+		if (currentStep === 3 && calendarRef.current) {
+			const calendarApi = calendarRef.current.getApi();
+			calendarApi.getEvents().forEach((event) => event.remove()); // Clear existing events
+
+			if (selectedRoomType) {
+				const room = hotelDetails.roomCountDetails.find(
+					(r) =>
+						r.roomType ===
+						(selectedRoomType === "other" ? customRoomType : selectedRoomType)
+				);
+
+				if (room && room.pricingRate && room.pricingRate.length > 0) {
+					const pricingEvents = room.pricingRate.map((rate) => ({
+						title: `${room.displayName}: ${rate.price} SAR`,
+						start: rate.calendarDate,
+						end: rate.calendarDate,
+						allDay: true,
+						backgroundColor:
+							rate.color || getColorForPrice(rate.price, rate.calendarDate),
+					}));
+
+					pricingEvents.forEach((event) => calendarApi.addEvent(event)); // Add the events
+				}
+			}
+		}
+		// eslint-disable-next-line
+	}, [currentStep, hotelDetails, selectedRoomType, customRoomType]);
+
 	const renderStepContent = () => {
 		switch (currentStep) {
 			case 0:
 				return (
 					<>
-						<Form.Item
-							name='parkingLot'
-							label={
-								chosenLanguage === "Arabic"
-									? "هل يوجد موقف سيارات في فندقك؟"
-									: "Does Your Hotel Have A Parking Lot?"
-							}
-							rules={[{ required: true, message: "Please select an option" }]}
-						>
-							<Select
-								onChange={(value) => {
-									setHotelDetails((prevDetails) => ({
-										...prevDetails,
-										parkingLot: value === "1",
-									}));
-								}}
-							>
-								<Option
-									value='1'
-									style={{
-										textAlign: chosenLanguage === "Arabic" ? "right" : "",
-									}}
-								>
-									{chosenLanguage === "Arabic" ? "نعم" : "Yes"}
-								</Option>
-								<Option
-									value='0'
-									style={{
-										textAlign: chosenLanguage === "Arabic" ? "right" : "",
-									}}
-								>
-									{chosenLanguage === "Arabic" ? "لا" : "No"}
-								</Option>
-							</Select>
-						</Form.Item>
-						<Form.Item
-							name='hotelFloors'
-							label={
-								chosenLanguage === "Arabic"
-									? "كم عدد الطوابق في فندقك؟"
-									: "How Many Floors Does your hotel have?"
-							}
-							rules={[
-								{
-									required: true,
-									message: "Please input the number of floors",
-								},
-							]}
-						>
-							<Input
-								type='number'
-								onChange={(e) => {
-									setHotelDetails((prevDetails) => ({
-										...prevDetails,
-										hotelFloors: e.target.value,
-									}));
-								}}
-							/>
-						</Form.Item>
-
-						<div
-							dir='ltr'
-							style={{
-								marginBottom: "10px",
-								fontWeight: "bold",
-								fontSize: "14px",
-								textTransform: "capitalize",
-							}}
-						>
-							{hotelDetails.location.coordinates[0] === 0 &&
-							hotelDetails.location.coordinates[1] === 0 ? (
-								<span style={{ color: "red" }}>
-									{chosenLanguage === "Arabic"
-										? "لم يتم تأكيد الموقع"
-										: "No location was confirmed"}
-								</span>
-							) : (
-								<span style={{ color: "darkgreen" }}>
-									{chosenLanguage === "Arabic"
-										? `Location: ${hotelDetails.hotelAddress}`
-										: `Location: ${hotelDetails.hotelAddress}`}
-								</span>
-							)}
-						</div>
-
-						<Button
-							type={
-								hotelDetails.location.coordinates[0] === 0 &&
-								hotelDetails.location.coordinates[1] === 0
-									? "danger"
-									: "primary"
-							}
-							onClick={handleOpenLocationModal}
-							style={{ marginBottom: "16px" }}
-						>
-							{chosenLanguage === "Arabic"
-								? hotelDetails.location.coordinates[0] === 0 &&
-								  hotelDetails.location.coordinates[1] === 0
-									? "إضافة موقع الفندق"
-									: "تعديل موقع الفندق"
-								: hotelDetails.location.coordinates[0] === 0 &&
-								    hotelDetails.location.coordinates[1] === 0
-								  ? "Add Hotel Location"
-								  : "Edit Hotel Location"}
-						</Button>
-
-						<Modal
-							title={
-								chosenLanguage === "Arabic"
-									? "حدد موقع الفندق"
-									: "Select Hotel Location"
-							}
-							open={locationModalVisible}
-							onOk={handleLocationModalOk}
-							onCancel={handleLocationModalCancel}
-							width={1100}
-						>
-							<Input
-								value={address}
-								onChange={handleAddressChange}
-								placeholder={
-									chosenLanguage === "Arabic"
-										? "أدخل عنوان الفندق"
-										: "Enter hotel address"
-								}
-								style={{ marginBottom: "16px" }}
-							/>
-							<LoadScript
-								googleMapsApiKey={process.env.REACT_APP_MAPS_API_KEY}
-								onLoad={handleLoad} // Load handler to initialize geocoder
-							>
-								<GoogleMap
-									mapContainerStyle={{ width: "100%", height: "400px" }}
-									center={markerPosition}
-									zoom={14}
-									onClick={handleMapClick}
-								>
-									<Marker position={markerPosition} draggable={true} />
-								</GoogleMap>
-							</LoadScript>
-						</Modal>
-
-						<h4>
-							{chosenLanguage === "Arabic"
-								? "صور عامة عن الفندق (مثل المبنى، الردهة، المصاعد، الخ...)"
-								: "General Images About the hotel (e.g. building, lobby, elevators, etc...)"}
-						</h4>
-						<Form.Item>
-							<ImageCardMain
-								roomType='hotelPhotos'
-								hotelPhotos={hotelPhotos}
-								setHotelPhotos={setHotelPhotos}
-								setHotelDetails={setHotelDetails}
-							/>
-						</Form.Item>
+						<ZCase0
+							hotelDetails={hotelDetails}
+							setHotelDetails={setHotelDetails}
+							chosenLanguage={chosenLanguage}
+							setLocationModalVisible={setLocationModalVisible}
+							locationModalVisible={locationModalVisible}
+							setMarkerPosition={setMarkerPosition}
+							markerPosition={markerPosition}
+							setAddress={setAddress}
+							address={address}
+							setHotelPhotos={setHotelPhotos}
+							hotelPhotos={hotelPhotos}
+							setGeocoder={setGeocoder}
+							geocoder={geocoder}
+						/>
 					</>
 				);
 
 			case 1:
 				return (
 					<>
-						<Form.Item
-							name='roomType'
-							label={
-								chosenLanguage === "Arabic"
-									? "اختر نوع الغرفة"
-									: "Select Room Type"
-							}
-							rules={[{ required: true, message: "Please select a room type" }]}
-						>
-							<Select
-								onChange={(value) => {
-									if (value === "other") {
-										form.setFieldsValue({ customRoomType: "" });
-									}
-									setRoomTypeSelected(true);
-									setSelectedRoomType(value);
-									const roomType = value === "other" ? customRoomType : value;
-
-									const roomCountDetailsArray = Array.isArray(
-										hotelDetails.roomCountDetails
-									)
-										? hotelDetails.roomCountDetails
-										: [];
-
-									const existingRoomDetails =
-										roomCountDetailsArray.find(
-											(room) => room.roomType === roomType
-										) || {};
-
-									form.setFieldsValue({
-										displayName: existingRoomDetails.displayName || "",
-										roomCount: existingRoomDetails.count || 0,
-										basePrice: existingRoomDetails.price?.basePrice || 0,
-										description: existingRoomDetails.description || "",
-										amenities: existingRoomDetails.amenities || [],
-									});
-								}}
-							>
-								{roomTypes.map((room) => (
-									<Option
-										key={room.value}
-										value={room.value}
-										style={{
-											textAlign: chosenLanguage === "Arabic" ? "right" : "",
-											paddingRight: chosenLanguage === "Arabic" ? "20px" : "",
-										}}
-									>
-										{room.label}
-									</Option>
-								))}
-								<Option
-									key='other'
-									value='other'
-									style={{
-										textAlign: chosenLanguage === "Arabic" ? "right" : "",
-										paddingRight: chosenLanguage === "Arabic" ? "20px" : "",
-									}}
-								>
-									{chosenLanguage === "Arabic" ? "أخرى" : "Other"}
-								</Option>
-							</Select>
-						</Form.Item>
-						{form.getFieldValue("roomType") === "other" && (
-							<Form.Item
-								name='customRoomType'
-								label={
-									chosenLanguage === "Arabic"
-										? "حدد نوع الغرفة الأخرى"
-										: "Specify Other Room Type"
-								}
-								rules={[
-									{ required: true, message: "Please specify the room type" },
-								]}
-							>
-								<Input
-									value={customRoomType}
-									onChange={(e) => setCustomRoomType(e.target.value)}
-								/>
-							</Form.Item>
-						)}
-						{roomTypeSelected && (
-							<>
-								<Form.Item
-									name='displayName'
-									label={
-										chosenLanguage === "Arabic"
-											? "اسم العرض (الاسم المعروض للعملاء)"
-											: "Display Name"
-									}
-									rules={[
-										{
-											required: true,
-											message: "Please input the display name",
-										},
-									]}
-								>
-									<Input
-										onChange={(e) => {
-											const roomType =
-												form.getFieldValue("roomType") === "other"
-													? customRoomType
-													: form.getFieldValue("roomType");
-
-											setHotelDetails((prevDetails) => {
-												const updatedRoomCountDetails = Array.isArray(
-													prevDetails.roomCountDetails
-												)
-													? prevDetails.roomCountDetails
-													: [];
-
-												const existingRoomIndex =
-													updatedRoomCountDetails.findIndex(
-														(room) => room.roomType === roomType
-													);
-
-												if (existingRoomIndex > -1) {
-													updatedRoomCountDetails[
-														existingRoomIndex
-													].displayName = e.target.value;
-												} else {
-													updatedRoomCountDetails.push({
-														roomType,
-														displayName: e.target.value,
-													});
-												}
-
-												return {
-													...prevDetails,
-													roomCountDetails: updatedRoomCountDetails,
-												};
-											});
-										}}
-									/>
-								</Form.Item>
-
-								<Form.Item
-									name='roomCount'
-									label={
-										chosenLanguage === "Arabic" ? "عدد الغرف" : "Room Count"
-									}
-									rules={[
-										{ required: true, message: "Please input the room count" },
-									]}
-								>
-									<Input
-										type='number'
-										onChange={(e) => {
-											const roomType =
-												form.getFieldValue("roomType") === "other"
-													? customRoomType
-													: form.getFieldValue("roomType");
-
-											setHotelDetails((prevDetails) => {
-												const updatedRoomCountDetails = Array.isArray(
-													prevDetails.roomCountDetails
-												)
-													? prevDetails.roomCountDetails
-													: [];
-
-												const existingRoomIndex =
-													updatedRoomCountDetails.findIndex(
-														(room) => room.roomType === roomType
-													);
-
-												if (existingRoomIndex > -1) {
-													updatedRoomCountDetails[existingRoomIndex].count =
-														parseInt(e.target.value, 10);
-												} else {
-													updatedRoomCountDetails.push({
-														roomType,
-														count: parseInt(e.target.value, 10),
-													});
-												}
-
-												return {
-													...prevDetails,
-													roomCountDetails: updatedRoomCountDetails,
-												};
-											});
-										}}
-									/>
-								</Form.Item>
-								<Form.Item
-									name='basePrice'
-									label={
-										chosenLanguage === "Arabic"
-											? "سعر الغرفة الأساسي"
-											: "Base Room Price"
-									}
-									rules={[
-										{ required: true, message: "Please input the base price" },
-									]}
-								>
-									<Input
-										type='number'
-										onChange={(e) => {
-											const roomType =
-												form.getFieldValue("roomType") === "other"
-													? customRoomType
-													: form.getFieldValue("roomType");
-
-											setHotelDetails((prevDetails) => {
-												const updatedRoomCountDetails = Array.isArray(
-													prevDetails.roomCountDetails
-												)
-													? prevDetails.roomCountDetails
-													: [];
-
-												const existingRoomIndex =
-													updatedRoomCountDetails.findIndex(
-														(room) => room.roomType === roomType
-													);
-
-												if (existingRoomIndex > -1) {
-													updatedRoomCountDetails[existingRoomIndex].price = {
-														basePrice: parseFloat(e.target.value),
-													};
-												} else {
-													updatedRoomCountDetails.push({
-														roomType,
-														price: { basePrice: parseFloat(e.target.value) },
-													});
-												}
-
-												return {
-													...prevDetails,
-													roomCountDetails: updatedRoomCountDetails,
-												};
-											});
-										}}
-									/>
-								</Form.Item>
-
-								<Form.Item
-									name='description'
-									label={
-										chosenLanguage === "Arabic"
-											? "وصف الغرفة"
-											: "Room Description"
-									}
-									rules={[
-										{
-											required: true,
-											message: "Please input the room description",
-										},
-									]}
-								>
-									<Input.TextArea
-										onChange={(e) => {
-											const roomType =
-												form.getFieldValue("roomType") === "other"
-													? customRoomType
-													: form.getFieldValue("roomType");
-
-											setHotelDetails((prevDetails) => {
-												const updatedRoomCountDetails = Array.isArray(
-													prevDetails.roomCountDetails
-												)
-													? prevDetails.roomCountDetails
-													: [];
-
-												const existingRoomIndex =
-													updatedRoomCountDetails.findIndex(
-														(room) => room.roomType === roomType
-													);
-
-												if (existingRoomIndex > -1) {
-													updatedRoomCountDetails[
-														existingRoomIndex
-													].description = e.target.value;
-												} else {
-													updatedRoomCountDetails.push({
-														roomType,
-														description: e.target.value,
-													});
-												}
-
-												return {
-													...prevDetails,
-													roomCountDetails: updatedRoomCountDetails,
-												};
-											});
-										}}
-									/>
-								</Form.Item>
-								<Form.Item
-									name='amenities'
-									label={
-										chosenLanguage === "Arabic"
-											? "وسائل الراحة"
-											: "Room Amenities"
-									}
-									rules={[
-										{ required: true, message: "Please select room amenities" },
-									]}
-								>
-									<Select
-										mode='multiple'
-										allowClear
-										onChange={(value) => {
-											const roomType =
-												form.getFieldValue("roomType") === "other"
-													? customRoomType
-													: form.getFieldValue("roomType");
-
-											setHotelDetails((prevDetails) => {
-												const updatedRoomCountDetails = Array.isArray(
-													prevDetails.roomCountDetails
-												)
-													? prevDetails.roomCountDetails
-													: [];
-
-												const existingRoomIndex =
-													updatedRoomCountDetails.findIndex(
-														(room) => room.roomType === roomType
-													);
-
-												if (existingRoomIndex > -1) {
-													updatedRoomCountDetails[existingRoomIndex].amenities =
-														value;
-												} else {
-													updatedRoomCountDetails.push({
-														roomType,
-														amenities: value,
-													});
-												}
-
-												return {
-													...prevDetails,
-													roomCountDetails: updatedRoomCountDetails,
-												};
-											});
-										}}
-									>
-										{amenitiesList.map((amenity, index) => (
-											<Option
-												key={index}
-												value={amenity}
-												style={{
-													textAlign: chosenLanguage === "Arabic" ? "right" : "",
-												}}
-											>
-												{amenity}
-											</Option>
-										))}
-									</Select>
-								</Form.Item>
-							</>
-						)}
+						<ZCase1
+							hotelDetails={hotelDetails}
+							setHotelDetails={setHotelDetails}
+							chosenLanguage={chosenLanguage}
+							roomTypes={roomTypes}
+							setSelectedRoomType={setSelectedRoomType}
+							amenitiesList={amenitiesList}
+							roomTypeSelected={roomTypeSelected}
+							setRoomTypeSelected={setRoomTypeSelected}
+							fromPage={fromPage}
+							setCustomRoomType={setCustomRoomType}
+							customRoomType={customRoomType}
+							form={form}
+						/>
 					</>
 				);
 
 			case 2:
 				return (
-					<div className='my-3'>
-						{ImageCard && (
-							<ImageCard
-								roomType={
-									form.getFieldValue("roomType") === "other"
-										? customRoomType
-										: form.getFieldValue("roomType")
-								}
-								hotelPhotos={hotelPhotos}
-								setHotelPhotos={setHotelPhotos}
-								setHotelDetails={setHotelDetails}
-								chosenLanguage={chosenLanguage}
-								hotelDetails={hotelDetails}
-							/>
-						)}
-					</div>
+					<>
+						<ZCase2
+							hotelDetails={hotelDetails}
+							setHotelDetails={setHotelDetails}
+							chosenLanguage={chosenLanguage}
+							fromPage={fromPage}
+							customRoomType={customRoomType}
+							form={form}
+							photos={photos}
+							setPhotos={setPhotos}
+						/>
+					</>
 				);
 			case 3:
 				const pricingEvents =
@@ -1048,11 +450,6 @@ const ZHotelDetailsForm2 = ({
 						selectedRoomType === "other" ? customRoomType : selectedRoomType;
 					const fullDisplayName = form.getFieldValue("displayName");
 
-					const truncatedDisplayName =
-						fullDisplayName.length > 8
-							? fullDisplayName.slice(0, 8) + "..."
-							: fullDisplayName;
-
 					const roomIndex = hotelDetails.roomCountDetails.findIndex(
 						(room) =>
 							room.roomType === roomType && room.displayName === fullDisplayName
@@ -1065,38 +462,41 @@ const ZHotelDetailsForm2 = ({
 						calendarDate: date.toISOString().split("T")[0],
 						room_type: roomType,
 						price: pricingRate,
-						color: getColorForPrice(pricingRate, selectedDateRange.join("-")), // Ensure unique color for this range
+						color: getColorForPrice(pricingRate, selectedDateRange.join("-")),
 					}));
 
-					const updatedRoomCountDetails = [...hotelDetails.roomCountDetails];
+					setHotelDetails((prevDetails) => {
+						const updatedRoomCountDetails = [...prevDetails.roomCountDetails];
 
-					if (roomIndex > -1) {
-						let existingRates =
-							updatedRoomCountDetails[roomIndex].pricingRate || [];
+						if (roomIndex > -1) {
+							let existingRates =
+								updatedRoomCountDetails[roomIndex].pricingRate || [];
 
-						existingRates = existingRates.filter(
-							(rate) =>
-								!newPricingRates.some(
-									(newRate) => newRate.calendarDate === rate.calendarDate
-								)
-						);
+							// Remove overlapping dates
+							existingRates = existingRates.filter(
+								(rate) =>
+									!newPricingRates.some(
+										(newRate) => newRate.calendarDate === rate.calendarDate
+									)
+							);
 
-						updatedRoomCountDetails[roomIndex].pricingRate = [
-							...existingRates,
-							...newPricingRates,
-						];
-					} else {
-						updatedRoomCountDetails.push({
-							roomType,
-							displayName: fullDisplayName, // Save the full displayName here
-							pricingRate: newPricingRates,
-						});
-					}
+							updatedRoomCountDetails[roomIndex].pricingRate = [
+								...existingRates,
+								...newPricingRates,
+							];
+						} else {
+							updatedRoomCountDetails.push({
+								roomType,
+								displayName: fullDisplayName,
+								pricingRate: newPricingRates,
+							});
+						}
 
-					setHotelDetails((prevDetails) => ({
-						...prevDetails,
-						roomCountDetails: updatedRoomCountDetails,
-					}));
+						return {
+							...prevDetails,
+							roomCountDetails: updatedRoomCountDetails,
+						};
+					});
 
 					const calendarApi = calendarRef.current.getApi();
 					newPricingRates.forEach((rate) => {
@@ -1105,12 +505,12 @@ const ZHotelDetailsForm2 = ({
 							.filter(
 								(event) =>
 									event.startStr === rate.calendarDate &&
-									event.title.includes(truncatedDisplayName)
+									event.title.includes(fullDisplayName)
 							);
 						existingEvents.forEach((event) => event.remove());
 
 						calendarApi.addEvent({
-							title: `${truncatedDisplayName}: ${rate.price} SAR`,
+							title: `${fullDisplayName}: ${rate.price} SAR`,
 							start: rate.calendarDate,
 							end: rate.calendarDate,
 							allDay: true,
@@ -1119,7 +519,6 @@ const ZHotelDetailsForm2 = ({
 					});
 
 					handleCancelSelection();
-
 					message.success("Date range added successfully!");
 				};
 

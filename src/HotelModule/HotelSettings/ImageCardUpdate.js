@@ -7,8 +7,8 @@ import axios from "axios";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import imageImage from "../../GeneralImages/UploadImageImage.jpg";
 
-const ImageCard = ({
-	roomType,
+const ImageCardUpdate = ({
+	roomId, // Use the roomId for unique identification
 	setHotelDetails,
 	hotelDetails,
 	chosenLanguage,
@@ -63,20 +63,17 @@ const ImageCard = ({
 				const updatedPhotos = [...photos, ...newPhotos];
 				setPhotos(updatedPhotos);
 
+				// Update hotelDetails state with new photos
 				setHotelDetails((prevDetails) => {
-					const roomCountDetailsArray = Array.isArray(
-						prevDetails.roomCountDetails
-					)
-						? prevDetails.roomCountDetails
-						: [];
-
-					const updatedRoomCountDetails = roomCountDetailsArray.map((room) =>
-						room.roomType === roomType
-							? { ...room, photos: updatedPhotos }
-							: room
+					const updatedRoomCountDetails = prevDetails.roomCountDetails.map(
+						(room) =>
+							room._id === roomId ? { ...room, photos: updatedPhotos } : room
 					);
 
-					return { ...prevDetails, roomCountDetails: updatedRoomCountDetails };
+					return {
+						...prevDetails,
+						roomCountDetails: updatedRoomCountDetails,
+					};
 				});
 			});
 		}
@@ -96,20 +93,11 @@ const ImageCard = ({
 					);
 					setPhotos(updatedPhotos);
 
+					// Update hotelDetails state with removed photo
 					setHotelDetails((prevDetails) => {
-						const roomCountDetailsArray = Array.isArray(
-							prevDetails.roomCountDetails
-						)
-							? prevDetails.roomCountDetails
-							: [];
-
-						const updatedRoomCountDetails = roomCountDetailsArray.map((room) =>
-							room.roomType === roomType
-								? {
-										...room,
-										photos: updatedPhotos,
-								  }
-								: room
+						const updatedRoomCountDetails = prevDetails.roomCountDetails.map(
+							(room) =>
+								room._id === roomId ? { ...room, photos: updatedPhotos } : room
 						);
 
 						return {
@@ -132,18 +120,11 @@ const ImageCard = ({
 		items.splice(result.destination.index, 0, reorderedItem);
 
 		setPhotos(items);
-		setHotelDetails((prevDetails) => {
-			const roomCountDetailsArray = Array.isArray(prevDetails.roomCountDetails)
-				? prevDetails.roomCountDetails
-				: [];
 
-			const updatedRoomCountDetails = roomCountDetailsArray.map((room) =>
-				room.roomType === roomType
-					? {
-							...room,
-							photos: items,
-					  }
-					: room
+		// Update hotelDetails state with reordered photos
+		setHotelDetails((prevDetails) => {
+			const updatedRoomCountDetails = prevDetails.roomCountDetails.map(
+				(room) => (room._id === roomId ? { ...room, photos: items } : room)
 			);
 
 			return {
@@ -168,7 +149,7 @@ const ImageCard = ({
 				</h5>
 				<br />
 				<div className='card-body text-center pt-0'>
-					<div className='image-input image-input-empty image-input-outline image-input-placeholder mb-3'>
+					<div className='image-input mb-3'>
 						<DragDropContext onDragEnd={handleOnDragEnd}>
 							<Droppable droppableId='photos' direction='horizontal'>
 								{(provided) => (
@@ -231,15 +212,15 @@ const ImageCard = ({
 								hidden
 								accept='images/*'
 								onChange={fileUploadAndResizeThumbNail}
-								required
 							/>
+							{/* Removed the required attribute since it might not be necessary */}
 						</label>
 					</div>
 					<div className='text-muted fs-7'>
 						Width: 800px, Height: 954px;
 						<br />
-						Set the room thumbnail image. Only *.png, *.jpg and *.jpeg image
-						files are accepted
+						Set the room thumbnail image. Only *.png, *.jpg, and *.jpeg image
+						files are accepted.
 					</div>
 				</div>
 			</div>
@@ -247,7 +228,7 @@ const ImageCard = ({
 	);
 };
 
-export default ImageCard;
+export default ImageCardUpdate;
 
 const ImageCardWrapper = styled.div`
 	margin: auto;

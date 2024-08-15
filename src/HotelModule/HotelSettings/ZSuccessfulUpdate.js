@@ -7,9 +7,8 @@ import { Modal } from "antd";
 const ZSuccessfulUpdate = ({
 	modalVisible,
 	setModalVisible,
-	setStep,
-	setSelectedRoomType,
-	setRoomTypeSelected,
+	userId,
+	hotelId,
 }) => {
 	const urlParams = new URLSearchParams(window.location.search);
 	const roomCount = urlParams.has("roomcount");
@@ -29,10 +28,7 @@ const ZSuccessfulUpdate = ({
 				}
 				open={modalVisible}
 				onOk={() => {
-					setStep(1);
-					setSelectedRoomType("");
-					setRoomTypeSelected(false);
-					setModalVisible(false);
+					window.location.href = `/hotel-management/settings/${userId}/${hotelId}?activeTab=HotelDetails&currentStep=1`;
 				}}
 				cancelButtonProps={{ style: { display: "none" } }}
 				onCancel={() => {

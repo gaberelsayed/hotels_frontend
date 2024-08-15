@@ -89,6 +89,12 @@ const HotelSettingsMain = () => {
 	const [finalStepModal, setFinalStepModal] = useState(false);
 
 	useEffect(() => {
+		const searchParams = new URLSearchParams(window.location.search);
+		const step = searchParams.get("currentStep");
+		setCurrentStep(step ? parseInt(step, 10) : 0);
+	}, []);
+
+	useEffect(() => {
 		if (window.innerWidth <= 1000) {
 			setCollapsed(true);
 		}
@@ -189,8 +195,6 @@ const HotelSettingsMain = () => {
 			JSON.parse(localStorage.getItem("selectedHotel")) || {};
 		const hotelId = selectedHotel._id;
 
-		console.log(hotelId, "hotelId");
-
 		// Fetching user account details
 		hotelAccount(user._id, token, user._id).then((data) => {
 			if (data && data.error) {
@@ -203,7 +207,6 @@ const HotelSettingsMain = () => {
 					if (data2 && data2.error) {
 						console.log(data2.error, "Error rendering");
 					} else {
-						console.log(data2, "data2");
 						if (data && data.name && data._id && data2 && data2._id) {
 							setHotelDetails(data2);
 
@@ -219,7 +222,6 @@ const HotelSettingsMain = () => {
 									? data2.pricingCalendar
 									: []
 							);
-							console.log(data2, "data2");
 
 							// Fetching hotel rooms
 							getHotelRooms(data2._id, user._id).then((data4) => {
@@ -273,8 +275,8 @@ const HotelSettingsMain = () => {
 	}, [clickedFloor]);
 
 	const hotelDetailsUpdate = (fromPage) => {
-		console.log(fromPage, "fromPage");
 		const updatedDetails = { ...hotelDetails, fromPage };
+		console.log(hotelDetails, "hotelDetailsYaba Updated");
 
 		// Call the API to update the hotel details
 		const { user, token } = isAuthenticated(); // Assuming you have a user and token
@@ -287,6 +289,7 @@ const HotelSettingsMain = () => {
 				if (response.error) {
 					console.log("Error updating hotel details:", response.error);
 				} else {
+					setSelectedRoomType("");
 					toast.success("Hotel Was Successfully Updated");
 					console.log("Hotel details updated successfully.");
 					setHotelDetails(updatedDetails); // Update the state with the new details
@@ -346,6 +349,8 @@ const HotelSettingsMain = () => {
 				setStep={setCurrentStep}
 				setSelectedRoomType={setSelectedRoomType}
 				setRoomTypeSelected={setRoomTypeSelected}
+				userId={user._id}
+				hotelId={hotelDetails._id}
 			/>
 			<div className='grid-container-main'>
 				<div className='navcontent'>
@@ -397,7 +402,7 @@ const HotelSettingsMain = () => {
 									setActiveTab("HotelDetails");
 									setCurrentStep(0);
 									history.push(
-										`/hotel-management/settings/${user._id}/${hotelDetails._id}?hoteldetails`
+										`/hotel-management/settings/${user._id}/${hotelDetails._id}?activeTab=HotelDetails&currentStep=0`
 									); // Programmatic navigation
 								}}
 							>
@@ -412,7 +417,7 @@ const HotelSettingsMain = () => {
 									setActiveTab("UpdateRoomCount");
 									setCurrentStep(1);
 									history.push(
-										`/hotel-management/settings/${user._id}/${hotelDetails._id}?roomcount`
+										`/hotel-management/settings/${user._id}/${hotelDetails._id}?activeTab=roomcount&currentStep=1`
 									); // Programmatic navigation
 								}}
 							>
@@ -527,6 +532,7 @@ const HotelSettingsMain = () => {
 									setSelectedRoomType={setSelectedRoomType}
 									roomTypeSelected={roomTypeSelected}
 									setRoomTypeSelected={setRoomTypeSelected}
+									fromPage={"Updating"}
 								/>
 							</>
 						) : null}
