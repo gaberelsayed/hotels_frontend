@@ -1,5 +1,5 @@
-import React from "react";
-import { Form, Input, Select } from "antd";
+import React, { useEffect } from "react";
+import { Form, Input, Select, Switch } from "antd";
 import styled from "styled-components";
 
 const { Option } = Select;
@@ -18,6 +18,13 @@ const ZCase1 = ({
 	customRoomType,
 	form,
 }) => {
+	// Set default value for activeRoom to true when adding a new room
+	useEffect(() => {
+		if (fromPage !== "Updating") {
+			form.setFieldsValue({ activeRoom: true });
+		}
+	}, [form, fromPage]);
+
 	return (
 		<ZCase1Wrapper
 			isArabic={chosenLanguage === "Arabic"}
@@ -58,6 +65,7 @@ const ZCase1 = ({
 									basePrice: existingRoomDetails.price?.basePrice || 0,
 									description: existingRoomDetails.description || "",
 									amenities: existingRoomDetails.amenities || [],
+									activeRoom: existingRoomDetails.activeRoom || true,
 								});
 							}
 						}}
@@ -294,11 +302,14 @@ const ZCase1 = ({
 										return {
 											...prevDetails,
 											roomCountDetails: updatedRoomCountDetails,
+											// Set activeRoom to true by default
+											activeRoom: true,
 										};
 									});
 								}}
 							/>
 						</Form.Item>
+
 						<Form.Item
 							name='amenities'
 							label={
@@ -357,6 +368,53 @@ const ZCase1 = ({
 									</Option>
 								))}
 							</Select>
+						</Form.Item>
+
+						<Form.Item
+							name='activeRoom'
+							label={
+								chosenLanguage === "Arabic"
+									? "نشط / غير نشط"
+									: "Active / Inactive"
+							}
+							valuePropName='checked'
+						>
+							<Switch
+								defaultChecked={true}
+								onChange={(checked) => {
+									const roomType =
+										form.getFieldValue("roomType") === "other"
+											? customRoomType
+											: form.getFieldValue("roomType");
+
+									setHotelDetails((prevDetails) => {
+										const updatedRoomCountDetails = Array.isArray(
+											prevDetails.roomCountDetails
+										)
+											? prevDetails.roomCountDetails
+											: [];
+
+										const existingRoomIndex = updatedRoomCountDetails.findIndex(
+											(room) => room.roomType === roomType
+										);
+
+										if (existingRoomIndex > -1) {
+											updatedRoomCountDetails[existingRoomIndex].activeRoom =
+												checked;
+										} else {
+											updatedRoomCountDetails.push({
+												roomType,
+												activeRoom: checked,
+											});
+										}
+
+										return {
+											...prevDetails,
+											roomCountDetails: updatedRoomCountDetails,
+										};
+									});
+								}}
+							/>
 						</Form.Item>
 					</>
 				)}

@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Form, Input, Select } from "antd";
+import { Form, Input, Select, Switch } from "antd";
 import styled from "styled-components";
 
 const { Option } = Select;
@@ -37,6 +37,7 @@ const ZUpdateCase1 = ({
 				basePrice: existingRoomDetails.price?.basePrice || 0,
 				description: existingRoomDetails.description || "",
 				amenities: existingRoomDetails.amenities || [],
+				activeRoom: existingRoomDetails.activeRoom || false,
 			});
 		}
 	}, [roomTypeSelected, fromPage, form, customRoomType, hotelDetails]);
@@ -83,6 +84,7 @@ const ZUpdateCase1 = ({
 									basePrice: existingRoomDetails.price?.basePrice || 0,
 									description: existingRoomDetails.description || "",
 									amenities: existingRoomDetails.amenities || [],
+									activeRoom: existingRoomDetails.activeRoom || false,
 								});
 							}
 						}}
@@ -363,6 +365,49 @@ const ZUpdateCase1 = ({
 									</Option>
 								))}
 							</Select>
+						</Form.Item>
+
+						<Form.Item
+							name='activeRoom'
+							label={
+								chosenLanguage === "Arabic"
+									? "نشط / غير نشط"
+									: "Active / Inactive"
+							}
+							valuePropName='checked'
+						>
+							<Switch
+								onChange={(checked) => {
+									const selectedRoomId = form.getFieldValue("_id");
+
+									setHotelDetails((prevDetails) => {
+										const updatedRoomCountDetails = Array.isArray(
+											prevDetails.roomCountDetails
+										)
+											? prevDetails.roomCountDetails
+											: [];
+
+										const existingRoomIndex = updatedRoomCountDetails.findIndex(
+											(room) => room._id === selectedRoomId
+										);
+
+										if (existingRoomIndex > -1) {
+											updatedRoomCountDetails[existingRoomIndex].activeRoom =
+												checked;
+										} else {
+											updatedRoomCountDetails.push({
+												_id: selectedRoomId,
+												activeRoom: checked,
+											});
+										}
+
+										return {
+											...prevDetails,
+											roomCountDetails: updatedRoomCountDetails,
+										};
+									});
+								}}
+							/>
 						</Form.Item>
 					</>
 				)}

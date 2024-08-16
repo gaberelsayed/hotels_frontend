@@ -167,65 +167,71 @@ const ZCase0 = ({
 			dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}
 		>
 			<>
-				<Form.Item
-					name='parkingLot'
-					label={
-						chosenLanguage === "Arabic"
-							? "هل يوجد موقف سيارات في فندقك؟"
-							: "Does Your Hotel Have A Parking Lot?"
-					}
-					rules={[{ required: true, message: "Please select an option" }]}
-				>
-					<Select
-						onChange={(value) => {
-							setHotelDetails((prevDetails) => ({
-								...prevDetails,
-								parkingLot: value === "1",
-							}));
-						}}
-					>
-						<Option
-							value='1'
-							style={{
-								textAlign: chosenLanguage === "Arabic" ? "right" : "",
-							}}
+				<div className='row'>
+					<div className='col-md-4'>
+						<Form.Item
+							name='parkingLot'
+							label={
+								chosenLanguage === "Arabic"
+									? "هل يوجد موقف سيارات في فندقك؟"
+									: "Does Your Hotel Have A Parking Lot?"
+							}
+							rules={[{ required: true, message: "Please select an option" }]}
 						>
-							{chosenLanguage === "Arabic" ? "نعم" : "Yes"}
-						</Option>
-						<Option
-							value='0'
-							style={{
-								textAlign: chosenLanguage === "Arabic" ? "right" : "",
-							}}
+							<Select
+								onChange={(value) => {
+									setHotelDetails((prevDetails) => ({
+										...prevDetails,
+										parkingLot: value === "1",
+									}));
+								}}
+							>
+								<Option
+									value='1'
+									style={{
+										textAlign: chosenLanguage === "Arabic" ? "right" : "",
+									}}
+								>
+									{chosenLanguage === "Arabic" ? "نعم" : "Yes"}
+								</Option>
+								<Option
+									value='0'
+									style={{
+										textAlign: chosenLanguage === "Arabic" ? "right" : "",
+									}}
+								>
+									{chosenLanguage === "Arabic" ? "لا" : "No"}
+								</Option>
+							</Select>
+						</Form.Item>
+					</div>
+					<div className='col-md-4'>
+						<Form.Item
+							name='hotelFloors'
+							label={
+								chosenLanguage === "Arabic"
+									? "كم عدد الطوابق في فندقك؟"
+									: "How Many Floors Does your hotel have?"
+							}
+							rules={[
+								{
+									required: true,
+									message: "Please input the number of floors",
+								},
+							]}
 						>
-							{chosenLanguage === "Arabic" ? "لا" : "No"}
-						</Option>
-					</Select>
-				</Form.Item>
-				<Form.Item
-					name='hotelFloors'
-					label={
-						chosenLanguage === "Arabic"
-							? "كم عدد الطوابق في فندقك؟"
-							: "How Many Floors Does your hotel have?"
-					}
-					rules={[
-						{
-							required: true,
-							message: "Please input the number of floors",
-						},
-					]}
-				>
-					<Input
-						type='number'
-						onChange={(e) => {
-							setHotelDetails((prevDetails) => ({
-								...prevDetails,
-								hotelFloors: e.target.value,
-							}));
-						}}
-					/>
-				</Form.Item>
+							<Input
+								type='number'
+								onChange={(e) => {
+									setHotelDetails((prevDetails) => ({
+										...prevDetails,
+										hotelFloors: e.target.value,
+									}));
+								}}
+							/>
+						</Form.Item>
+					</div>
+				</div>
 
 				<div
 					dir='ltr'
@@ -309,7 +315,7 @@ const ZCase0 = ({
 					</LoadScript>
 				</Modal>
 
-				<h4>
+				<h4 style={{ fontSize: "1.3rem", fontWeight: "bold" }} className='mt-3'>
 					{chosenLanguage === "Arabic"
 						? "صور عامة عن الفندق (مثل المبنى، الردهة، المصاعد، الخ...)"
 						: "General Images About the hotel (e.g. building, lobby, elevators, etc...)"}

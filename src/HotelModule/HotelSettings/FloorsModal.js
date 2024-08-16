@@ -34,7 +34,8 @@ const FloorsModal = ({
 
 			setFloorDetails(newFloorDetails);
 		}
-	}, [rooms, clickedFloor, setFloorDetails, floorDetails]);
+		// eslint-disable-next-line
+	}, [rooms, clickedFloor, setFloorDetails]);
 
 	const getRoomCountTotal = (roomCountDetails) => {
 		return Object.values(roomCountDetails).reduce((total, count) => {
@@ -62,15 +63,13 @@ const FloorsModal = ({
 			return;
 		}
 
-		const newFloorDetails = {
-			...floorDetails,
+		setFloorDetails((prevDetails) => ({
+			...prevDetails,
 			roomCountDetails: {
-				...floorDetails.roomCountDetails,
+				...prevDetails.roomCountDetails,
 				[key]: newRoomCount,
 			},
-		};
-
-		setFloorDetails(newFloorDetails);
+		}));
 	};
 
 	const populateAllRooms = () => {
