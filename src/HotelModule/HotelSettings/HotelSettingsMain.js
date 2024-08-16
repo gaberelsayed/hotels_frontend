@@ -276,12 +276,11 @@ const HotelSettingsMain = () => {
 
 	const hotelDetailsUpdate = (fromPage) => {
 		const updatedDetails = { ...hotelDetails, fromPage };
-		console.log(hotelDetails, "hotelDetailsYaba Updated");
 
 		// Call the API to update the hotel details
 		const { user, token } = isAuthenticated(); // Assuming you have a user and token
 		const hotelId = hotelDetails._id; // Assuming your hotelDetails object has an _id field
-
+		console.log(updatedDetails, "updatedDetails");
 		// Using the API function from your API admin file
 		updateHotelDetails(hotelId, user._id, token, updatedDetails)
 			.then((response) => {
@@ -293,7 +292,13 @@ const HotelSettingsMain = () => {
 					toast.success("Hotel Was Successfully Updated");
 					console.log("Hotel details updated successfully.");
 					setHotelDetails(updatedDetails); // Update the state with the new details
-					setFinalStepModal(true);
+					if (fromPage !== "Updating") {
+						setFinalStepModal(true);
+					} else {
+						setTimeout(() => {
+							window.location.href = `/hotel-management/settings/${user._id}/${hotelDetails._id}?activeTab=roomcount`;
+						}, 2000);
+					}
 				}
 			})
 			.catch((err) => console.log("Error:", err));
@@ -308,11 +313,19 @@ const HotelSettingsMain = () => {
 			new Map(hotelRooms.map((room) => [room["room_number"], room])).values()
 		);
 
-		// Add roomColorCode based on room_type from roomCountDetails or roomTypeColors
+		// Add roomColorCode based on room_type and displayName from roomCountDetails or roomTypeColors
 		const roomsWithColor = uniqueRooms.map((room) => {
-			const roomDetails = hotelDetails.roomCountDetails[room.room_type];
+			// Find the corresponding room details in hotelDetails.roomCountDetails
+			const roomDetails = hotelDetails.roomCountDetails.find(
+				(detail) =>
+					detail.roomType === room.room_type &&
+					detail.displayName === room.display_name
+			);
+
+			// Set roomColorCode based on found room details or fallback to roomTypeColors or default to black
 			const roomColorCode =
-				roomDetails?.roomColor || roomTypeColors[room.room_type] || "#000"; // Default to black if no color is found
+				roomDetails?.roomColor || roomTypeColors[room.room_type] || "#000";
+
 			return {
 				...room,
 				roomColorCode,

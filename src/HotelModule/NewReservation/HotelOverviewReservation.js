@@ -170,32 +170,45 @@ const HotelOverviewReservation = ({
 		if (!room) return;
 		setCurrentRoom(room);
 
+		// Use both room_type and display_name to find pricing
+		const { room_type, display_name } = room;
+
 		if (searchedReservation && searchedReservation.pickedRoomsType) {
-			const roomType = searchedReservation.pickedRoomsType.find(
-				(r) => r.room_type === room.room_type
+			const roomTypeDetails = searchedReservation.pickedRoomsType.find(
+				(r) => r.room_type === room_type && r.displayName === display_name
 			);
 
 			if (
-				roomType &&
-				roomType.pricingByDay &&
-				roomType.pricingByDay.length > 0
+				roomTypeDetails &&
+				roomTypeDetails.pricingByDay &&
+				roomTypeDetails.pricingByDay.length > 0
 			) {
-				setPricingByDay(roomType.pricingByDay);
+				setPricingByDay(roomTypeDetails.pricingByDay);
 			} else {
-				generatePricingTable(room.room_type, start_date, end_date);
+				generatePricingTable(room_type, display_name, start_date, end_date);
 			}
 		} else {
-			generatePricingTable(room.room_type, start_date, end_date);
+			generatePricingTable(room_type, display_name, start_date, end_date);
 		}
 
 		setIsModalVisible(true);
 	};
 
 	const generatePricingTable = useCallback(
-		(roomType, startDate, endDate) => {
-			const roomDetails = hotelDetails.roomCountDetails[roomType];
-			const pricingRate = roomDetails?.pricingRate || [];
-			const basePrice = roomDetails?.price?.basePrice || 0;
+		(roomType, displayName, startDate, endDate) => {
+			// Find the corresponding room in hotelDetails
+			const roomDetails = hotelDetails.roomCountDetails.find(
+				(detail) =>
+					detail.roomType === roomType && detail.displayName === displayName
+			);
+
+			if (!roomDetails) {
+				console.warn("No matching room details found");
+				return;
+			}
+
+			const pricingRate = roomDetails.pricingRate || [];
+			const basePrice = roomDetails.price?.basePrice || 0;
 
 			const daysArray = [];
 			const currentDate = moment(startDate);

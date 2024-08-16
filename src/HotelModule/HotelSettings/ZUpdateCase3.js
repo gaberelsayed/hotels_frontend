@@ -1,5 +1,5 @@
-import React, { useRef, useEffect } from "react";
-import { Form, Input, Button, message } from "antd";
+import React, { useRef, useEffect, useState } from "react";
+import { Form, Input, Button, message, Checkbox, Modal } from "antd";
 import styled from "styled-components";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -29,15 +29,21 @@ const ZUpdateCase3 = ({
 }) => {
 	const calendarRef = useRef(null);
 	const priceInputRef = useRef(null);
+	const [isBlocked, setIsBlocked] = useState(false);
+
+	// Helper function to truncate displayName to 10 characters followed by "..."
+	const truncateDisplayName = (name) => {
+		return name.length > 10 ? `${name.slice(0, 10)}...` : name;
+	};
 
 	// Prepopulate selected date range and pricing events for the selected room
 	useEffect(() => {
 		if (existingRoomDetails && existingRoomDetails.pricingRate) {
 			const prepopulatedEvents = existingRoomDetails.pricingRate.map(
 				(rate) => ({
-					title: `${existingRoomDetails.displayName.slice(0, 10) || "Room"}: ${
-						rate.price
-					} SAR`,
+					title: `${
+						truncateDisplayName(existingRoomDetails.displayName) || "Room"
+					}: ${rate.price} SAR`,
 					start: rate.calendarDate,
 					end: rate.calendarDate,
 					allDay: true,
@@ -105,11 +111,14 @@ const ZUpdateCase3 = ({
 		form.setFieldsValue({
 			dateRange: dates,
 		});
+
+		// Ensure the selected range is highlighted in grey
+		handleDatePickerChange([selectedStart, selectedEnd]);
 	};
 
 	// Submit the pricing data for the selected date range
-	const handleDateRangeSubmit = () => {
-		if (!pricingRate) {
+	const handleDateRangeSubmit = (isBlocking = false) => {
+		if (!pricingRate && !isBlocking) {
 			setPriceError(true);
 			return;
 		}
@@ -124,31 +133,50 @@ const ZUpdateCase3 = ({
 		).map((date) => ({
 			calendarDate: date.toISOString().split("T")[0],
 			room_type: roomType,
-			price: pricingRate,
-			color: getColorForPrice(pricingRate, selectedDateRange.join("-")),
+			price: isBlocking ? 0 : pricingRate,
+			color: isBlocking
+				? "black"
+				: getColorForPrice(pricingRate, selectedDateRange.join("-")),
 		}));
 
 		// Update the roomCountDetails state with new pricing data
 		setHotelDetails((prevDetails) => {
-			const updatedRoomCountDetails = prevDetails.roomCountDetails.map(
-				(room) => {
-					if (room._id === existingRoomDetails._id) {
-						// Merge existing rates with new ones, ensuring no duplicates
-						const mergedRates = [
-							...(room.pricingRate || []).filter(
-								(rate) =>
-									!newPricingRates.some(
-										(newRate) => newRate.calendarDate === rate.calendarDate
-									)
-							),
-							...newPricingRates,
-						];
-						return { ...room, pricingRate: mergedRates };
-					}
-					return room;
-				}
+			const updatedRoomCountDetails = [...prevDetails.roomCountDetails];
+
+			const roomIndex = updatedRoomCountDetails.findIndex(
+				(room) => room._id === existingRoomDetails._id
 			);
-			return { ...prevDetails, roomCountDetails: updatedRoomCountDetails };
+
+			if (roomIndex > -1) {
+				let existingRates =
+					updatedRoomCountDetails[roomIndex].pricingRate || [];
+
+				// Remove overlapping dates
+				existingRates = existingRates.filter(
+					(rate) =>
+						!newPricingRates.some(
+							(newRate) => newRate.calendarDate === rate.calendarDate
+						)
+				);
+
+				updatedRoomCountDetails[roomIndex].pricingRate = [
+					...existingRates,
+					...newPricingRates,
+				];
+			} else {
+				// If room doesn't exist, add it (this shouldn't happen for updates, but it's safe to include)
+				updatedRoomCountDetails.push({
+					_id: existingRoomDetails._id,
+					roomType,
+					displayName: fullDisplayName,
+					pricingRate: newPricingRates,
+				});
+			}
+
+			return {
+				...prevDetails,
+				roomCountDetails: updatedRoomCountDetails,
+			};
 		});
 
 		const calendarApi = calendarRef.current.getApi();
@@ -159,7 +187,7 @@ const ZUpdateCase3 = ({
 			existingEvents.forEach((event) => event.remove());
 
 			calendarApi.addEvent({
-				title: `${fullDisplayName}: ${rate.price} SAR`,
+				title: `${truncateDisplayName(fullDisplayName)}: ${rate.price} SAR`,
 				start: rate.calendarDate,
 				end: rate.calendarDate,
 				allDay: true,
@@ -169,7 +197,37 @@ const ZUpdateCase3 = ({
 
 		handleCancelSelection();
 
-		message.success("Date range added successfully!");
+		message.success(
+			chosenLanguage === "Arabic"
+				? "تمت إضافة النطاق بنجاح!"
+				: "Date range added successfully!"
+		);
+	};
+
+	// Handle blocking checkbox change
+	const handleBlockChange = (e) => {
+		setIsBlocked(e.target.checked);
+		if (e.target.checked) {
+			const [start, end] = selectedDateRange;
+			const messageText =
+				chosenLanguage === "Arabic"
+					? `هل أنت متأكد أنك تريد حظر النطاق الزمني من ${start.toLocaleDateString(
+							"ar-EG"
+					  )} إلى ${end.toLocaleDateString("ar-EG")}\u061F`
+					: `Are you sure you want to block the date range from ${start.toLocaleDateString()} to ${end.toLocaleDateString()}?`;
+
+			Modal.confirm({
+				title: messageText,
+				okText: chosenLanguage === "Arabic" ? "نعم" : "Yes",
+				cancelText: chosenLanguage === "Arabic" ? "لا" : "No",
+				onOk: () => {
+					handleDateRangeSubmit(true); // Trigger submission with blocking enabled
+				},
+				onCancel: () => {
+					setIsBlocked(false); // Uncheck the block checkbox
+				},
+			});
+		}
 	};
 
 	// Cancel the date range selection
@@ -177,6 +235,7 @@ const ZUpdateCase3 = ({
 		setSelectedDateRange([null, null]);
 		setPricingRate("");
 		setPriceError(false);
+		setIsBlocked(false);
 
 		const calendarApi = calendarRef.current.getApi();
 		const existingSelectedEvents = calendarApi
@@ -187,7 +246,9 @@ const ZUpdateCase3 = ({
 
 	const pricingEvents =
 		existingRoomDetails?.pricingRate?.map((rate) => ({
-			title: `${existingRoomDetails.displayName}: ${rate.price} SAR`,
+			title: `${truncateDisplayName(existingRoomDetails.displayName)}: ${
+				rate.price
+			} SAR`,
 			start: rate.calendarDate,
 			end: rate.calendarDate,
 			allDay: true,
@@ -221,8 +282,8 @@ const ZUpdateCase3 = ({
 				>
 					<h4 style={{ fontSize: "1.2rem", fontWeight: "bold" }}>
 						{chosenLanguage === "Arabic"
-							? `تسعير الغرفة: ${form?.getFieldValue("displayName") || ""}`
-							: `Pricing for room: ${form?.getFieldValue("displayName") || ""}`}
+							? `تسعير الغرفة: ${existingRoomDetails.displayName || ""}`
+							: `Pricing for room: ${existingRoomDetails.displayName || ""}`}
 					</h4>
 					<label>
 						{chosenLanguage === "Arabic" ? "نطاق التاريخ" : "Date Range"}
@@ -268,6 +329,22 @@ const ZUpdateCase3 = ({
 									{chosenLanguage === "Arabic" ? "نعم" : "Yes"}
 								</label>
 							</h4>
+							<h4
+								style={{
+									fontSize: "1.1rem",
+									fontWeight: "bold",
+									textAlign: chosenLanguage === "Arabic" ? "right" : "",
+								}}
+							>
+								{chosenLanguage === "Arabic"
+									? `هل ترغب في حظر؟`
+									: `Would you like to block?`}
+								<Checkbox
+									className='mx-3'
+									checked={isBlocked}
+									onChange={handleBlockChange}
+								/>
+							</h4>
 							<div>
 								<label>
 									{chosenLanguage === "Arabic" ? "سعر النطاق:" : "Price Range:"}
@@ -278,6 +355,7 @@ const ZUpdateCase3 = ({
 									onChange={(e) => {
 										setPricingRate(e.target.value);
 										setPriceError(false);
+										setIsBlocked(false);
 									}}
 									ref={priceInputRef}
 									placeholder={
@@ -295,6 +373,7 @@ const ZUpdateCase3 = ({
 										boxSizing: "border-box",
 										textAlign: chosenLanguage === "Arabic" ? "right" : "",
 									}}
+									disabled={isBlocked} // Disable input if blocked is selected
 								/>
 								{priceError && (
 									<div style={{ color: "red" }}>
@@ -306,7 +385,7 @@ const ZUpdateCase3 = ({
 							</div>
 							<div className='text-center mt-3'>
 								<Button
-									onClick={handleDateRangeSubmit}
+									onClick={() => handleDateRangeSubmit()}
 									className='btn btn-primary'
 								>
 									{chosenLanguage === "Arabic"

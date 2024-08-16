@@ -220,8 +220,20 @@ const ZReservationForm2 = ({
 	};
 
 	const generatePricingTable = useCallback(
-		(roomType, startDate, endDate) => {
-			const roomDetails = hotelDetails.roomCountDetails[roomType];
+		(roomType, displayName, startDate, endDate) => {
+			// Find the room details by matching both roomType and displayName
+			const roomDetails = hotelDetails.roomCountDetails.find(
+				(detail) =>
+					detail.roomType === roomType && detail.displayName === displayName
+			);
+
+			if (!roomDetails) {
+				console.warn(
+					"No matching room details found for the given roomType and displayName"
+				);
+				return;
+			}
+
 			const pricingRate = roomDetails?.pricingRate || [];
 			const basePrice = roomDetails?.price?.basePrice || 0;
 
@@ -242,7 +254,8 @@ const ZReservationForm2 = ({
 
 			setPickedRoomsType((prev) => {
 				const existingRoomIndex = prev.findIndex(
-					(item) => item.room_type === roomType
+					(item) =>
+						item.room_type === roomType && item.displayName === displayName
 				);
 
 				if (existingRoomIndex !== -1) {
@@ -260,6 +273,7 @@ const ZReservationForm2 = ({
 						...prev,
 						{
 							room_type: roomType,
+							displayName: displayName,
 							pricingByDay: daysArray,
 							chosenPrice:
 								daysArray.reduce((acc, day) => acc + day.price, 0) /

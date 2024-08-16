@@ -154,10 +154,17 @@ const HotelHeatMap = ({
 		setSelectedRoomStatus(null);
 	};
 
-	const getRoomImage = (roomType) => {
-		const room = hotelDetails.roomCountDetails[roomType];
-		if (room && room.photos && room.photos.length > 0) {
-			return room.photos[0].url;
+	const getRoomDetails = (roomType, displayName) => {
+		return hotelDetails.roomCountDetails.find(
+			(detail) =>
+				detail.roomType === roomType && detail.displayName === displayName
+		);
+	};
+
+	const getRoomImage = (roomType, displayName) => {
+		const roomDetails = getRoomDetails(roomType, displayName);
+		if (roomDetails && roomDetails.photos && roomDetails.photos.length > 0) {
+			return roomDetails.photos[0].url;
 		}
 		return null;
 	};
@@ -206,7 +213,10 @@ const HotelHeatMap = ({
 															room.room_type,
 															room.bedsNumber
 														);
-														const roomImage = getRoomImage(room.room_type);
+														const roomImage = getRoomImage(
+															room.room_type,
+															room.display_name
+														);
 														return (
 															<Tooltip
 																title={
@@ -232,6 +242,7 @@ const HotelHeatMap = ({
 																		>
 																			Room Type: {room.room_type}
 																		</div>
+																		<div>Display Name: {room.display_name}</div>
 																		<div>
 																			Occupied: {isBooked ? "Yes" : "No"}
 																		</div>
@@ -291,7 +302,10 @@ const HotelHeatMap = ({
 																room.room_type,
 																room.bedsNumber
 															);
-															const roomImage = getRoomImage(room.room_type);
+															const roomImage = getRoomImage(
+																room.room_type,
+																room.displayName
+															);
 															return (
 																<Tooltip
 																	title={
@@ -308,6 +322,9 @@ const HotelHeatMap = ({
 																			)}
 																			<div>Room #: {room.room_number}</div>
 																			<div>Room Type: {room.room_type}</div>
+																			<div>
+																				Display Name: {room.displayName}
+																			</div>
 																			<div>
 																				Occupied: {isBooked ? "Yes" : "No"}
 																			</div>

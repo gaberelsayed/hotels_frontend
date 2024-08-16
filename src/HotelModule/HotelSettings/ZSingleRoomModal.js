@@ -270,13 +270,9 @@ const ZSingleRoomModal = ({
 						</label>
 						<select
 							style={{ textTransform: "capitalize" }}
-							value={
-								clickedRoom.room_features?.smoking
-									? "For Smokers"
-									: "No Smoking"
-							}
+							value={clickedRoom.room_features?.smoking}
 							onChange={(e) => {
-								const smokingValue = e.target.value === "For Smokers";
+								const smokingValue = e.target.value === "true";
 								setClickedRoom({
 									...clickedRoom,
 									room_features: {
@@ -286,9 +282,8 @@ const ZSingleRoomModal = ({
 								});
 							}}
 						>
-							<option value=''>Please Select</option>
-							<option value={false}>No Smoking</option>
 							<option value={true}>For Smokers</option>
+							<option value={false}>No Smoking</option>
 						</select>
 					</div>
 				</div>
