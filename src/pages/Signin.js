@@ -1,7 +1,7 @@
 import React, { Fragment, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
-import { authenticate, isAuthenticated, signin } from "../auth";
+import { authenticate, isAuthenticated, signin, signout } from "../auth";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
 import queryString from "query-string";
@@ -17,6 +17,10 @@ const Signin = ({ history }) => {
 	const { email, password, loading, redirectToReferrer } = values;
 
 	useEffect(() => {
+		signout(() => {
+			console.log("User signed out");
+		});
+
 		const { email, password } = queryString.parse(window.location.search);
 		if (email && password) {
 			setValues((prevValues) => ({
@@ -52,7 +56,7 @@ const Signin = ({ history }) => {
 						});
 					}
 				});
-			}, 2000); // Show spinner for 2 seconds
+			}, 3000); // Show spinner for 2 seconds
 		}
 	}, []);
 
