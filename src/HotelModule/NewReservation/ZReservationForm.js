@@ -270,7 +270,7 @@ const ZReservationForm = ({
 					) : null}
 
 					<div className='row'>
-						<div className='col-md-8'>
+						<div className='col-md-8 mx-auto'>
 							<div className='my-3'>
 								<div className='row'>
 									<div className='col-md-9 my-auto'>
@@ -666,7 +666,7 @@ const ZReservationForm = ({
 							<div
 								className='row my-4 mx-auto'
 								style={{
-									background: "#d3d3d3",
+									background: "#ededed",
 									width: "99%",
 									minHeight: "250px",
 								}}

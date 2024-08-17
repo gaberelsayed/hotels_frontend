@@ -883,7 +883,7 @@ const ZReservationForm2 = ({
 							<div
 								className='row my-4 mx-auto'
 								style={{
-									background: "#d3d3d3",
+									background: "#ededed",
 									width: "99%",
 									minHeight: "250px",
 								}}

@@ -408,7 +408,7 @@ const HotelSettingsMain = () => {
 					</div>
 
 					<div style={{ background: "#ededed", padding: "1px" }}>
-						<div className='my-2 tab-grid col-md-8'>
+						<div className='my-2 tab-grid col-md-9  mr-3'>
 							<Tab
 								isActive={activeTab === "HotelDetails"}
 								onClick={() => {
@@ -586,8 +586,11 @@ const HotelSettingsMainWrapper = styled.div`
 		/* Additional styling for grid layout */
 	}
 
-	@media (max-width: 1400px) {
-		background: white;
+	@media (max-width: 1600px) {
+		.grid-container-main {
+			grid-template-columns: ${(props) =>
+				props.show ? "5% 90%" : props.showList ? "13% 87%" : "19% 81%"};
+		}
 	}
 `;
 
@@ -610,4 +613,9 @@ const Tab = styled.div`
 	z-index: 100;
 	font-size: 1.2rem;
 	color: ${(props) => (props.isActive ? "black" : "black")};
+
+	@media (max-width: 1600px) {
+		font-size: 1rem;
+		padding: 10px 1px; /* Adjust padding as needed */
+	}
 `;
