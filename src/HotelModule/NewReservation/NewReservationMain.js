@@ -291,6 +291,7 @@ const NewReservationMain = () => {
 					setConfirmationNumber(data.confirmation_number);
 					setPaymentStatus(data.payment_status);
 					setSearchedReservation(data);
+					console.log(data, "searchedReservation");
 					setLoading(false);
 				} else {
 					toast.error("Incorrect Confirmation #, Please try again...");
@@ -567,6 +568,7 @@ const NewReservationMain = () => {
 				console.log(data.error, "Error rendering");
 			} else {
 				setRoomInventory(data);
+				console.log(data, "roomInventory");
 			}
 		});
 	};
@@ -864,7 +866,7 @@ const NewReservationMainWrapper = styled.div`
 	.grid-container-main {
 		display: grid;
 		grid-template-columns: ${(props) =>
-			props.show ? "5% 90%" : props.showList ? "13% 87%" : "15% 80%"};
+			props.show ? "5% 90%" : props.showList ? "13% 87%" : "13% 80%"};
 	}
 
 	.container-wrapper {

@@ -1018,7 +1018,10 @@ const ZReservationForm = ({
 																	<div style={{ fontSize: "14px" }}>
 																		{customer_details && customer_details.name}
 																	</div>
-																	<div className='mx-auto mt-2'>
+																	<div
+																		className='mx-auto mt-2'
+																		style={{ fontSize: "14px" }}
+																	>
 																		{chosenLanguage === "Arabic"
 																			? "رقم التأكيد"
 																			: "Confirmation #"}
@@ -1031,7 +1034,7 @@ const ZReservationForm = ({
 
 															<div>
 																{index === 0 ? (
-																	<div>
+																	<div style={{ fontSize: "14px" }}>
 																		{chosenLanguage === "Arabic"
 																			? "أنواع الغرف:"
 																			: "Room Types:"}{" "}
@@ -1045,16 +1048,16 @@ const ZReservationForm = ({
 																		width: "85%",
 																		padding: "5px",
 																		textTransform: "capitalize",
-																		fontSize: "14px",
+																		fontSize: "12px",
 																	}}
 																>
-																	{room.room_type}
+																	{room.room_type + " | " + room.displayName}
 																</div>
 															</div>
 
 															<div>
 																{index === 0 ? (
-																	<div>
+																	<div style={{ fontSize: "14px" }}>
 																		{chosenLanguage === "Arabic"
 																			? "	عدد الغرف:"
 																			: "Room Count:"}{" "}
@@ -1067,6 +1070,7 @@ const ZReservationForm = ({
 																		background: "white",
 																		width: "85%",
 																		padding: "5px",
+																		fontSize: "12px",
 																	}}
 																>
 																	{room.count}
@@ -1074,7 +1078,7 @@ const ZReservationForm = ({
 															</div>
 															<div>
 																{index === 0 ? (
-																	<div>
+																	<div style={{ fontSize: "14px" }}>
 																		{chosenLanguage === "Arabic"
 																			? "السعر في اليوم الواحد:"
 																			: "Price/ Day:"}{" "}
@@ -1087,6 +1091,7 @@ const ZReservationForm = ({
 																		background: "white",
 																		width: "85%",
 																		padding: "5px",
+																		fontSize: "12px",
 																	}}
 																>
 																	{room &&
@@ -1124,7 +1129,7 @@ const ZReservationForm = ({
 														<div key={index} className='inner-grid'>
 															<div></div>
 
-															<div>
+															<div style={{ fontSize: "14px" }}>
 																{index === 0 ? (
 																	<div>
 																		{chosenLanguage === "Arabic"
@@ -1140,9 +1145,10 @@ const ZReservationForm = ({
 																		width: "85%",
 																		padding: "5px",
 																		textTransform: "capitalize",
+																		fontSize: "12px",
 																	}}
 																>
-																	{room.room_type}
+																	{room.room_type + " | " + room.display_name}
 																	<div
 																		style={{
 																			color: "red",
@@ -1158,7 +1164,7 @@ const ZReservationForm = ({
 
 															<div>
 																{index === 0 ? (
-																	<div>
+																	<div style={{ fontSize: "14px" }}>
 																		{chosenLanguage === "Arabic"
 																			? "	عدد الغرف:"
 																			: "Room Count:"}{" "}
@@ -1171,6 +1177,7 @@ const ZReservationForm = ({
 																		background: "white",
 																		width: "85%",
 																		padding: "5px",
+																		fontSize: "12px",
 																	}}
 																>
 																	1
@@ -1178,7 +1185,7 @@ const ZReservationForm = ({
 															</div>
 															<div>
 																{index === 0 ? (
-																	<div>
+																	<div style={{ fontSize: "14px" }}>
 																		{chosenLanguage === "Arabic"
 																			? "السعر في اليوم الواحد:"
 																			: "Price/ Day:"}{" "}
@@ -1191,6 +1198,7 @@ const ZReservationForm = ({
 																		background: "white",
 																		width: "85%",
 																		padding: "5px",
+																		fontSize: "12px",
 																	}}
 																>
 																	{pickedRoomPricing &&
@@ -1203,7 +1211,7 @@ const ZReservationForm = ({
 															</div>
 															<div>
 																{index === 0 ? (
-																	<div>
+																	<div style={{ fontSize: "14px" }}>
 																		{chosenLanguage === "Arabic"
 																			? "رقم الغرفة"
 																			: "Room Number"}{" "}
@@ -1216,6 +1224,7 @@ const ZReservationForm = ({
 																		background: "white",
 																		width: "85%",
 																		padding: "5px",
+																		fontSize: "12px",
 																	}}
 																>
 																	{room.room_number ? room.room_number : "N/A"}
@@ -1337,7 +1346,7 @@ const ZReservationForm = ({
 };
 
 export default ZReservationForm;
-
+//Ensure that review grid is even
 const ZReservationFormWrapper = styled.div`
 	margin-top: 40px;
 	margin-right: ${(props) => (props.is_Fixed ? "" : "20px")};
@@ -1405,7 +1414,7 @@ const ZReservationFormWrapper = styled.div`
 		position: fixed;
 		top: 70px;
 		width: 100%;
-		background-color: darkgrey;
+		background-color: lightgrey;
 		z-index: 10;
 		opacity: 0;
 		transition: opacity 0.5s ease-in-out;

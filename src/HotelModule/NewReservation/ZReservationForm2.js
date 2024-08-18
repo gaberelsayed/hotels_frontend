@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
-import { DatePicker, Spin, Table, Modal, InputNumber } from "antd";
+import { DatePicker, Spin, Table, Modal, InputNumber, Select } from "antd";
 import moment from "moment";
 import { toast } from "react-toastify";
 import { isAuthenticated } from "../../auth";
@@ -11,6 +11,8 @@ import {
 	expediaData,
 	janatData,
 } from "../apiAdmin";
+
+const { Option } = Select;
 
 const ZReservationForm2 = ({
 	customer_details,
@@ -51,6 +53,7 @@ const ZReservationForm2 = ({
 	currentRoom,
 	setCurrentRoom,
 }) => {
+	// eslint-disable-next-line
 	const [selectedRoomType, setSelectedRoomType] = useState("");
 	// eslint-disable-next-line
 	const [selectedPriceOption, setSelectedPriceOption] = useState("");
@@ -110,10 +113,81 @@ const ZReservationForm2 = ({
 		return current && current < moment(start_date).startOf("day");
 	};
 
-	const handleRoomTypeChange = (e) => {
-		setSelectedRoomType(e.target.value);
-		setSelectedPriceOption("");
-		setSelectedCount("");
+	const handleRoomTypeChange = (selectedValues) => {
+		// Create a map to track how many times each room type and displayName combination has been selected
+		const roomSelectionCount = {};
+
+		const updatedPickedRoomsType = selectedValues
+			.map((value) => {
+				const [room_type, displayName] = value.split("_");
+
+				const selectedRoom = roomInventory.find(
+					(room) =>
+						room.room_type === room_type && room.displayName === displayName
+				);
+
+				if (selectedRoom) {
+					// Calculate pricingByDay or use basePrice if not available
+					let pricingByDay = selectedRoom.pricingByDay || [];
+
+					if (pricingByDay.length === 0 && selectedRoom.price?.basePrice) {
+						const startDate = moment(start_date);
+						const endDate = moment(end_date);
+						for (
+							let date = startDate.clone();
+							date.isSameOrBefore(endDate);
+							date.add(1, "days")
+						) {
+							pricingByDay.push({
+								date: date.format("YYYY-MM-DD"),
+								price: selectedRoom.price.basePrice,
+							});
+						}
+					}
+
+					// Calculate average chosenPrice
+					const chosenPrice =
+						pricingByDay.reduce((acc, day) => acc + parseFloat(day.price), 0) /
+						pricingByDay.length;
+
+					// Generate a key to keep track of this room type and display name
+					const key = `${room_type}_${displayName}`;
+					roomSelectionCount[key] = (roomSelectionCount[key] || 0) + 1;
+
+					return {
+						room_type: selectedRoom.room_type,
+						displayName: selectedRoom.displayName,
+						chosenPrice: chosenPrice,
+						count: 1, // default count
+						pricingByDay: pricingByDay,
+						roomColor: selectedRoom.roomColor, // Include room color
+					};
+				}
+
+				return null;
+			})
+			.filter(Boolean); // Filter out null values if any
+
+		// Combine the selected rooms into `pickedRoomsType`
+		const combinedPickedRoomsType = [];
+
+		updatedPickedRoomsType.forEach((newRoom) => {
+			const existingRoomIndex = combinedPickedRoomsType.findIndex(
+				(room) =>
+					room.room_type === newRoom.room_type &&
+					room.displayName === newRoom.displayName
+			);
+
+			if (existingRoomIndex !== -1) {
+				// If the room type and displayName already exist, update the count
+				combinedPickedRoomsType[existingRoomIndex].count += newRoom.count;
+			} else {
+				// Otherwise, add the new room type and displayName to the array
+				combinedPickedRoomsType.push(newRoom);
+			}
+		});
+
+		setPickedRoomsType(combinedPickedRoomsType);
 	};
 
 	const handleOk2 = () => {
@@ -122,28 +196,23 @@ const ZReservationForm2 = ({
 				const updatedRooms = [...prev];
 				const updatedRoom = { ...updatedRooms[selectedRoomIndex] };
 
-				// Ensure the count is not reset
 				const currentCount = updatedRoom.count;
 
-				// Update pricingByDay with the new prices
 				updatedRoom.pricingByDay = updatedRoom.pricingByDay.map(
 					(day, index) => {
 						return {
 							...day,
-							price: parseFloat(day.price),
+							price: parseFloat(day.price) || 0, // Prevent NaN
 						};
 					}
 				);
 
-				// Recalculate chosenPrice as the average of the pricingByDay prices
 				updatedRoom.chosenPrice =
 					updatedRoom.pricingByDay.reduce((acc, day) => acc + day.price, 0) /
-					updatedRoom.pricingByDay.length;
+						updatedRoom.pricingByDay.length || 0; // Prevent NaN
 
-				// Ensure the count remains the same
 				updatedRoom.count = currentCount;
 
-				// Update the room in the array
 				updatedRooms[selectedRoomIndex] = updatedRoom;
 
 				return updatedRooms;
@@ -158,15 +227,14 @@ const ZReservationForm2 = ({
 				const updatedRooms = [...prev];
 				const roomToUpdate = { ...updatedRooms[selectedRoomIndex] };
 
-				// Create an array of new room objects with the same details
 				const newRoomObjects = Array.from({ length: updatedRoomCount }, () => ({
 					room_type: roomToUpdate.room_type,
+					displayName: roomToUpdate.displayName,
 					chosenPrice: roomToUpdate.chosenPrice,
 					count: 1,
 					pricingByDay: roomToUpdate.pricingByDay,
 				}));
 
-				// Remove the original room object and insert the new room objects
 				updatedRooms.splice(selectedRoomIndex, 1, ...newRoomObjects);
 
 				return updatedRooms;
@@ -312,17 +380,65 @@ const ZReservationForm2 = ({
 	};
 
 	const calculateTotalAmountPerDay = () => {
-		return pickedRoomsType.reduce((total, room) => {
-			return total + room.count * room.chosenPrice;
+		return (
+			pickedRoomsType.reduce((total, room) => {
+				const roomTotal = room.pricingByDay.reduce((dayTotal, day) => {
+					return dayTotal + parseFloat(day.price) || 0; // Ensure price is treated as a float
+				}, 0);
+				const averagePricePerDay = roomTotal / (room.pricingByDay.length || 1);
+				return total + room.count * averagePricePerDay;
+			}, 0) || 0
+		);
+	};
+
+	const calculatedTotalAmountPerDay_PerRoomTypeAndRoomDisplay = (
+		roomType,
+		displayName
+	) => {
+		// Calculate the total count of rooms with the same roomType and displayName
+		const roomCounts = pickedRoomsType.reduce((acc, room) => {
+			const key = `${room.room_type}_${room.displayName}`;
+
+			if (key === `${roomType}_${displayName}`) {
+				if (!acc[key]) {
+					acc[key] = 0;
+				}
+				acc[key] += room.count;
+			}
+
+			return acc;
+		}, {});
+
+		const totalAmountPerDay = pickedRoomsType.reduce((acc, room) => {
+			const key = `${room.room_type}_${room.displayName}`;
+
+			if (key === `${roomType}_${displayName}`) {
+				const roomTotal = room.pricingByDay.reduce((dayTotal, day) => {
+					return dayTotal + parseFloat(day.price) || 0; // Ensure price is treated as a float
+				}, 0);
+
+				const averagePricePerDay = roomTotal / (room.pricingByDay.length || 1);
+
+				// Divide by the total room count with the same type and displayName
+				const perRoomCostPerDay = averagePricePerDay / roomCounts[key];
+
+				return acc + perRoomCostPerDay;
+			}
+
+			return acc;
 		}, 0);
+
+		return totalAmountPerDay;
 	};
 
 	const calculateGrandTotal = () => {
 		if (selectedRoomIndex !== null && pickedRoomsType[selectedRoomIndex]) {
-			return pickedRoomsType[selectedRoomIndex].pricingByDay.reduce(
-				(total, day) =>
-					total + day.price * pickedRoomsType[selectedRoomIndex].count,
-				0
+			return (
+				pickedRoomsType[selectedRoomIndex].pricingByDay.reduce(
+					(total, day) =>
+						total + day.price * pickedRoomsType[selectedRoomIndex].count,
+					0
+				) || 0 // Prevent NaN
 			);
 		}
 		return 0;
@@ -338,7 +454,7 @@ const ZReservationForm2 = ({
 		const roomIndex = pickedRoomsType.findIndex(
 			(pickedRoom) =>
 				pickedRoom.room_type === room.room_type &&
-				pickedRoom.chosenPrice === room.chosenPrice
+				pickedRoom.displayName === room.displayName
 		);
 		if (roomIndex !== -1) {
 			setSelectedRoomIndex(roomIndex);
@@ -375,6 +491,11 @@ const ZReservationForm2 = ({
 		},
 	];
 
+	console.log(
+		"calculatedTotalAmountPerDay_PerRoomTypeAndRoomDisplay:",
+		calculatedTotalAmountPerDay_PerRoomTypeAndRoomDisplay()
+	);
+
 	return (
 		<>
 			{loading ? (
@@ -388,15 +509,12 @@ const ZReservationForm2 = ({
 			) : (
 				<ZReservationFormWrapper arabic={chosenLanguage === "Arabic"}>
 					<Modal
-						title='Update Picked Room'
+						title={`Update Room: ${pickedRoomsType[selectedRoomIndex]?.displayName}`}
 						open={isModalVisible}
 						onOk={handleOk}
 						onCancel={handleCancel}
 					>
-						<p>
-							{chosenLanguage === "Arabic" ? "" : ""}Update the count for the
-							room:
-						</p>
+						<p>Update the count for the room:</p>
 						<InputNumber
 							min={1}
 							value={updatedRoomCount}
@@ -418,7 +536,7 @@ const ZReservationForm2 = ({
 								onClick={() => removeRoom(selectedRoomIndex)}
 								className='btn btn-danger w-50'
 							>
-								{chosenLanguage === "Arabic" ? "" : ""}Remove Room
+								Remove Room
 							</button>
 						</div>
 					</Modal>
@@ -1126,57 +1244,70 @@ const ZReservationForm2 = ({
 						<div className='row'>
 							{roomsSummary && roomsSummary.length > 0 && (
 								<div
-									className='col-md-4'
+									className='col-md-6'
 									style={{ marginTop: "20px", marginBottom: "20px" }}
 								>
-									{chosenLanguage === "Arabic" ? (
-										<>
-											<label style={{ fontWeight: "bold" }}>نوع الغرفة</label>
-											<select
-												onChange={handleRoomTypeChange}
-												value={selectedRoomType}
-												style={{
-													height: "auto",
-													width: "100%",
-													padding: "10px",
-													boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
-													borderRadius: "10px",
-													textTransform: "capitalize",
-												}}
+									<label style={{ fontWeight: "bold" }}>
+										{chosenLanguage === "Arabic" ? "نوع الغرفة" : "Room Type"}
+									</label>
+									<Select
+										mode='multiple'
+										placeholder={
+											chosenLanguage === "Arabic"
+												? "اختر نوع الغرفة"
+												: "Select Room Type"
+										}
+										style={{
+											width: "100%",
+											padding: "10px",
+											boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
+											borderRadius: "10px",
+											textTransform: "capitalize",
+										}}
+										onChange={handleRoomTypeChange}
+										optionLabelProp='label'
+									>
+										{roomInventory.map((room) => (
+											<Option
+												key={`${room.room_type}_${room.displayName}`}
+												value={`${room.room_type}_${room.displayName}`}
+												label={
+													<>
+														<div
+															style={{
+																width: "10px",
+																height: "10px",
+																backgroundColor: room.roomColor,
+																display: "inline-block",
+																marginRight: "8px",
+															}}
+														/>
+														{`${room.displayName} (${room.room_type})`}
+													</>
+												}
 											>
-												<option value=''>اختر نوع الغرفة</option>
-												{roomInventory &&
-													roomInventory.map((room) => (
-														<option key={room.room_type} value={room.room_type}>
-															{room.room_type} | المتاح: {room.available} غرف
-														</option>
-													))}
-											</select>
-										</>
-									) : (
-										<>
-											<label style={{ fontWeight: "bold" }}>Room Type</label>
-											<select
-												onChange={handleRoomTypeChange}
-												value={selectedRoomType}
-												style={{
-													height: "auto",
-													width: "100%",
-													padding: "10px",
-													boxShadow: "2px 2px 2px 2px rgb(0,0,0,0.2)",
-													borderRadius: "10px",
-													textTransform: "capitalize",
-												}}
-											>
-												<option value=''>Select Room Type</option>
-												{roomsSummary.map((room) => (
-													<option key={room.room_type} value={room.room_type}>
-														{room.room_type} | Available: {room.available} Rooms
-													</option>
-												))}
-											</select>
-										</>
-									)}
+												<div style={{ display: "flex", alignItems: "center" }}>
+													<div
+														style={{
+															width: "10px",
+															height: "10px",
+															backgroundColor: room.roomColor,
+															marginRight: "8px",
+														}}
+													/>
+													<span>
+														{`${room.displayName} (${room.room_type}) | ${
+															chosenLanguage === "Arabic"
+																? "المتاح"
+																: "Available"
+														}: ${room.total_available} ${
+															chosenLanguage === "Arabic" ? "غرف" : "Rooms"
+														}`}
+													</span>
+												</div>
+											</Option>
+										))}
+									</Select>
 								</div>
 							)}
 						</div>
@@ -1212,7 +1343,14 @@ const ZReservationForm2 = ({
 												}}
 												onClick={() => openModal(room, index)}
 											>
-												{`Room Type: ${room.room_type}, Price: ${room.chosenPrice} SAR, Count: ${room.count} Rooms`}{" "}
+												{`Room: ${room.displayName} (${
+													room.room_type
+												}), Price: ${Number(
+													calculatedTotalAmountPerDay_PerRoomTypeAndRoomDisplay(
+														room.room_type,
+														room.displayName
+													)
+												).toFixed(2)} SAR, Count: ${room.count} Rooms`}
 												<span
 													style={{
 														color: "darkred",
@@ -1229,8 +1367,8 @@ const ZReservationForm2 = ({
 									<h3>
 										Total Amount:{" "}
 										{(
-											calculateTotalAmountPerDay() *
-											Number(days_of_residence - 1)
+											Number(calculateTotalAmountPerDay()) *
+											(Number(days_of_residence) - 1)
 										).toFixed(2)}{" "}
 										SAR
 									</h3>

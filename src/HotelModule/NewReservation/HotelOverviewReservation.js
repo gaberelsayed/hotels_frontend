@@ -170,20 +170,21 @@ const HotelOverviewReservation = ({
 		if (!room) return;
 		setCurrentRoom(room);
 
-		// Use both room_type and display_name to find pricing
 		const { room_type, display_name } = room;
 
+		// Check if the searched reservation has pricing information
 		if (searchedReservation && searchedReservation.pickedRoomsType) {
 			const roomTypeDetails = searchedReservation.pickedRoomsType.find(
 				(r) => r.room_type === room_type && r.displayName === display_name
 			);
 
-			if (
-				roomTypeDetails &&
-				roomTypeDetails.pricingByDay &&
-				roomTypeDetails.pricingByDay.length > 0
-			) {
-				setPricingByDay(roomTypeDetails.pricingByDay);
+			if (roomTypeDetails && roomTypeDetails.pricingByDay) {
+				setPricingByDay(
+					roomTypeDetails.pricingByDay.map((day) => ({
+						date: day.date,
+						price: parseFloat(day.price) || 0, // Ensure price is a number
+					}))
+				);
 			} else {
 				generatePricingTable(room_type, display_name, start_date, end_date);
 			}
@@ -389,10 +390,17 @@ const HotelOverviewReservation = ({
 			return accumulator;
 		}, []);
 
-	const getRoomImage = (roomType) => {
-		const room = hotelDetails.roomCountDetails[roomType];
-		if (room && room.photos && room.photos.length > 0) {
-			return room.photos[0].url;
+	const getRoomDetails = (roomType, displayName) => {
+		return hotelDetails.roomCountDetails.find(
+			(detail) =>
+				detail.roomType === roomType && detail.displayName === displayName
+		);
+	};
+
+	const getRoomImage = (roomType, displayName) => {
+		const roomDetails = getRoomDetails(roomType, displayName);
+		if (roomDetails && roomDetails.photos && roomDetails.photos.length > 0) {
+			return roomDetails.photos[0].url;
 		}
 		return null;
 	};
@@ -437,7 +445,10 @@ const HotelOverviewReservation = ({
 															room.room_type,
 															room.bedsNumber
 														);
-														const roomImage = getRoomImage(room.room_type);
+														const roomImage = getRoomImage(
+															room.room_type,
+															room.display_name
+														);
 														return (
 															<Tooltip
 																title={
@@ -463,6 +474,7 @@ const HotelOverviewReservation = ({
 																		>
 																			Room Type: {room.room_type}
 																		</div>
+																		<div>Display Name: {room.display_name}</div>
 																		<div>
 																			Occupied: {isBooked ? "Yes" : "No"}
 																		</div>
