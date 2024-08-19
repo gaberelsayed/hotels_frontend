@@ -1126,7 +1126,7 @@ const ZReservationForm = ({
 												hotelRooms
 													.filter((room) => pickedHotelRooms.includes(room._id))
 													.map((room, index) => (
-														<div key={index} className='inner-grid'>
+														<div key={index} className='inner-grid2'>
 															<div></div>
 
 															<div style={{ fontSize: "14px" }}>
@@ -1346,7 +1346,7 @@ const ZReservationForm = ({
 };
 
 export default ZReservationForm;
-//Ensure that review grid is even
+//Ensure that review
 const ZReservationFormWrapper = styled.div`
 	margin-top: 40px;
 	margin-right: ${(props) => (props.is_Fixed ? "" : "20px")};
@@ -1406,7 +1406,7 @@ const ZReservationFormWrapper = styled.div`
 
 	.review-grid {
 		display: grid;
-		grid-template-columns: 35% 45%;
+		grid-template-columns: 40% 38%;
 		padding: 20px;
 	}
 
@@ -1426,10 +1426,20 @@ const ZReservationFormWrapper = styled.div`
 
 	.inner-grid {
 		display: grid;
-		grid-template-columns: 180px 200px 100px 150px 100px;
+		grid-template-columns: 170px 300px 80px 150px 100px;
+	}
+
+	.inner-grid2 {
+		display: grid;
+		grid-template-columns: 0px 300px 80px 150px 80px;
 	}
 
 	.inner-grid > div > div {
+		text-align: center;
+		font-weight: bold;
+	}
+
+	.inner-grid2 > div > div {
 		text-align: center;
 		font-weight: bold;
 	}

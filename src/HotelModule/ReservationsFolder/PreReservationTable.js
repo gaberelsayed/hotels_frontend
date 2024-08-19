@@ -177,9 +177,7 @@ const PreReservationTable = ({
 			key: "pickedRoomsType",
 			render: (pickedRoomsType) =>
 				pickedRoomsType.map((room, index) => (
-					<div key={index}>{`${room.room_type}: ${Number(
-						room.chosenPrice
-					).toFixed(2)} x ${room.count}`}</div>
+					<div key={index}>{`${room.room_type}`}</div>
 				)),
 		},
 		{
@@ -188,20 +186,105 @@ const PreReservationTable = ({
 			render: (record) => {
 				// Check if 'record' and 'roomDetails' are available and have entries
 				if (record && record.roomDetails && record.roomDetails.length > 0) {
-					return record.roomDetails.map((room, index) => (
-						<div key={index}>
-							{room.room_number ? room.room_number : "No Room"}
-						</div>
-					));
-				}
-
-				// If 'roomDetails' is not available, check 'roomId'
-				else if (record && record.roomId && record.roomId.length > 0) {
-					return record.roomId.map((room, index) => (
-						<div key={index}>
-							{room.room_number ? room.room_number : "No Room"}
-						</div>
-					));
+					if (record.roomDetails.length > 1) {
+						return (
+							<div>
+								<div>{record.roomDetails[0].room_number}</div>
+								<button
+									style={{
+										background: "none",
+										border: "none",
+										color: "blue",
+										cursor: "pointer",
+										textDecoration: "underline",
+										padding: "0",
+										fontSize: "12px",
+									}}
+									onClick={() => {
+										// Toggle visibility of remaining room numbers
+										const roomDetailsElement = document.getElementById(
+											`room-details-${record.confirmation_number}`
+										);
+										if (roomDetailsElement.style.display === "none") {
+											roomDetailsElement.style.display = "block";
+										} else {
+											roomDetailsElement.style.display = "none";
+										}
+									}}
+								>
+									+{record.roomDetails.length - 1} more
+								</button>
+								<div
+									id={`room-details-${record.confirmation_number}`}
+									style={{ display: "none" }}
+								>
+									{record.roomDetails.slice(1).map((room, index) => (
+										<div key={index}>
+											{room.room_number ? room.room_number : "No Room"}
+										</div>
+									))}
+								</div>
+							</div>
+						);
+					} else {
+						return (
+							<div>
+								{record.roomDetails[0].room_number
+									? record.roomDetails[0].room_number
+									: "No Room"}
+							</div>
+						);
+					}
+				} else if (record && record.roomId && record.roomId.length > 0) {
+					if (record.roomId.length > 1) {
+						return (
+							<div>
+								<div>{record.roomId[0].room_number}</div>
+								<button
+									style={{
+										background: "none",
+										border: "none",
+										color: "blue",
+										cursor: "pointer",
+										textDecoration: "underline",
+										padding: "0",
+										fontSize: "12px",
+									}}
+									onClick={() => {
+										// Toggle visibility of remaining room numbers
+										const roomDetailsElement = document.getElementById(
+											`room-details-${record.confirmation_number}`
+										);
+										if (roomDetailsElement.style.display === "none") {
+											roomDetailsElement.style.display = "block";
+										} else {
+											roomDetailsElement.style.display = "none";
+										}
+									}}
+								>
+									+{record.roomId.length - 1} more
+								</button>
+								<div
+									id={`room-details-${record.confirmation_number}`}
+									style={{ display: "none" }}
+								>
+									{record.roomId.slice(1).map((room, index) => (
+										<div key={index}>
+											{room.room_number ? room.room_number : "No Room"}
+										</div>
+									))}
+								</div>
+							</div>
+						);
+					} else {
+						return (
+							<div>
+								{record.roomId[0].room_number
+									? record.roomId[0].room_number
+									: "No Room"}
+							</div>
+						);
+					}
 				}
 
 				// If neither is available, return "No Room"
@@ -529,5 +612,28 @@ const PreReservationTableWrapper = styled.div`
 
 	.table {
 		border-collapse: collapse; // Ensure borders are well aligned
+	}
+
+	.ant-table-tbody > tr > td {
+		white-space: nowrap; // Prevent content from wrapping to the next line
+		overflow: hidden; // Ensure overflow content is hidden
+		text-overflow: ellipsis; // Add ellipsis for overflow content
+		max-height: 50px; // Set a max height for rows
+		height: 50px; // Set a consistent height for all rows
+		vertical-align: middle; // Center content vertically
+		padding: 8px; // Add padding to keep content well-aligned
+	}
+
+	.ant-table-tbody > tr {
+		height: 50px; // Set a consistent row height
+	}
+
+	.ant-table-tbody > tr:hover > td {
+		background: #f5f5f5; // Add a hover effect if needed
+	}
+
+	.ant-table-thead > tr > th {
+		white-space: nowrap; // Prevent header content from wrapping
+		padding: 8px; // Adjust padding for better alignment
 	}
 `;
