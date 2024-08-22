@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import AdminNavbar from "../AdminNavbar/AdminNavbar";
 import AdminNavbarArabic from "../AdminNavbar/AdminNavbarArabic";
 import styled from "styled-components";
-import AddedHotelsMain from "./AddedHotelsMain";
+import MainHotelDashboard from "../AddedHotels/MainHotelDashboard";
 
 const AdminDashboard = ({ chosenLanguage }) => {
 	const [AdminMenuStatus, setAdminMenuStatus] = useState(false);
@@ -45,7 +45,7 @@ const AdminDashboard = ({ chosenLanguage }) => {
 				<div className='otherContentWrapper'>
 					<div className='container-wrapper'>
 						<div>
-							<AddedHotelsMain />
+							<MainHotelDashboard />
 						</div>
 					</div>
 				</div>

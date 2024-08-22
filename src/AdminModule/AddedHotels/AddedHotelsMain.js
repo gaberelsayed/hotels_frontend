@@ -4,11 +4,12 @@ import AdminNavbarArabic from "../AdminNavbar/AdminNavbarArabic";
 import styled from "styled-components";
 import { gettingHotelDetailsForAdmin } from "../apiAdmin";
 import { isAuthenticated } from "../../auth";
-import { Link } from "react-router-dom";
+import MainHotelDashboard from "./MainHotelDashboard";
 
 const AddedHotelsMain = ({ chosenLanguage }) => {
 	const [AdminMenuStatus, setAdminMenuStatus] = useState(false);
 	const [collapsed, setCollapsed] = useState(false);
+	// eslint-disable-next-line
 	const [allHotelDetailsAdmin, setAllHotelDetailsAdmin] = useState("");
 
 	const { user, token } = isAuthenticated();
@@ -18,6 +19,7 @@ const AddedHotelsMain = ({ chosenLanguage }) => {
 				console.log(data.error, "Error getting all hotel details");
 			} else {
 				setAllHotelDetailsAdmin(data);
+				console.log(data);
 			}
 		});
 	};
@@ -61,24 +63,8 @@ const AddedHotelsMain = ({ chosenLanguage }) => {
 				<div className='otherContentWrapper'>
 					<div className='container-wrapper'>
 						<h3 className='mb-3'>All Added Hotels</h3>
-						<div className='row'>
-							{allHotelDetailsAdmin &&
-								allHotelDetailsAdmin.map((hotel, i) => {
-									return (
-										<div className='col-md-3 mx-auto' key={i}>
-											<Link
-												to={`/admin/new-hotel?${hotel.belongsTo._id}`}
-												style={{
-													fontWeight: "bold",
-													textTransform: "capitalize",
-													textDecoration: "underline",
-												}}
-											>
-												{hotel.hotelName} | {hotel.belongsTo.hotelAddress}
-											</Link>
-										</div>
-									);
-								})}
+						<div>
+							<MainHotelDashboard />
 						</div>
 					</div>
 				</div>
@@ -92,8 +78,6 @@ export default AddedHotelsMain;
 const AddedHotelsMainWrapper = styled.div`
 	overflow-x: hidden;
 	/* background: #ededed; */
-	margin-top: 20px;
-	min-height: 715px;
 
 	.grid-container-main {
 		display: grid;

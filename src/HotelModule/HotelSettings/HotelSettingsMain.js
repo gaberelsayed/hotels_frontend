@@ -278,7 +278,6 @@ const HotelSettingsMain = () => {
 		const updatedDetails = { ...hotelDetails, fromPage };
 
 		// Call the API to update the hotel details
-		const { user, token } = isAuthenticated(); // Assuming you have a user and token
 		const hotelId = hotelDetails._id; // Assuming your hotelDetails object has an _id field
 		console.log(updatedDetails, "updatedDetails");
 		// Using the API function from your API admin file

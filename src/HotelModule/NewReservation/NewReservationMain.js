@@ -131,6 +131,8 @@ const NewReservationMain = () => {
 		return [year, month, day].join("-");
 	};
 
+	const selectedHotel = JSON.parse(localStorage.getItem("selectedHotel")) || {};
+
 	const gettingHotelData = () => {
 		hotelAccount(user._id, token, user._id).then((data) => {
 			if (data && data.error) {
@@ -173,7 +175,7 @@ const NewReservationMain = () => {
 							if (heatMapStartDate && heatMapEndDate) {
 								getHotelReservations(
 									hotelId,
-									user._id,
+									user.role === 2000 ? user._id : selectedHotel.belongsTo._id,
 									heatMapStartDate,
 									heatMapEndDate
 								).then((data3) => {
@@ -187,7 +189,7 @@ const NewReservationMain = () => {
 
 							getHotelReservations(
 								hotelId,
-								user._id,
+								user.role === 2000 ? user._id : selectedHotel.belongsTo._id,
 								heatMapStartDate,
 								heatMapEndDate
 							).then((data4) => {
@@ -205,7 +207,10 @@ const NewReservationMain = () => {
 							}
 
 							if (!hotelRooms || hotelRooms.length === 0) {
-								getHotelRooms(hotelId, user._id).then((data3) => {
+								getHotelRooms(
+									hotelId,
+									user.role === 2000 ? user._id : selectedHotel.belongsTo._id
+								).then((data3) => {
 									if (data3 && data3.error) {
 										console.log(data3.error);
 									} else {
@@ -451,6 +456,14 @@ const NewReservationMain = () => {
 			return toast.error("Room count must be greater than 0");
 		}
 
+		const selectedHotel =
+			JSON.parse(localStorage.getItem("selectedHotel")) || {};
+
+		if (!selectedHotel || !selectedHotel._id) {
+			console.log("No hotel selected");
+			return;
+		}
+
 		const calculatedPickedRoomsType = calculatePickedRoomsType();
 		const total_amount_calculated = calculateTotalAmountNoRooms();
 		const total_amount_calculated_WithRooms = calculateTotalAmountWithRooms();
@@ -530,7 +543,7 @@ const NewReservationMain = () => {
 			});
 		} else {
 			createNewReservation(
-				user._id,
+				user.role === 2000 ? user._id : selectedHotel.belongsTo._id,
 				hotelDetails._id,
 				token,
 				new_reservation
@@ -561,7 +574,7 @@ const NewReservationMain = () => {
 		gettingRoomInventory(
 			formattedStartDate,
 			formattedEndDate,
-			user._id,
+			user.role === 2000 ? user._id : selectedHotel.belongsTo._id,
 			hotelDetails._id
 		).then((data) => {
 			if (data && data.error) {
@@ -640,7 +653,11 @@ const NewReservationMain = () => {
 								onClick={() => {
 									setActiveTab("heatmap");
 									history.push(
-										`/hotel-management/new-reservation/${user._id}/${selectedHotelLocalStorage._id}?heatmap`
+										`/hotel-management/new-reservation/${
+											user.role === 2000
+												? user._id
+												: selectedHotel.belongsTo._id
+										}/${selectedHotelLocalStorage._id}?heatmap`
 									); // Programmatically navigate
 								}}
 							>
@@ -653,7 +670,11 @@ const NewReservationMain = () => {
 								onClick={() => {
 									setActiveTab("reserveARoom");
 									history.push(
-										`/hotel-management/new-reservation/${user._id}/${selectedHotelLocalStorage._id}?reserveARoom`
+										`/hotel-management/new-reservation/${
+											user.role === 2000
+												? user._id
+												: selectedHotel.belongsTo._id
+										}/${selectedHotelLocalStorage._id}?reserveARoom`
 									); // Programmatically navigate
 								}}
 							>
@@ -665,7 +686,11 @@ const NewReservationMain = () => {
 								onClick={() => {
 									setActiveTab("newReservation");
 									history.push(
-										`/hotel-management/new-reservation/${user._id}/${selectedHotelLocalStorage._id}?newReservation`
+										`/hotel-management/new-reservation/${
+											user.role === 2000
+												? user._id
+												: selectedHotel.belongsTo._id
+										}/${selectedHotelLocalStorage._id}?newReservation`
 									); // Programmatically navigate
 								}}
 							>
@@ -679,7 +704,11 @@ const NewReservationMain = () => {
 								onClick={() => {
 									setActiveTab("list");
 									history.push(
-										`/hotel-management/new-reservation/${user._id}/${selectedHotelLocalStorage._id}?list`
+										`/hotel-management/new-reservation/${
+											user.role === 2000
+												? user._id
+												: selectedHotel.belongsTo._id
+										}/${selectedHotelLocalStorage._id}?list`
 									); // Programmatically navigate
 								}}
 							>
@@ -693,7 +722,11 @@ const NewReservationMain = () => {
 								onClick={() => {
 									setActiveTab("housingreport");
 									history.push(
-										`/hotel-management/new-reservation/${user._id}/${selectedHotelLocalStorage._id}?housingreport`
+										`/hotel-management/new-reservation/${
+											user.role === 2000
+												? user._id
+												: selectedHotel.belongsTo._id
+										}/${selectedHotelLocalStorage._id}?housingreport`
 									); // Programmatically navigate
 								}}
 							>
@@ -856,6 +889,9 @@ const NewReservationMain = () => {
 
 export default NewReservationMain;
 
+//Make sure that the payment status is set correctly
+//Edit Page For Reservations
+
 const NewReservationMainWrapper = styled.div`
 	overflow-x: hidden;
 	/* background: #ededed; */
@@ -866,7 +902,7 @@ const NewReservationMainWrapper = styled.div`
 	.grid-container-main {
 		display: grid;
 		grid-template-columns: ${(props) =>
-			props.show ? "5% 90%" : props.showList ? "13% 87%" : "13% 80%"};
+			props.show ? "5% 90%" : props.showList ? "13% 87%" : "15% 80%"};
 	}
 
 	.container-wrapper {

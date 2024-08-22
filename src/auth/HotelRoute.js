@@ -8,7 +8,9 @@ const HotelRoute = ({ component: Component, ...rest }) => (
 	<Route
 		{...rest}
 		render={(props) =>
-			isAuthenticated() && isAuthenticated().user.role === 2000 ? (
+			isAuthenticated() &&
+			(isAuthenticated().user.role === 2000 ||
+				isAuthenticated().user.role === 1000) ? (
 				<Component {...props} />
 			) : (
 				<Redirect

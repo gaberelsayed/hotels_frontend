@@ -95,10 +95,12 @@ export const updateSingleRoom = (roomId, userId, token, room) => {
 
 export const gettingHotelDetailsForAdmin = (userId, token) => {
 	return fetch(
-		`${process.env.REACT_APP_API_URL}/hotel-details-admin/${userId}`,
+		`${process.env.REACT_APP_API_URL}/hotel-details/admin/${userId}`,
 		{
 			method: "GET",
-			Authorization: `Bearer ${token}`,
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
 		}
 	)
 		.then((response) => {
@@ -151,6 +153,25 @@ export const getJanatWebsiteRecord = () => {
 	return fetch(`${process.env.REACT_APP_API_URL}/janat-website-document`, {
 		method: "GET",
 	})
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
+export const gettingAllHotelAccounts = (userId, token) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/all-hotel-accounts/${userId}`,
+		{
+			method: "GET",
+			headers: {
+				// content type?
+				"Content-Type": "application/json",
+				Accept: "application/json",
+				Authorization: `Bearer ${token}`,
+			},
+		}
+	)
 		.then((response) => {
 			return response.json();
 		})

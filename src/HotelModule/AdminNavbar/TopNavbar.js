@@ -40,8 +40,10 @@ const TopNavbar = ({ collapsed }) => {
 	}, [location, user]);
 
 	const handleMenuClick = ({ key }) => {
-		if (key === "profile") {
+		if (key === "profile" && user.role === 2000) {
 			history.push("/hotel-management/main-dashboard");
+		} else if (key === "profile" && user.role === 1000) {
+			history.push("/admin/dashboard");
 		} else if (key === "logout") {
 			handleSignout();
 		}

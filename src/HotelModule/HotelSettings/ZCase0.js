@@ -262,7 +262,7 @@ const ZCase0 = ({
 					type={
 						hotelDetails.location.coordinates[0] === 0 &&
 						hotelDetails.location.coordinates[1] === 0
-							? "danger"
+							? "primary"
 							: "primary"
 					}
 					onClick={handleOpenLocationModal}

@@ -61,7 +61,16 @@ const items = [
 		<PieChartOutlined />
 	),
 	getItem(
-		<Link to='/admin/new-hotel'>Add a New Hotel</Link>,
+		<Link to='/admin/janat-website' style={{ fontWeight: "bold" }}>
+			JANNAT BOOKING WEBSITE
+		</Link>,
+		"sub10",
+		<>
+			<DollarCircleOutlined />
+		</>
+	),
+	getItem(
+		<Link to='/admin/new-hotel'>Customer Service</Link>,
 		"sub2",
 		<AreaChartOutlined />
 	),
@@ -75,16 +84,6 @@ const items = [
 	getItem(<Link to='#'>Hotel Settings</Link>, "sub6", <AreaChartOutlined />),
 
 	getItem(<Link to='#'>Hotel Branches</Link>, "sub7", <TeamOutlined />),
-
-	getItem(
-		<Link to='/admin/janat-website' style={{ fontWeight: "bold" }}>
-			JANAT BOOKING WEBSITE
-		</Link>,
-		"sub10",
-		<>
-			<DollarCircleOutlined />
-		</>
-	),
 
 	getItem(
 		<div className='margin-divider'></div>,

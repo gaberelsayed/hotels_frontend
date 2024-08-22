@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-// import { Link } from "react-router-dom";
 import moment from "moment";
 import FilterComponent from "./FilterComponent";
 import { Modal, Pagination, Table } from "antd";
@@ -31,6 +30,8 @@ const PreReservationTable = ({
 	const [isModalVisible, setIsModalVisible] = useState(false);
 	const [selectedReservation, setSelectedReservation] = useState(null);
 	const [modalKey, setModalKey] = useState(0);
+
+	console.log(allPreReservations, "allPreReservations");
 
 	const searchSubmit = (e) => {
 		e.preventDefault();
@@ -525,8 +526,6 @@ const PreReservationTable = ({
 						pageSize={recordsPerPage}
 						total={totalRecords}
 						onChange={handlePageChange}
-
-						// Add any additional props you need
 					/>
 				</div>
 
@@ -556,8 +555,6 @@ const PreReservationTable = ({
 						pageSize={recordsPerPage}
 						total={totalRecords}
 						onChange={handlePageChange}
-
-						// Add any additional props you need
 					/>
 				</div>
 			</PreReservationTableWrapper>
