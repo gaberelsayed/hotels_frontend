@@ -48,6 +48,8 @@ const ZHotelDetailsForm2 = ({
 	submittingHotelDetails,
 	fromPage,
 	existingRoomDetails,
+	viewsList,
+	extraAmenitiesList,
 }) => {
 	const [selectedDateRange, setSelectedDateRange] = useState([null, null]);
 	const [pricingRate, setPricingRate] = useState("");
@@ -187,6 +189,9 @@ const ZHotelDetailsForm2 = ({
 					price: { basePrice: values.basePrice },
 					description: values.description,
 					amenities: values.amenities,
+					views: values.views,
+					extraAmenities: values.extraAmenities,
+					pricedExtras: values.pricedExtras || [],
 					roomColor,
 					pricingRate: [], // Initialize pricingRate here
 					photos: [], // Initialize photos array here
@@ -370,6 +375,8 @@ const ZHotelDetailsForm2 = ({
 							setCustomRoomType={setCustomRoomType}
 							customRoomType={customRoomType}
 							form={form}
+							viewsList={viewsList}
+							extraAmenitiesList={extraAmenitiesList}
 						/>
 					</>
 				);

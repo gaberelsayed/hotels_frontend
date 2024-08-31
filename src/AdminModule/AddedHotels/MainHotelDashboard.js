@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import styled from "styled-components";
-import { Button, Modal, Card, Input } from "antd";
+import { Button, Modal, Card, Input, Select, message } from "antd";
 import {
 	CheckOutlined,
 	CloseOutlined,
@@ -14,6 +14,8 @@ import AddHotelForm from "./AddHotelForm";
 import EditHotelForm from "./EditHotelForm";
 import { gettingHotelDetailsForAdmin } from "../apiAdmin";
 
+const { Option } = Select;
+
 const MainHotelDashboard = () => {
 	const { chosenLanguage } = useCartContext();
 	const [hotelsData, setHotelsData] = useState([]);
@@ -25,7 +27,7 @@ const MainHotelDashboard = () => {
 	const { user, token } = isAuthenticated();
 
 	const gettingHotelData = useCallback(() => {
-		gettingHotelDetailsForAdmin(user._id, token, user._id).then((data) => {
+		gettingHotelDetailsForAdmin(user._id, token).then((data) => {
 			if (data && data.error) {
 				console.log(data.error, "Error rendering");
 			} else {
@@ -62,6 +64,31 @@ const MainHotelDashboard = () => {
 
 		// Redirect to the dashboard
 		window.location.href = `/hotel-management/dashboard/${hotel.belongsTo._id}/${hotel._id}`;
+	};
+
+	const handleActivationChange = (hotel, value) => {
+		const action = value === true ? "activate" : "deactivate";
+		const actionText = action.charAt(0).toUpperCase() + action.slice(1);
+
+		if (
+			window.confirm(
+				`Are you sure you want to ${actionText} hotel "${hotel.hotelName}"?`
+			)
+		) {
+			const updatedHotel = { ...hotel, activateHotel: value };
+			updateHotelDetails(hotel._id, user._id, token, updatedHotel)
+				.then((response) => {
+					if (response.error) {
+						message.error(`Failed to ${action} the hotel. Please try again.`);
+					} else {
+						message.success(`Hotel "${hotel.hotelName}" has been ${action}d.`);
+						gettingHotelData(); // Refresh the data after update
+					}
+				})
+				.catch((err) =>
+					message.error(`Failed to ${action} the hotel. Please try again.`)
+				);
+		}
 	};
 
 	// Filter hotelsData based on search query
@@ -198,6 +225,21 @@ const MainHotelDashboard = () => {
 								</DetailsColumn>
 								{renderHotelStatus(hotel)}
 							</DetailsWrapper>
+							<div className='mx-auto text-center py-3'>
+								<StatusSelect
+									value={hotel.activateHotel ? true : false}
+									onChange={(value) => handleActivationChange(hotel, value)}
+									style={{
+										backgroundColor: hotel.activateHotel
+											? "darkgreen"
+											: "darkred",
+										color: "white",
+									}}
+								>
+									<Option value={true}>Activate</Option>
+									<Option value={false}>Deactivate</Option>
+								</StatusSelect>
+							</div>
 						</StyledCard>
 					))
 				) : (
@@ -226,6 +268,7 @@ const MainHotelDashboard = () => {
 					updateHotelDetails={updateHotelDetails}
 					token={token}
 					userId={user._id}
+					gettingHotelData={gettingHotelData}
 				/>
 			</Modal>
 		</MainHotelDashboardWrapper>
@@ -320,4 +363,21 @@ const SearchWrapper = styled.div`
 	margin: 20px auto;
 	width: 100%;
 	max-width: 400px;
+`;
+
+const StatusSelect = styled(Select)`
+	width: 30%;
+	border-radius: 4px;
+	color: white;
+	font-weight: bold;
+	text-align: center;
+	.ant-select-selector {
+		background-color: ${(props) =>
+			props.value === true ? "darkgreen" : "darkred"} !important;
+		color: white !important;
+	}
+
+	@media (max-width: 900px) {
+		width: 90%;
+	}
 `;

@@ -18,6 +18,8 @@ const ZUpdateCase1 = ({
 	customRoomType,
 	form,
 	existingRoomDetails,
+	viewsList = [],
+	extraAmenitiesList = [],
 }) => {
 	// Prepopulate fields based on selectedRoomType
 	useEffect(() => {
@@ -37,6 +39,9 @@ const ZUpdateCase1 = ({
 				basePrice: existingRoomDetails.price?.basePrice || 0,
 				description: existingRoomDetails.description || "",
 				amenities: existingRoomDetails.amenities || [],
+				views: existingRoomDetails.views || [],
+				extraAmenities: existingRoomDetails.extraAmenities || [],
+				pricedExtras: existingRoomDetails.pricedExtras || [],
 				activeRoom: existingRoomDetails.activeRoom || false,
 			});
 		}
@@ -310,62 +315,184 @@ const ZUpdateCase1 = ({
 								}}
 							/>
 						</Form.Item>
-						<Form.Item
-							name='amenities'
-							label={
-								chosenLanguage === "Arabic" ? "وسائل الراحة" : "Room Amenities"
-							}
-							rules={[
-								{ required: true, message: "Please select room amenities" },
-							]}
-						>
-							<Select
-								mode='multiple'
-								allowClear
-								onChange={(value) => {
-									const selectedRoomId = form.getFieldValue("_id");
-
-									setHotelDetails((prevDetails) => {
-										const updatedRoomCountDetails = Array.isArray(
-											prevDetails.roomCountDetails
-										)
-											? prevDetails.roomCountDetails
-											: [];
-
-										const existingRoomIndex = updatedRoomCountDetails.findIndex(
-											(room) => room._id === selectedRoomId
-										);
-
-										if (existingRoomIndex > -1) {
-											updatedRoomCountDetails[existingRoomIndex].amenities =
-												value;
-										} else {
-											updatedRoomCountDetails.push({
-												_id: selectedRoomId,
-												amenities: value,
-											});
-										}
-
-										return {
-											...prevDetails,
-											roomCountDetails: updatedRoomCountDetails,
-										};
-									});
-								}}
+						<MultiSelectWrapper>
+							<Form.Item
+								name='amenities'
+								label={
+									chosenLanguage === "Arabic"
+										? "وسائل الراحة"
+										: "Room Amenities"
+								}
+								rules={[
+									{ required: true, message: "Please select room amenities" },
+								]}
 							>
-								{amenitiesList.map((amenity, index) => (
-									<Option
-										key={index}
-										value={amenity}
-										style={{
-											textAlign: chosenLanguage === "Arabic" ? "right" : "",
-										}}
-									>
-										{amenity}
-									</Option>
-								))}
-							</Select>
-						</Form.Item>
+								<Select
+									mode='multiple'
+									allowClear
+									onChange={(value) => {
+										const selectedRoomId = form.getFieldValue("_id");
+
+										setHotelDetails((prevDetails) => {
+											const updatedRoomCountDetails = Array.isArray(
+												prevDetails.roomCountDetails
+											)
+												? prevDetails.roomCountDetails
+												: [];
+
+											const existingRoomIndex =
+												updatedRoomCountDetails.findIndex(
+													(room) => room._id === selectedRoomId
+												);
+
+											if (existingRoomIndex > -1) {
+												updatedRoomCountDetails[existingRoomIndex].amenities =
+													value;
+											} else {
+												updatedRoomCountDetails.push({
+													_id: selectedRoomId,
+													amenities: value,
+												});
+											}
+
+											return {
+												...prevDetails,
+												roomCountDetails: updatedRoomCountDetails,
+											};
+										});
+									}}
+								>
+									{amenitiesList.map((amenity, index) => (
+										<Option
+											key={index}
+											value={amenity}
+											style={{
+												textAlign: chosenLanguage === "Arabic" ? "right" : "",
+											}}
+										>
+											{amenity}
+										</Option>
+									))}
+								</Select>
+							</Form.Item>
+
+							<Form.Item
+								name='views'
+								label={chosenLanguage === "Arabic" ? "إطلالات" : "Room Views"}
+								rules={[
+									{ required: true, message: "Please select room views" },
+								]}
+							>
+								<Select
+									mode='multiple'
+									allowClear
+									onChange={(value) => {
+										const selectedRoomId = form.getFieldValue("_id");
+
+										setHotelDetails((prevDetails) => {
+											const updatedRoomCountDetails = Array.isArray(
+												prevDetails.roomCountDetails
+											)
+												? prevDetails.roomCountDetails
+												: [];
+
+											const existingRoomIndex =
+												updatedRoomCountDetails.findIndex(
+													(room) => room._id === selectedRoomId
+												);
+
+											if (existingRoomIndex > -1) {
+												updatedRoomCountDetails[existingRoomIndex].views =
+													value;
+											} else {
+												updatedRoomCountDetails.push({
+													_id: selectedRoomId,
+													views: value,
+												});
+											}
+
+											return {
+												...prevDetails,
+												roomCountDetails: updatedRoomCountDetails,
+											};
+										});
+									}}
+								>
+									{viewsList.map((view, index) => (
+										<Option
+											key={index}
+											value={view}
+											style={{
+												textAlign: chosenLanguage === "Arabic" ? "right" : "",
+											}}
+										>
+											{view}
+										</Option>
+									))}
+								</Select>
+							</Form.Item>
+
+							<Form.Item
+								name='extraAmenities'
+								label={
+									chosenLanguage === "Arabic"
+										? "وسائل الراحة الإضافية"
+										: "Extra Amenities"
+								}
+								rules={[
+									{ required: true, message: "Please select extra amenities" },
+								]}
+							>
+								<Select
+									mode='multiple'
+									allowClear
+									onChange={(value) => {
+										const selectedRoomId = form.getFieldValue("_id");
+
+										setHotelDetails((prevDetails) => {
+											const updatedRoomCountDetails = Array.isArray(
+												prevDetails.roomCountDetails
+											)
+												? prevDetails.roomCountDetails
+												: [];
+
+											const existingRoomIndex =
+												updatedRoomCountDetails.findIndex(
+													(room) => room._id === selectedRoomId
+												);
+
+											if (existingRoomIndex > -1) {
+												updatedRoomCountDetails[
+													existingRoomIndex
+												].extraAmenities = value;
+											} else {
+												updatedRoomCountDetails.push({
+													_id: selectedRoomId,
+													extraAmenities: value,
+												});
+											}
+
+											return {
+												...prevDetails,
+												roomCountDetails: updatedRoomCountDetails,
+											};
+										});
+									}}
+								>
+									{extraAmenitiesList.map((amenity, index) => (
+										<Option
+											key={index}
+											value={amenity}
+											style={{
+												textAlign: chosenLanguage === "Arabic" ? "right" : "",
+											}}
+										>
+											{amenity}
+										</Option>
+									))}
+								</Select>
+							</Form.Item>
+						</MultiSelectWrapper>
 
 						<Form.Item
 							name='activeRoom'
@@ -419,3 +546,14 @@ const ZUpdateCase1 = ({
 export default ZUpdateCase1;
 
 const ZUpdateCase1Wrapper = styled.div``;
+
+const MultiSelectWrapper = styled.div`
+	display: flex;
+	justify-content: space-between;
+	gap: 16px;
+	flex-wrap: wrap;
+
+	.ant-form-item {
+		flex: 1;
+	}
+`;

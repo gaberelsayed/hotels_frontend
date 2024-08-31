@@ -43,6 +43,8 @@ const ZUpdateHotelDetailsForm2 = ({
 	fromPage,
 	photos, // Receive photos from props
 	setPhotos, // Receive setPhotos from props
+	viewsList,
+	extraAmenitiesList,
 }) => {
 	const [selectedDateRange, setSelectedDateRange] = useState([null, null]);
 	const [pricingRate, setPricingRate] = useState("");
@@ -75,6 +77,9 @@ const ZUpdateHotelDetailsForm2 = ({
 				basePrice: existingRoomDetails.price?.basePrice || 0,
 				description: existingRoomDetails.description || "",
 				amenities: existingRoomDetails.amenities || [],
+				views: existingRoomDetails.views || [],
+				extraAmenities: existingRoomDetails.extraAmenities || [],
+				pricedExtras: existingRoomDetails.pricedExtras || [],
 			});
 
 			setRoomTypeSelected(true);
@@ -130,6 +135,11 @@ const ZUpdateHotelDetailsForm2 = ({
 					},
 					description: values.description || existingRoomDetails.description,
 					amenities: values.amenities || existingRoomDetails.amenities,
+					views: values.views || existingRoomDetails.views || [],
+					extraAmenities:
+						values.extraAmenities || existingRoomDetails.extraAmenities || [],
+					pricedExtras:
+						values.pricedExtras || existingRoomDetails.pricedExtras || [],
 					photos: photos.length ? photos : existingRoomDetails.photos || [],
 				};
 
@@ -176,6 +186,8 @@ const ZUpdateHotelDetailsForm2 = ({
 						setCustomRoomType={setCustomRoomType}
 						form={form}
 						existingRoomDetails={existingRoomDetails}
+						viewsList={viewsList}
+						extraAmenitiesList={extraAmenitiesList}
 					/>
 				);
 

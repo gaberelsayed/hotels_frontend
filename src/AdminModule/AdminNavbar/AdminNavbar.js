@@ -70,7 +70,7 @@ const items = [
 		</>
 	),
 	getItem(
-		<Link to='/admin/new-hotel'>Customer Service</Link>,
+		<Link to='/admin/customer-service'>Customer Service</Link>,
 		"sub2",
 		<AreaChartOutlined />
 	),
@@ -177,7 +177,7 @@ const AdminNavbar = ({
 				defaultSelectedKeys={
 					fromPage === "AdminDasboard"
 						? "sub1"
-						: fromPage === "NewHotel"
+						: fromPage === "CustomerService"
 						  ? "sub2"
 						  : fromPage === "OwnerAccount"
 						    ? "sub3"

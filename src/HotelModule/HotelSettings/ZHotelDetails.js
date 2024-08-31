@@ -1,9 +1,5 @@
 import React from "react";
 import styled from "styled-components";
-// eslint-disable-next-line
-import ZHotelDetailsForm from "./ZHotelDetailsForm";
-// eslint-disable-next-line
-import RoomPhotosUpload from "./RoomPhotosUpload";
 import ZHotelDetailsForm2 from "./ZHotelDetailsForm2";
 
 const ZHotelDetails = ({
@@ -23,6 +19,8 @@ const ZHotelDetails = ({
 	roomTypeSelected,
 	setRoomTypeSelected,
 	fromPage,
+	viewsList,
+	extraAmenitiesList,
 }) => {
 	return (
 		<ZAddHotelSettingsWrapper>
@@ -41,6 +39,8 @@ const ZHotelDetails = ({
 					setRoomTypeSelected={setRoomTypeSelected}
 					submittingHotelDetails={submittingHotelDetails}
 					fromPage={fromPage}
+					viewsList={viewsList}
+					extraAmenitiesList={extraAmenitiesList}
 				/>
 
 				<div className='mx-auto text-center mt-4'>

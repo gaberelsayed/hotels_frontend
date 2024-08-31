@@ -52,7 +52,9 @@ const AdminNavbar = ({
 	const { user } = isAuthenticated();
 	const selectedHotel = JSON.parse(localStorage.getItem("selectedHotel")) || {};
 
-	const userId = user._id;
+	const userId = selectedHotel.belongsTo._id
+		? selectedHotel.belongsTo._id
+		: user._id;
 	const hotelId = selectedHotel._id;
 
 	const toggleCollapsed = () => {

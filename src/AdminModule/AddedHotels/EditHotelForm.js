@@ -10,6 +10,7 @@ const EditHotelForm = ({
 	closeEditHotelModal,
 	hotelData,
 	updateHotelDetails,
+	gettingHotelData,
 	token,
 	userId,
 }) => {
@@ -39,7 +40,11 @@ const EditHotelForm = ({
 				toast.error(response.error);
 			} else {
 				toast.success(`Hotel ${hotel.hotelName} was successfully updated`);
+				gettingHotelData();
 				closeEditHotelModal();
+				window.setTimeout(() => {
+					window.location.reload();
+				}, 1500);
 			}
 		} catch (error) {
 			toast.error("Error updating hotel: " + error.message);

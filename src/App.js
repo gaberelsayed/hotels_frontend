@@ -13,15 +13,6 @@ import AdminRoute from "./auth/AdminRoute";
 import AdminDashboard from "./AdminModule/AdminDashboard/AdminDashboard";
 import AddNewHotel from "./AdminModule/NewHotels/AddNewHotel";
 import AddedHotelsMain from "./AdminModule/AddedHotels/AddedHotelsMain";
-import HotelManagerDashboardAdmin from "./AdminModule/HotelModule/HotelManagement/HotelManagerDashboard";
-import ReservationsMainAdmin from "./AdminModule/HotelModule/ReservationsFolder/ReservationsMain";
-import NewReservationMainAdmin from "./AdminModule/HotelModule/NewReservation/NewReservationMain";
-import HotelSettingsMainAdmin from "./AdminModule/HotelModule/HotelSettings/HotelSettingsMain";
-import SignupNewAdmin from "./AdminModule/HotelModule/HotelStaff/SignupNew";
-import PaymentMainAdmin from "./AdminModule/HotelModule/Payment/PaymentMain";
-import ReceiptPDFAdmin from "./AdminModule/HotelModule/NewReservation/ReceiptPDF";
-import HouseKeepingMainAdmin from "./AdminModule/HotelModule/HouseKeeping/HouseKeepingMain";
-import HotelReportsMainAdmin from "./AdminModule/HotelModule/HotelReports/HotelReportsMain";
 import AddOwnerAccount from "./AdminModule/AddOwner/AddOwnerAccount";
 
 //Hotel Routes
@@ -50,8 +41,9 @@ import FinanceRoute from "./auth/FinanceRoute";
 import PaymentMainFinance from "./Finance/Payment/PaymentMainFinance";
 import OwnerRoute from "./auth/OwnerRoute";
 import OwnerDashboardMain from "./OwnerContent/OwnerDashboardMain";
-import ClientPayVirtualCard from "./AdminModule/HotelModule/ClientPay/ClientPayVirtualCard";
 import MainHotelDashboard from "./HotelModule/MainHotelDashboard";
+import CustomerServiceMain from "./AdminModule/CustomerService/CustomerServiceMain";
+import CustomerServiceHotelMain from "./HotelModule/CustomerService/CustomerServiceHotelMain";
 //Conf #: 197875718, 198354414, 199118009, 198501575, 198787549, 197674274, 195732024
 
 function App() {
@@ -90,6 +82,11 @@ function App() {
 						exact
 						component={AdminDashboard}
 					/>
+					<AdminRoute
+						path='/admin/customer-service'
+						exact
+						component={CustomerServiceMain}
+					/>
 					<AdminRoute path='/admin/new-hotel' exact component={AddNewHotel} />
 					<AdminRoute
 						path='/admin/add-owner-account'
@@ -107,58 +104,6 @@ function App() {
 						component={AddedHotelsMain}
 					/>
 
-					{/* Admin Routes for Hotels  */}
-					<AdminRoute
-						path='/admin-management/dashboard/:hotelId/:userId'
-						exact
-						component={HotelManagerDashboardAdmin}
-					/>
-					<AdminRoute
-						path='/admin-management/reservation-history/:hotelId/:userId'
-						exact
-						component={ReservationsMainAdmin}
-					/>
-					<AdminRoute
-						path='/admin-management/new-reservation/:hotelId/:userId'
-						exact
-						component={NewReservationMainAdmin}
-					/>
-					<AdminRoute
-						path='/admin-management/settings/:hotelId/:userId'
-						exact
-						component={HotelSettingsMainAdmin}
-					/>
-
-					<AdminRoute
-						path='/admin-management/staff/:hotelId/:userId'
-						exact
-						component={SignupNewAdmin}
-					/>
-
-					<AdminRoute
-						path='/admin-management-payment/:hotelId/:userId'
-						exact
-						component={PaymentMainAdmin}
-					/>
-					<AdminRoute
-						path='/admin-management/house-keeping/:hotelId/:userId'
-						exact
-						component={HouseKeepingMainAdmin}
-					/>
-					<AdminRoute path='/admin/receipt' exact component={ReceiptPDFAdmin} />
-					<AdminRoute
-						path='/admin-management/admin-reports/:hotelId/:userId'
-						exact
-						component={HotelReportsMainAdmin}
-					/>
-
-					<Route
-						path='/admin/virtual-card-payments/:reservationId/:guestname/:guestphone/:hotelname/:roomtype/:checkin/:checkout/:daysofresidence/:totalamount'
-						exact
-						component={ClientPayVirtualCard}
-					/>
-
-					{/*End of Admin Routes for Hotels  */}
 					<HotelRoute
 						path='/hotel-management/main-dashboard'
 						exact
@@ -168,6 +113,11 @@ function App() {
 						path='/hotel-management/dashboard/:userId/:hotelId'
 						exact
 						component={HotelManagerDashboard}
+					/>
+					<HotelRoute
+						path='/hotel-management/customer-service/:userId/:hotelId'
+						exact
+						component={CustomerServiceHotelMain}
 					/>
 					<HotelRoute
 						path='/hotel-management/reservation-history/:userId/:hotelId'

@@ -86,6 +86,22 @@ const TopNavbar = ({ collapsed }) => {
 		// If not, do nothing
 	};
 
+	const handleChatClick = () => {
+		const selectedHotel =
+			JSON.parse(localStorage.getItem("selectedHotel")) || {};
+		const userId = user._id;
+		const hotelId = selectedHotel._id;
+
+		// Check if both userId and hotelId are in the current path
+		const pathContainsUserIdAndHotelId =
+			location.pathname.includes(userId) && location.pathname.includes(hotelId);
+
+		if (pathContainsUserIdAndHotelId) {
+			window.location.href = `/hotel-management/customer-service/${userId}/${hotelId}`;
+		}
+		// If not, do nothing
+	};
+
 	return (
 		<NavbarWrapper isArabic={chosenLanguage === "Arabic"}>
 			<LeftSection>
@@ -132,7 +148,7 @@ const TopNavbar = ({ collapsed }) => {
 						<BellOutlined />
 						<NotificationDot />
 					</IconWrapper>
-					<IconWrapper>
+					<IconWrapper onClick={handleChatClick}>
 						<MessageOutlined />
 						<NotificationDot />
 					</IconWrapper>

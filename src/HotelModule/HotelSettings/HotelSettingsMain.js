@@ -136,6 +136,8 @@ const HotelSettingsMain = () => {
 		"TV",
 		"Air Conditioning",
 		"Mini Bar",
+		"Smoking",
+		"Non-Smoking",
 		"Pool",
 		"Gym",
 		"Restaurant",
@@ -147,12 +149,9 @@ const HotelSettingsMain = () => {
 		"Pet Friendly",
 		"Business Center",
 		"Airport Shuttle",
-		"Conference Rooms",
 		"Fitness Center",
-		"Non-Smoking Rooms",
 		"Breakfast Included",
 		"Accessible Rooms",
-		"Kitchenette",
 		"Bicycle Rental",
 		"Sauna",
 		"Hot Tub",
@@ -160,8 +159,9 @@ const HotelSettingsMain = () => {
 		"Tennis Court",
 		"Kids' Club",
 		"Beachfront",
-		"Casino",
+	];
 
+	const viewsList = [
 		// Views
 		"Sea View",
 		"Street View",
@@ -169,17 +169,13 @@ const HotelSettingsMain = () => {
 		"City View",
 		"Mountain View",
 		"Holy Haram View",
+	];
 
-		// Smoking Preferences
-		"Smoking",
-		"Non-Smoking",
-
+	const extraAmenitiesList = [
 		// Additional Amenities for Makkah, KSA
 		"Prayer Mat",
-		"Qibla Direction Indicator",
 		"Holy Quran",
 		"Islamic Television Channels",
-		"Dedicated Prayer Room",
 		"Shuttle Service to Haram",
 		"Nearby Souks/Markets",
 		"Arabic Coffee & Dates Service",
@@ -188,6 +184,7 @@ const HotelSettingsMain = () => {
 		"Complimentary Zamzam Water",
 		"Halal-certified Restaurant",
 		"Hajj & Umrah Booking Assistance",
+		"Dedicated Prayer Room",
 	];
 
 	const gettingHotelData = () => {
@@ -476,6 +473,8 @@ const HotelSettingsMain = () => {
 									roomTypeSelected={roomTypeSelected}
 									setRoomTypeSelected={setRoomTypeSelected}
 									fromPage='AddNew'
+									viewsList={viewsList}
+									extraAmenitiesList={extraAmenitiesList}
 								/>
 							</div>
 						) : activeTab === "RoomDetails" &&
@@ -545,6 +544,8 @@ const HotelSettingsMain = () => {
 									roomTypeSelected={roomTypeSelected}
 									setRoomTypeSelected={setRoomTypeSelected}
 									fromPage={"Updating"}
+									viewsList={viewsList}
+									extraAmenitiesList={extraAmenitiesList}
 								/>
 							</>
 						) : null}

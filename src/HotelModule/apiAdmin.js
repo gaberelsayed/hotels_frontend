@@ -941,3 +941,239 @@ export const PropertySignup = (userData) => {
 			throw err;
 		});
 };
+
+export const hotelsForAccount = (accountId) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/hotel-details/super-admin/${accountId}`,
+		{
+			method: "GET",
+			headers: {
+				// content type?
+				"Content-Type": "application/json",
+				Accept: "application/json",
+			},
+		}
+	)
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
+export const getFilteredSupportCases = (token, hotelId) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/support-cases-hotels/active/${hotelId}`,
+		{
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json",
+				Accept: "application/json",
+				Authorization: `Bearer ${token}`,
+			},
+		}
+	)
+		.then((response) => response.json())
+		.catch((err) => console.log(err));
+};
+
+export const getFilteredClosedSupportCases = (token, hotelId) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/support-cases-hotels/closed/${hotelId}`,
+		{
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json",
+				Accept: "application/json",
+				Authorization: `Bearer ${token}`,
+			},
+		}
+	)
+		.then((response) => response.json())
+		.catch((err) => console.log(err));
+};
+
+// Support Cases Setup For Hotels
+export const createNewSupportCase = async (data) => {
+	return fetch(`${process.env.REACT_APP_API_URL}/support-cases/new`, {
+		method: "POST",
+		headers: {
+			Accept: "application/json",
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify(data),
+	})
+		.then((response) => {
+			if (!response.ok) {
+				throw new Error("Network response was not ok " + response.statusText);
+			}
+			return response.json();
+		})
+		.catch((err) => {
+			console.error("API error: ", err);
+		});
+};
+
+export const getSupportCases = (status, token, hotelId) => {
+	const url = `${process.env.REACT_APP_API_URL}/support-cases?status=${status}`;
+	return fetch(url, {
+		method: "GET",
+		headers: {
+			Accept: "application/json",
+			"Content-Type": "application/json",
+			Authorization: `Bearer ${token}`,
+		},
+	})
+		.then((response) => response.json())
+		.catch((err) => console.log(err));
+};
+
+export const getSupportCaseById = (caseId, token) => {
+	return fetch(`${process.env.REACT_APP_API_URL}/support-cases/${caseId}`, {
+		method: "GET",
+		headers: {
+			Accept: "application/json",
+			"Content-Type": "application/json",
+			Authorization: `Bearer ${token}`,
+		},
+	})
+		.then((response) => {
+			return response.json();
+		})
+		.catch((err) => console.log(err));
+};
+
+// Fetch unseen messages by Super Admin or PMS Owner
+export const getUnseenMessagesCountByAdmin = async (userId) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/support-cases/unseen/count?userId=${userId}`,
+		{
+			method: "GET",
+			headers: {
+				Accept: "application/json",
+			},
+		}
+	)
+		.then((response) => {
+			if (!response.ok) {
+				throw new Error("Network response was not ok " + response.statusText);
+			}
+			return response.json();
+		})
+		.catch((err) => {
+			console.error("API error: ", err);
+		});
+};
+
+// Fetch unseen messages by Hotel Owner
+export const getUnseenMessagesByHotelOwner = async (hotelId) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/support-cases/${hotelId}/unseen/hotel-owner`,
+		{
+			method: "GET",
+			headers: {
+				Accept: "application/json",
+			},
+		}
+	)
+		.then((response) => {
+			if (!response.ok) {
+				throw new Error("Network response was not ok " + response.statusText);
+			}
+			return response.json();
+		})
+		.catch((err) => {
+			console.error("API error: ", err);
+		});
+};
+
+// Fetch unseen messages by Regular Client
+export const getUnseenMessagesByClient = async (clientId) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/support-cases-client/${clientId}/unseen`,
+		{
+			method: "GET",
+			headers: {
+				Accept: "application/json",
+			},
+		}
+	)
+		.then((response) => {
+			if (!response.ok) {
+				throw new Error("Network response was not ok " + response.statusText);
+			}
+			return response.json();
+		})
+		.catch((err) => {
+			console.error("API error: ", err);
+		});
+};
+
+// Update seen status for Admin or Owner
+export const updateSeenStatusForAdminOrOwner = async (caseId) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/support-cases/${caseId}/seen/admin-owner`,
+		{
+			method: "PUT",
+			headers: {
+				Accept: "application/json",
+				"Content-Type": "application/json",
+			},
+		}
+	)
+		.then((response) => {
+			if (!response.ok) {
+				throw new Error("Network response was not ok " + response.statusText);
+			}
+			return response.json();
+		})
+		.catch((err) => {
+			console.error("API error: ", err);
+		});
+};
+
+// Update seen status for Regular Client
+export const updateSeenStatusForClient = async (caseId) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/support-cases/${caseId}/seen/client`,
+		{
+			method: "PUT",
+			headers: {
+				Accept: "application/json",
+				"Content-Type": "application/json",
+			},
+		}
+	)
+		.then((response) => {
+			if (!response.ok) {
+				throw new Error("Network response was not ok " + response.statusText);
+			}
+			return response.json();
+		})
+		.catch((err) => {
+			console.error("API error: ", err);
+		});
+};
+
+// Mark all messages as seen by Super Admin
+export const markAllMessagesAsSeenByHotel = async (caseId, userId) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/support-cases/${caseId}/seen-by-hotel`,
+		{
+			method: "PUT",
+			headers: {
+				Accept: "application/json",
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({ userId }), // Pass the current user's ID
+		}
+	)
+		.then((response) => {
+			if (!response.ok) {
+				throw new Error("Network response was not ok " + response.statusText);
+			}
+			return response.json();
+		})
+		.catch((err) => {
+			console.error("API error: ", err);
+		});
+};

@@ -17,6 +17,8 @@ const ZUpdateRoomCount = ({
 	roomTypeSelected,
 	setRoomTypeSelected,
 	fromPage,
+	viewsList,
+	extraAmenitiesList,
 }) => {
 	const [roomDetails, setRoomDetails] = useState(null); // Local state to hold room details
 	const [photos, setPhotos] = useState([]); // Move photos state here
@@ -81,6 +83,8 @@ const ZUpdateRoomCount = ({
 							fromPage={fromPage}
 							photos={photos} // Pass photos state
 							setPhotos={setPhotos} // Pass setPhotos function
+							viewsList={viewsList}
+							extraAmenitiesList={extraAmenitiesList}
 						/>
 					) : (
 						<p
