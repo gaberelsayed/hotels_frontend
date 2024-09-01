@@ -1,6 +1,18 @@
-import React, { useEffect } from "react";
-import { Form, Input, Select, Switch } from "antd";
+import React, { useEffect, useState } from "react";
+import {
+	Form,
+	Input,
+	Select,
+	Switch,
+	Button,
+	Modal,
+	Table,
+	InputNumber,
+	Popconfirm,
+	Radio,
+} from "antd";
 import styled from "styled-components";
+import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 
 const { Option } = Select;
 
@@ -21,6 +33,11 @@ const ZUpdateCase1 = ({
 	viewsList = [],
 	extraAmenitiesList = [],
 }) => {
+	const [isModalVisible, setIsModalVisible] = useState(false);
+	const [pricedExtrasData, setPricedExtrasData] = useState([]);
+	const [editingKey, setEditingKey] = useState("");
+	const [formPricedExtras] = Form.useForm();
+
 	// Prepopulate fields based on selectedRoomType
 	useEffect(() => {
 		if (fromPage === "Updating" && roomTypeSelected) {
@@ -44,8 +61,262 @@ const ZUpdateCase1 = ({
 				pricedExtras: existingRoomDetails.pricedExtras || [],
 				activeRoom: existingRoomDetails.activeRoom || false,
 			});
+
+			// Prepopulate pricedExtrasData for the modal table
+			setPricedExtrasData(existingRoomDetails.pricedExtras || []);
+		} else {
+			setPricedExtrasData([]);
 		}
 	}, [roomTypeSelected, fromPage, form, customRoomType, hotelDetails]);
+
+	const handleOpenModal = () => {
+		// Re-set the formPricedExtras fields with the current pricedExtrasData
+		formPricedExtras.setFieldsValue({
+			pricedExtras: pricedExtrasData || [],
+		});
+		setIsModalVisible(true);
+	};
+
+	const handleModalOk = () => {
+		const selectedRoomId = form.getFieldValue("_id");
+
+		setHotelDetails((prevDetails) => {
+			const updatedRoomCountDetails = Array.isArray(
+				prevDetails.roomCountDetails
+			)
+				? [...prevDetails.roomCountDetails]
+				: [];
+
+			const existingRoomIndex = updatedRoomCountDetails.findIndex(
+				(room) => room._id === selectedRoomId
+			);
+
+			if (existingRoomIndex > -1) {
+				updatedRoomCountDetails[existingRoomIndex].pricedExtras =
+					pricedExtrasData.filter(
+						(item) => item.name && item.price !== undefined
+					);
+			} else {
+				updatedRoomCountDetails.push({
+					_id: selectedRoomId,
+					pricedExtras: pricedExtrasData.filter(
+						(item) => item.name && item.price !== undefined
+					),
+				});
+			}
+
+			return {
+				...prevDetails,
+				roomCountDetails: updatedRoomCountDetails,
+			};
+		});
+
+		setIsModalVisible(false);
+	};
+
+	const handleModalCancel = () => {
+		setIsModalVisible(false);
+	};
+
+	const handleAddRow = () => {
+		setPricedExtrasData([
+			...pricedExtrasData,
+			{
+				key: Date.now(),
+				name: "",
+				price: undefined,
+				paymentFrequency: "", // Start as empty
+			},
+		]);
+	};
+
+	const handleDeleteRow = (key) => {
+		setPricedExtrasData(pricedExtrasData.filter((item) => item.key !== key));
+	};
+
+	const isEditing = (record) => record.key === editingKey;
+
+	const edit = (record) => {
+		formPricedExtras.setFieldsValue({
+			name: "",
+			price: "",
+			paymentFrequency: "", // Default to empty
+			...record,
+		});
+		setEditingKey(record.key);
+	};
+
+	const cancel = () => {
+		setEditingKey("");
+	};
+
+	const save = async (key) => {
+		try {
+			const row = await formPricedExtras.validateFields();
+			const newData = [...pricedExtrasData];
+			const index = newData.findIndex((item) => item.key === key);
+
+			if (index > -1) {
+				const item = newData[index];
+				newData.splice(index, 1, { ...item, ...row });
+				setPricedExtrasData(newData);
+				setEditingKey("");
+			} else {
+				newData.push(row);
+				setPricedExtrasData(newData);
+				setEditingKey("");
+			}
+		} catch (errInfo) {
+			console.log("Validate Failed:", errInfo);
+		}
+	};
+
+	const columns = [
+		{
+			title: "Name",
+			dataIndex: "name",
+			width: "30%",
+			editable: true,
+			render: (text, record) => {
+				if (isEditing(record)) {
+					return (
+						<Form.Item
+							name='name'
+							style={{ margin: 0 }}
+							rules={[
+								{
+									required: true,
+									message: "Please Input Name!",
+								},
+							]}
+						>
+							<Input placeholder='Enter Name' />
+						</Form.Item>
+					);
+				} else {
+					return text;
+				}
+			},
+		},
+		{
+			title: "Price",
+			dataIndex: "price",
+			width: "20%",
+			editable: true,
+			render: (text, record) => {
+				if (isEditing(record)) {
+					return (
+						<Form.Item
+							name='price'
+							style={{ margin: 0 }}
+							rules={[
+								{
+									required: true,
+									message: "Please Input Price!",
+								},
+							]}
+						>
+							<InputNumber
+								min={0}
+								style={{ width: "100%" }}
+								placeholder='Enter Price'
+							/>
+						</Form.Item>
+					);
+				} else {
+					return text !== undefined ? `${text} SAR` : "";
+				}
+			},
+		},
+		{
+			title: "Payment Frequency",
+			dataIndex: "paymentFrequency",
+			width: "30%",
+			editable: true,
+			render: (text, record) => {
+				if (isEditing(record)) {
+					return (
+						<Form.Item
+							name='paymentFrequency'
+							style={{ margin: 0 }}
+							rules={[
+								{
+									required: true,
+									message: "Please select a payment frequency!",
+								},
+							]}
+						>
+							<Radio.Group>
+								<Radio value='Per Night'>Per Night</Radio>
+								<Radio value='One Time'>One Time</Radio>
+							</Radio.Group>
+						</Form.Item>
+					);
+				} else {
+					return text;
+				}
+			},
+		},
+		{
+			title: "Action",
+			dataIndex: "action",
+			render: (_, record) => {
+				const editable = isEditing(record);
+				return editable ? (
+					<span>
+						<Button
+							onClick={() => save(record.key)}
+							type='link'
+							style={{ marginRight: 8 }}
+						>
+							Save
+						</Button>
+						<Popconfirm title='Sure to cancel?' onConfirm={cancel}>
+							<Button type='link'>Cancel</Button>
+						</Popconfirm>
+					</span>
+				) : (
+					<span>
+						<Button
+							disabled={editingKey !== ""}
+							onClick={() => edit(record)}
+							type='link'
+						>
+							Edit
+						</Button>
+						<Popconfirm
+							title='Sure to delete?'
+							onConfirm={() => handleDeleteRow(record.key)}
+						>
+							<Button
+								type='link'
+								danger
+								icon={<DeleteOutlined />}
+								disabled={editingKey !== ""}
+							/>
+						</Popconfirm>
+					</span>
+				);
+			},
+		},
+	];
+
+	const mergedColumns = columns.map((col) => {
+		if (!col.editable) {
+			return col;
+		}
+
+		return {
+			...col,
+			onCell: (record) => ({
+				record,
+				inputType: col.dataIndex === "price" ? "number" : "text",
+				dataIndex: col.dataIndex,
+				title: col.title,
+				editing: isEditing(record),
+			}),
+		};
+	});
 
 	return (
 		<ZUpdateCase1Wrapper
@@ -492,6 +763,46 @@ const ZUpdateCase1 = ({
 									))}
 								</Select>
 							</Form.Item>
+
+							<Button
+								type='primary'
+								onClick={handleOpenModal}
+								icon={<PlusOutlined />}
+								style={{ marginBottom: 16 }}
+							>
+								Priced Extras
+							</Button>
+
+							<Modal
+								title='Priced Extras'
+								visible={isModalVisible}
+								onOk={handleModalOk}
+								onCancel={handleModalCancel}
+								width={700}
+							>
+								<Form form={formPricedExtras} component={false}>
+									<Table
+										components={{
+											body: {
+												cell: EditableCell,
+											},
+										}}
+										bordered
+										dataSource={pricedExtrasData}
+										columns={mergedColumns}
+										rowClassName='editable-row'
+										pagination={false}
+									/>
+								</Form>
+								<Button
+									onClick={handleAddRow}
+									type='dashed'
+									style={{ marginTop: 16, width: "100%" }}
+									icon={<PlusOutlined />}
+								>
+									Add a row
+								</Button>
+							</Modal>
 						</MultiSelectWrapper>
 
 						<Form.Item
@@ -557,3 +868,27 @@ const MultiSelectWrapper = styled.div`
 		flex: 1;
 	}
 `;
+
+// Editable cell component for the table
+const EditableCell = ({ title, editable, children, ...restProps }) => {
+	return (
+		<td {...restProps}>
+			{editable ? (
+				<Form.Item
+					style={{ margin: 0 }}
+					name={restProps.dataIndex}
+					rules={[
+						{
+							required: true,
+							message: `Please Input ${title}!`,
+						},
+					]}
+				>
+					{restProps.children}
+				</Form.Item>
+			) : (
+				children
+			)}
+		</td>
+	);
+};

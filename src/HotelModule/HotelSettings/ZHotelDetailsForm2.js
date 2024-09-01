@@ -106,6 +106,7 @@ const ZHotelDetailsForm2 = ({
 				basePrice: existingRoomDetails.price?.basePrice || 0,
 				description: existingRoomDetails.description || "",
 				amenities: existingRoomDetails.amenities || [],
+				pricedExtras: existingRoomDetails.pricedExtras || [],
 			});
 
 			// Set roomTypeSelected to true to indicate that a room type has been selected
@@ -174,27 +175,29 @@ const ZHotelDetailsForm2 = ({
 					values.roomType === "other" ? customRoomType : values.roomType;
 				const roomColor = getRoomColor(roomType);
 
-				// Check if this room type and display name already exist
+				// Find existing room details
 				const existingRoomIndex = hotelDetails.roomCountDetails.findIndex(
 					(room) =>
 						room.roomType === roomType &&
 						room.displayName === values.displayName
 				);
 
-				// Prepare the new room details
+				// Prepare the new room details, merging with existing room details
+				const existingRoomDetails =
+					hotelDetails.roomCountDetails[existingRoomIndex] || {};
 				const newRoomDetails = {
+					...existingRoomDetails, // Merge existing details to keep fields like pricedExtras
 					roomType,
 					displayName: values.displayName,
 					count: values.roomCount,
 					price: { basePrice: values.basePrice },
 					description: values.description,
-					amenities: values.amenities,
-					views: values.views,
-					extraAmenities: values.extraAmenities,
-					pricedExtras: values.pricedExtras || [],
+					amenities: values.amenities || [],
+					views: values.views || [],
+					extraAmenities: values.extraAmenities || [],
 					roomColor,
-					pricingRate: [], // Initialize pricingRate here
-					photos: [], // Initialize photos array here
+					pricingRate: existingRoomDetails.pricingRate || [], // Keep existing pricing rates
+					photos: existingRoomDetails.photos || [], // Keep existing photos
 				};
 
 				if (existingRoomIndex > -1) {

@@ -66,6 +66,7 @@ const ZUpdateHotelDetailsForm2 = ({
 
 	useEffect(() => {
 		if (existingRoomDetails && selectedRoomType) {
+			form.resetFields(); // Reset fields before setting new values
 			form.setFieldsValue({
 				roomType: existingRoomDetails.roomType,
 				customRoomType:
@@ -113,11 +114,6 @@ const ZUpdateHotelDetailsForm2 = ({
 		selectedRoomType.displayName,
 	]);
 
-	console.log(
-		existingRoomDetails,
-		"From Use Effect in From ZUpdateHotelDetailsForm2"
-	);
-
 	const handleNext = () => {
 		form
 			.validateFields()
@@ -125,6 +121,7 @@ const ZUpdateHotelDetailsForm2 = ({
 				const roomType =
 					values.roomType === "other" ? customRoomType : values.roomType;
 
+				// Merge existing data with updated data
 				const updatedRoomDetails = {
 					...existingRoomDetails,
 					roomType,
@@ -135,14 +132,15 @@ const ZUpdateHotelDetailsForm2 = ({
 					},
 					description: values.description || existingRoomDetails.description,
 					amenities: values.amenities || existingRoomDetails.amenities,
-					views: values.views || existingRoomDetails.views || [],
+					views: values.views || existingRoomDetails.views,
 					extraAmenities:
-						values.extraAmenities || existingRoomDetails.extraAmenities || [],
-					pricedExtras:
-						values.pricedExtras || existingRoomDetails.pricedExtras || [],
+						values.extraAmenities || existingRoomDetails.extraAmenities,
+					pricedExtras: values.pricedExtras || existingRoomDetails.pricedExtras,
 					photos: photos.length ? photos : existingRoomDetails.photos || [],
+					pricingRate: existingRoomDetails.pricingRate || [], // Retain pricingRate if not updated
 				};
 
+				// Update the hotelDetails state with the updated room details
 				const updatedRoomCountDetails = hotelDetails.roomCountDetails.map(
 					(room) =>
 						room._id === existingRoomDetails._id ? updatedRoomDetails : room

@@ -1,6 +1,19 @@
-import React, { useEffect } from "react";
-import { Form, Input, Select, Switch } from "antd";
+import React, { useEffect, useState } from "react";
+import {
+	Form,
+	Input,
+	Select,
+	Switch,
+	Button,
+	Modal,
+	Table,
+	InputNumber,
+	Popconfirm,
+	message,
+	Radio,
+} from "antd";
 import styled from "styled-components";
+import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 
 const { Option } = Select;
 
@@ -20,12 +33,264 @@ const ZCase1 = ({
 	viewsList = [],
 	extraAmenitiesList = [],
 }) => {
+	const [isModalVisible, setIsModalVisible] = useState(false);
+	const [pricedExtrasData, setPricedExtrasData] = useState([]);
+	const [editingKey, setEditingKey] = useState("");
+	const [formPricedExtras] = Form.useForm();
+
 	// Set default value for activeRoom to true when adding a new room
 	useEffect(() => {
 		if (fromPage !== "Updating") {
 			form.setFieldsValue({ activeRoom: true });
 		}
 	}, [form, fromPage]);
+
+	const handleOpenModal = () => {
+		setIsModalVisible(true);
+	};
+
+	const handleModalOk = () => {
+		const roomType =
+			form.getFieldValue("roomType") === "other"
+				? customRoomType
+				: form.getFieldValue("roomType");
+
+		setHotelDetails((prevDetails) => {
+			const updatedRoomCountDetails = Array.isArray(
+				prevDetails.roomCountDetails
+			)
+				? [...prevDetails.roomCountDetails]
+				: [];
+
+			const existingRoomIndex = updatedRoomCountDetails.findIndex(
+				(room) => room.roomType === roomType
+			);
+
+			if (existingRoomIndex > -1) {
+				updatedRoomCountDetails[existingRoomIndex].pricedExtras =
+					pricedExtrasData.filter(
+						(item) => item.name && item.price !== undefined
+					);
+			} else {
+				updatedRoomCountDetails.push({
+					roomType,
+					pricedExtras: pricedExtrasData.filter(
+						(item) => item.name && item.price !== undefined
+					),
+				});
+			}
+
+			return {
+				...prevDetails,
+				roomCountDetails: updatedRoomCountDetails,
+			};
+		});
+
+		setIsModalVisible(false);
+		message.success("Priced Extras updated successfully!");
+	};
+
+	const handleModalCancel = () => {
+		setIsModalVisible(false);
+		// Reset pricedExtrasData if needed
+		if (fromPage !== "Updating") {
+			setPricedExtrasData([]);
+		}
+	};
+
+	const handleAddRow = () => {
+		setPricedExtrasData([
+			...pricedExtrasData,
+			{ key: Date.now(), name: "", price: undefined, paymentFrequency: "" },
+		]);
+	};
+
+	const handleDeleteRow = (key) => {
+		setPricedExtrasData(pricedExtrasData.filter((item) => item.key !== key));
+	};
+
+	const isEditing = (record) => record.key === editingKey;
+
+	const edit = (record) => {
+		formPricedExtras.setFieldsValue({
+			name: record.name || "",
+			price: record.price || "",
+			paymentFrequency: record.paymentFrequency || "",
+		});
+		setEditingKey(record.key);
+	};
+
+	const cancel = () => {
+		setEditingKey("");
+	};
+
+	const save = async (key) => {
+		try {
+			const row = await formPricedExtras.validateFields();
+			const newData = [...pricedExtrasData];
+			const index = newData.findIndex((item) => item.key === key);
+
+			if (index > -1) {
+				const item = newData[index];
+				newData.splice(index, 1, { ...item, ...row });
+				setPricedExtrasData(newData);
+				setEditingKey("");
+			} else {
+				newData.push(row);
+				setPricedExtrasData(newData);
+				setEditingKey("");
+			}
+		} catch (errInfo) {
+			console.log("Validate Failed:", errInfo);
+		}
+	};
+
+	const columns = [
+		{
+			title: "Name",
+			dataIndex: "name",
+			width: "30%",
+			editable: true,
+			render: (text, record) => {
+				if (isEditing(record)) {
+					return (
+						<Form.Item
+							name='name'
+							style={{ margin: 0 }}
+							rules={[
+								{
+									required: true,
+									message: "Please Input Name!",
+								},
+							]}
+						>
+							<Input placeholder='Enter Name' />
+						</Form.Item>
+					);
+				} else {
+					return text;
+				}
+			},
+		},
+		{
+			title: "Price",
+			dataIndex: "price",
+			width: "20%",
+			editable: true,
+			render: (text, record) => {
+				if (isEditing(record)) {
+					return (
+						<Form.Item
+							name='price'
+							style={{ margin: 0 }}
+							rules={[
+								{
+									required: true,
+									message: "Please Input Price!",
+								},
+							]}
+						>
+							<InputNumber
+								min={0}
+								style={{ width: "100%" }}
+								placeholder='Enter Price'
+							/>
+						</Form.Item>
+					);
+				} else {
+					return text !== undefined ? `${text} SAR` : "";
+				}
+			},
+		},
+		{
+			title: "Payment Frequency",
+			dataIndex: "paymentFrequency",
+			width: "30%",
+			editable: true,
+			render: (text, record) => {
+				if (isEditing(record)) {
+					return (
+						<Form.Item
+							name='paymentFrequency'
+							style={{ margin: 0 }}
+							rules={[
+								{
+									required: true,
+									message: "Please select a payment frequency!",
+								},
+							]}
+						>
+							<Radio.Group>
+								<Radio value='Per Night'>Per Night</Radio>
+								<Radio value='One Time'>One Time</Radio>
+							</Radio.Group>
+						</Form.Item>
+					);
+				} else {
+					return text || "";
+				}
+			},
+		},
+		{
+			title: "Action",
+			dataIndex: "action",
+			render: (_, record) => {
+				const editable = isEditing(record);
+				return editable ? (
+					<span>
+						<Button
+							onClick={() => save(record.key)}
+							type='link'
+							style={{ marginRight: 8 }}
+						>
+							Save
+						</Button>
+						<Popconfirm title='Sure to cancel?' onConfirm={cancel}>
+							<Button type='link'>Cancel</Button>
+						</Popconfirm>
+					</span>
+				) : (
+					<span>
+						<Button
+							disabled={editingKey !== ""}
+							onClick={() => edit(record)}
+							type='link'
+						>
+							Edit
+						</Button>
+						<Popconfirm
+							title='Sure to delete?'
+							onConfirm={() => handleDeleteRow(record.key)}
+						>
+							<Button
+								type='link'
+								danger
+								icon={<DeleteOutlined />}
+								disabled={editingKey !== ""}
+							/>
+						</Popconfirm>
+					</span>
+				);
+			},
+		},
+	];
+
+	const mergedColumns = columns.map((col) => {
+		if (!col.editable) {
+			return col;
+		}
+
+		return {
+			...col,
+			onCell: (record) => ({
+				record,
+				inputType: col.dataIndex === "price" ? "number" : "text",
+				dataIndex: col.dataIndex,
+				title: col.title,
+				editing: isEditing(record),
+			}),
+		};
+	});
 
 	return (
 		<ZCase1Wrapper
@@ -379,9 +644,9 @@ const ZCase1 = ({
 							<Form.Item
 								name='views'
 								label={chosenLanguage === "Arabic" ? "إطلالات" : "Room Views"}
-								rules={[
-									{ required: true, message: "Please select room views" },
-								]}
+								// rules={[
+								// 	{ required: true, message: "Please select room views" },
+								// ]}
 							>
 								<Select
 									mode='multiple'
@@ -442,9 +707,9 @@ const ZCase1 = ({
 										? "وسائل الراحة الإضافية"
 										: "Extra Amenities"
 								}
-								rules={[
-									{ required: true, message: "Please select extra amenities" },
-								]}
+								// rules={[
+								// 	{ required: true, message: "Please select extra amenities" },
+								// ]}
 							>
 								<Select
 									mode='multiple'
@@ -498,6 +763,49 @@ const ZCase1 = ({
 									))}
 								</Select>
 							</Form.Item>
+
+							{roomTypeSelected && (
+								<Form.Item className='my-auto px-5'>
+									<Button
+										style={{ background: "grey", color: "wheat" }}
+										onClick={handleOpenModal}
+										icon={<PlusOutlined />}
+									>
+										Priced Extras
+									</Button>
+								</Form.Item>
+							)}
+
+							{/* Priced Extras Modal */}
+							<Modal
+								title='Priced Extras'
+								open={isModalVisible}
+								onOk={handleModalOk}
+								onCancel={handleModalCancel}
+								width={700}
+								okText='Save'
+								cancelText='Cancel'
+							>
+								<Form form={formPricedExtras} component={false}>
+									<Table
+										components={{
+											body: {
+												cell: EditableCell,
+											},
+										}}
+										bordered
+										dataSource={pricedExtrasData}
+										columns={mergedColumns}
+										rowClassName='editable-row'
+										pagination={false}
+										footer={() => (
+											<Button type='dashed' onClick={handleAddRow} block>
+												Add New Extra
+											</Button>
+										)}
+									/>
+								</Form>
+							</Modal>
 						</MultiSelectWrapper>
 
 						<Form.Item
@@ -567,3 +875,47 @@ const MultiSelectWrapper = styled.div`
 		flex: 1;
 	}
 `;
+
+const EditableCell = ({
+	editing,
+	dataIndex,
+	title,
+	inputType,
+	record,
+	index,
+	children,
+	...restProps
+}) => {
+	const inputNode =
+		dataIndex === "price" ? (
+			<InputNumber min={0} style={{ width: "100%" }} />
+		) : dataIndex === "paymentFrequency" ? (
+			<Radio.Group>
+				<Radio value='Per Night'>Per Night</Radio>
+				<Radio value='One Time'>One Time</Radio>
+			</Radio.Group>
+		) : (
+			<Input />
+		);
+
+	return (
+		<td {...restProps}>
+			{editing ? (
+				<Form.Item
+					name={dataIndex}
+					style={{ margin: 0 }}
+					rules={[
+						{
+							required: true,
+							message: `Please select ${title}!`,
+						},
+					]}
+				>
+					{inputNode}
+				</Form.Item>
+			) : (
+				children
+			)}
+		</td>
+	);
+};
