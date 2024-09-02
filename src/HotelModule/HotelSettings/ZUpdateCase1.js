@@ -40,16 +40,7 @@ const ZUpdateCase1 = ({
 
 	// Prepopulate fields based on selectedRoomType
 	useEffect(() => {
-		if (fromPage === "Updating" && roomTypeSelected) {
-			const selectedRoomId = form.getFieldValue("_id");
-
-			const roomCountDetailsArray = Array.isArray(hotelDetails.roomCountDetails)
-				? hotelDetails.roomCountDetails
-				: [];
-
-			const existingRoomDetails =
-				roomCountDetailsArray.find((room) => room._id === selectedRoomId) || {};
-
+		if (roomTypeSelected && existingRoomDetails) {
 			form.setFieldsValue({
 				displayName: existingRoomDetails.displayName || "",
 				roomCount: existingRoomDetails.count || 0,
@@ -58,16 +49,15 @@ const ZUpdateCase1 = ({
 				amenities: existingRoomDetails.amenities || [],
 				views: existingRoomDetails.views || [],
 				extraAmenities: existingRoomDetails.extraAmenities || [],
-				pricedExtras: existingRoomDetails.pricedExtras || [],
 				activeRoom: existingRoomDetails.activeRoom || false,
+				pricedExtras: existingRoomDetails.pricedExtras || [], // Correctly set priced extras
 			});
 
-			// Prepopulate pricedExtrasData for the modal table
-			setPricedExtrasData(existingRoomDetails.pricedExtras || []);
+			setPricedExtrasData(existingRoomDetails.pricedExtras || []); // Ensure pricedExtrasData updates
 		} else {
-			setPricedExtrasData([]);
+			setPricedExtrasData([]); // Reset pricedExtrasData when no room is selected
 		}
-	}, [roomTypeSelected, fromPage, form, customRoomType, hotelDetails]);
+	}, [roomTypeSelected, existingRoomDetails, form]);
 
 	const handleOpenModal = () => {
 		// Re-set the formPricedExtras fields with the current pricedExtrasData
@@ -650,9 +640,9 @@ const ZUpdateCase1 = ({
 							<Form.Item
 								name='views'
 								label={chosenLanguage === "Arabic" ? "إطلالات" : "Room Views"}
-								rules={[
-									{ required: true, message: "Please select room views" },
-								]}
+								// rules={[
+								// 	{ required: true, message: "Please select room views" },
+								// ]}
 							>
 								<Select
 									mode='multiple'
@@ -710,9 +700,9 @@ const ZUpdateCase1 = ({
 										? "وسائل الراحة الإضافية"
 										: "Extra Amenities"
 								}
-								rules={[
-									{ required: true, message: "Please select extra amenities" },
-								]}
+								// rules={[
+								// 	{ required: true, message: "Please select extra amenities" },
+								// ]}
 							>
 								<Select
 									mode='multiple'
@@ -763,15 +753,16 @@ const ZUpdateCase1 = ({
 									))}
 								</Select>
 							</Form.Item>
-
-							<Button
-								type='primary'
-								onClick={handleOpenModal}
-								icon={<PlusOutlined />}
-								style={{ marginBottom: 16 }}
-							>
-								Priced Extras
-							</Button>
+							<div className='mt-4 px-5'>
+								<Button
+									type='primary'
+									onClick={handleOpenModal}
+									icon={<PlusOutlined />}
+									style={{ marginBottom: 16 }}
+								>
+									Priced Extras
+								</Button>
+							</div>
 
 							<Modal
 								title='Priced Extras'

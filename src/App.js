@@ -8,9 +8,6 @@ import Footer from "./Footer";
 import Signup from "./pages/Signup";
 import Signin from "./pages/Signin";
 
-//Priced Extra
-//Make sure the Modal is prepoulating correct in the priced Extra
-
 //Management Routes
 import AdminRoute from "./auth/AdminRoute";
 import AdminDashboard from "./AdminModule/AdminDashboard/AdminDashboard";

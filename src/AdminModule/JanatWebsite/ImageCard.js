@@ -65,7 +65,7 @@ const ImageCard = ({
 						) : null}
 					</div>
 					<div className='text-muted fs-7'>
-						Width: 222px, Height: 46px;
+						Width: 222px, Height: 60px;
 						<br />
 						Set the logo thumbnail image. Only *.png, *.jpg and *.jpeg image
 						files are accepted
