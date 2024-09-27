@@ -130,12 +130,26 @@ const ChatDetail = ({ chat, isHistory, fetchChats }) => {
 	return (
 		<ChatDetailWrapper>
 			<h3 style={{ textTransform: "capitalize" }}>
-				Chat with{" "}
-				<span style={{ fontWeight: "bold" }}>
-					{chat &&
-						(chat.hotelId.hotelName ||
-							chat.conversation[0].messageBy.customerName)}
-				</span>{" "}
+				{chat && chat.openedBy === "client" ? (
+					<span style={{ fontSize: "20px" }}>
+						Client ({chat.conversation[0].messageBy.customerName}) Needs Support{" "}
+						Regarding {chat.conversation[0].inquiryAbout} In Hotel{" "}
+						<span style={{ fontWeight: "bold" }}>
+							{chat &&
+								(chat.hotelId.hotelName ||
+									chat.conversation[0].messageBy.customerName)}
+						</span>{" "}
+					</span>
+				) : (
+					<>
+						Chat with{" "}
+						<span style={{ fontWeight: "bold" }}>
+							{chat &&
+								(chat.hotelId.hotelName ||
+									chat.conversation[0].messageBy.customerName)}
+						</span>{" "}
+					</>
+				)}
 			</h3>
 			<p>
 				<strong>Inquiry About:</strong> {chat.conversation[0].inquiryAbout}

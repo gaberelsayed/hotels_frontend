@@ -166,7 +166,13 @@ const ActiveHotelSupportCases = () => {
 
 		// Handle new case event
 		const handleNewChat = (newCase) => {
-			setSupportCases((prevCases) => [...prevCases, newCase]);
+			// Only add cases where the openedBy field is 'hotel owner' or 'super admin'
+			if (
+				newCase.openedBy === "hotel owner" ||
+				newCase.openedBy === "super admin"
+			) {
+				setSupportCases((prevCases) => [...prevCases, newCase]);
+			}
 		};
 
 		// Handle new message received

@@ -1,21 +1,70 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useHistory, useLocation } from "react-router-dom";
+import { Badge } from "antd";
 import ActiveHotelSupportCases from "./ActiveHotelSupportCases";
 import ActiveClientsSupportCases from "./ActiveClientsSupportCases";
 import HistoryHotelSupportCases from "./HistoryHotelSupportCases";
 import HistoryClientsSupportCases from "./HistoryClientsSupportCases";
+import {
+	getFilteredSupportCases,
+	getFilteredSupportCasesClients,
+} from "../apiAdmin"; // Assume you have these API functions
+import socket from "../../socket";
 
 const CustomerServiceDetails = () => {
 	const history = useHistory();
 	const location = useLocation();
 	const [activeTab, setActiveTab] = useState("active-hotel-cases");
 
+	// State for case counts
+	const [activeHotelCasesCount, setActiveHotelCasesCount] = useState(0);
+	const [activeClientCasesCount, setActiveClientCasesCount] = useState(0);
+
 	// Function to handle tab change
 	const handleTabChange = (tab) => {
 		setActiveTab(tab);
 		history.push(`?tab=${tab}`);
 	};
+
+	// Function to fetch the active case counts
+	const fetchCaseCounts = async () => {
+		try {
+			const hotelCount = await getFilteredSupportCases(); // Fetch active hotel cases count
+			const clientCount = await getFilteredSupportCasesClients(); // Fetch active client cases count
+			setActiveHotelCasesCount(hotelCount.length); // Assuming the API returns an array
+			setActiveClientCasesCount(clientCount.length);
+		} catch (error) {
+			console.error("Error fetching case counts", error);
+		}
+	};
+
+	// Fetch the case counts initially when component mounts
+	useEffect(() => {
+		fetchCaseCounts();
+	}, []);
+
+	// Listen for socket events to update the case counts in real-time
+	useEffect(() => {
+		// Handle new case or closed case events
+		const handleNewChat = () => {
+			fetchCaseCounts(); // Re-fetch the case counts when a new chat is added
+		};
+
+		const handleCloseCase = () => {
+			fetchCaseCounts(); // Re-fetch the case counts when a case is closed
+		};
+
+		// Listen for these events on the socket
+		socket.on("newChat", handleNewChat);
+		socket.on("closeCase", handleCloseCase);
+
+		// Cleanup on unmount
+		return () => {
+			socket.off("newChat", handleNewChat);
+			socket.off("closeCase", handleCloseCase);
+		};
+	}, []);
 
 	// Set active tab based on URL query parameter
 	useEffect(() => {
@@ -33,13 +82,29 @@ const CustomerServiceDetails = () => {
 					isActive={activeTab === "active-hotel-cases"}
 					onClick={() => handleTabChange("active-hotel-cases")}
 				>
-					Active Hotel Support Cases
+					Active Hotel Support Cases{" "}
+					<Badge
+						count={activeHotelCasesCount}
+						style={{
+							backgroundColor: "#f5222d",
+							fontSize: "16px",
+							fontWeight: "bold",
+						}}
+					/>
 				</Tab>
 				<Tab
 					isActive={activeTab === "active-client-cases"}
 					onClick={() => handleTabChange("active-client-cases")}
 				>
-					Active Clients Support Cases
+					Active Clients Support Cases{" "}
+					<Badge
+						count={activeClientCasesCount}
+						style={{
+							backgroundColor: "#52c41a",
+							fontSize: "16px",
+							fontWeight: "bold",
+						}}
+					/>
 				</Tab>
 				<Tab
 					isActive={activeTab === "history-hotel-cases"}
@@ -56,7 +121,6 @@ const CustomerServiceDetails = () => {
 			</div>
 
 			<div className='content-wrapper'>
-				{/* Content will be displayed here based on the active tab */}
 				{activeTab === "active-hotel-cases" && (
 					<div>
 						<ActiveHotelSupportCases />

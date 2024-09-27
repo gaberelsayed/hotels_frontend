@@ -228,6 +228,22 @@ export const getFilteredSupportCases = (token) => {
 		.catch((err) => console.log(err));
 };
 
+export const getFilteredSupportCasesClients = (token) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/support-cases-clients/active`,
+		{
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json",
+				Accept: "application/json",
+				Authorization: `Bearer ${token}`,
+			},
+		}
+	)
+		.then((response) => response.json())
+		.catch((err) => console.log(err));
+};
+
 export const getFilteredClosedSupportCases = (token) => {
 	return fetch(`${process.env.REACT_APP_API_URL}/support-cases/closed`, {
 		method: "GET",
@@ -237,6 +253,22 @@ export const getFilteredClosedSupportCases = (token) => {
 			Authorization: `Bearer ${token}`,
 		},
 	})
+		.then((response) => response.json())
+		.catch((err) => console.log(err));
+};
+
+export const getFilteredClosedSupportCasesClients = (token) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/support-cases/closed/clients`,
+		{
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json",
+				Accept: "application/json",
+				Authorization: `Bearer ${token}`,
+			},
+		}
+	)
 		.then((response) => response.json())
 		.catch((err) => console.log(err));
 };
