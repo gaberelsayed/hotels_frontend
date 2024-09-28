@@ -992,6 +992,22 @@ export const getFilteredClosedSupportCases = (token, hotelId) => {
 		.catch((err) => console.log(err));
 };
 
+export const getFilteredClosedSupportCasesClients = (token, hotelId) => {
+	return fetch(
+		`${process.env.REACT_APP_API_URL}/support-cases-hotels-clients/closed/${hotelId}`,
+		{
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json",
+				Accept: "application/json",
+				Authorization: `Bearer ${token}`,
+			},
+		}
+	)
+		.then((response) => response.json())
+		.catch((err) => console.log(err));
+};
+
 // Support Cases Setup For Hotels
 export const createNewSupportCase = async (data) => {
 	return fetch(`${process.env.REACT_APP_API_URL}/support-cases/new`, {

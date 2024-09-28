@@ -29,6 +29,7 @@ const ActiveHotelSupportCasesHotels = () => {
 	const [selectedCase, setSelectedCase] = useState(null);
 	const [isRatingVisible, setIsRatingVisible] = useState(false); // Modal visibility for rating
 	const [rating, setRating] = useState(0); // Rating state
+	// eslint-disable-next-line
 	const [unseenCount, setUnseenCount] = useState(0); // Unseen messages count
 
 	// Load selectedHotel from local storage on mount
@@ -263,13 +264,13 @@ const ActiveHotelSupportCasesHotels = () => {
 						header={
 							<div style={{ fontWeight: "bold", textDecoration: "underline" }}>
 								Open Support Cases
-								<Badge
+								{/* <Badge
 									count={unseenCount}
 									style={{
 										backgroundColor: "#f5222d",
 										marginLeft: "10px",
 									}}
-								/>
+								/> */}
 							</div>
 						}
 						bordered

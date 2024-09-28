@@ -1,5 +1,5 @@
-import React from "react";
-import { Form, Input, Button, Select, message, Modal } from "antd";
+import React, { useState } from "react";
+import { Form, Input, Button, Select, message, Modal, Checkbox } from "antd";
 import styled from "styled-components";
 import ImageCardMain from "./ImageCardMain";
 import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
@@ -21,8 +21,16 @@ const ZCase0 = ({
 	setGeocoder,
 	geocoder,
 }) => {
+	const [manualLat, setManualLat] = useState("");
+	const [manualLng, setManualLng] = useState("");
+	const [manualInputEnabled, setManualInputEnabled] = useState(false);
+
 	const handleLoad = () => {
-		setGeocoder(new window.google.maps.Geocoder());
+		if (window.google && window.google.maps && window.google.maps.Geocoder) {
+			setGeocoder(new window.google.maps.Geocoder());
+		} else {
+			console.error("Google Maps Geocoder is not loaded");
+		}
 	};
 
 	const handleAddressChange = (e) => {
@@ -95,7 +103,35 @@ const ZCase0 = ({
 		});
 	};
 
+	const handleManualSubmit = () => {
+		const lat = parseFloat(manualLat);
+		const lng = parseFloat(manualLng);
+
+		if (isNaN(lat) || isNaN(lng)) {
+			message.error("Invalid latitude or longitude.");
+			return;
+		}
+
+		setMarkerPosition({ lat, lng });
+		setHotelDetails((prevDetails) => ({
+			...prevDetails,
+			location: {
+				type: "Point",
+				coordinates: [lng, lat],
+			},
+			hotelAddress: `Lat: ${lat}, Lng: ${lng}`,
+		}));
+		message.success(
+			"Location updated successfully based on entered longitude and latitude!"
+		);
+	};
+
 	const handleLocationModalOk = () => {
+		if (!geocoder) {
+			message.error("Geocoder is not initialized");
+			return;
+		}
+
 		geocoder.geocode(
 			{ location: { lat: markerPosition.lat, lng: markerPosition.lng } },
 			(results, status) => {
@@ -300,9 +336,48 @@ const ZCase0 = ({
 						}
 						style={{ marginBottom: "16px" }}
 					/>
+
+					<Checkbox
+						checked={manualInputEnabled}
+						onChange={(e) => setManualInputEnabled(e.target.checked)}
+						className='my-3'
+					>
+						{chosenLanguage === "Arabic"
+							? "هل تريد إضافة خطوط الطول والعرض؟"
+							: "Would You Like To Add Longitude and Latitude?"}
+					</Checkbox>
+
+					{manualInputEnabled && (
+						<>
+							<Input
+								type='number'
+								placeholder='Enter Latitude'
+								value={manualLat}
+								onChange={(e) => setManualLat(e.target.value)}
+								style={{ marginTop: "10px", marginBottom: "10px" }}
+							/>
+							<Input
+								type='number'
+								placeholder='Enter Longitude'
+								value={manualLng}
+								onChange={(e) => setManualLng(e.target.value)}
+								style={{ marginBottom: "10px" }}
+							/>
+							<Button
+								type='primary'
+								onClick={handleManualSubmit}
+								className='mb-4'
+							>
+								{chosenLanguage === "Arabic"
+									? "إرسال خط الطول والعرض"
+									: "Submit Long & Lat"}
+							</Button>
+						</>
+					)}
+
 					<LoadScript
 						googleMapsApiKey={process.env.REACT_APP_MAPS_API_KEY}
-						onLoad={handleLoad} // Load handler to initialize geocoder
+						onLoad={handleLoad}
 					>
 						<GoogleMap
 							mapContainerStyle={{ width: "100%", height: "400px" }}

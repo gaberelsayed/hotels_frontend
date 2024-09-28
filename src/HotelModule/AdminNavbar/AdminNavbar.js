@@ -121,7 +121,9 @@ const AdminNavbar = ({
 			"black-bg"
 		),
 		getItem(
-			"CRM",
+			<Link to={`/hotel-management/customer-service/${userId}/${hotelId}`}>
+				CRM
+			</Link>,
 			"sub14",
 			<CustomerServiceOutlined />,
 			null,

@@ -35,12 +35,7 @@ const CustomerServiceDetailsHotels = () => {
 				>
 					Active Hotel Support Cases
 				</Tab>
-				<Tab
-					isActive={activeTab === "active-client-cases"}
-					onClick={() => handleTabChange("active-client-cases")}
-				>
-					Active Clients Support Cases
-				</Tab>
+
 				<Tab
 					isActive={activeTab === "history-hotel-cases"}
 					onClick={() => handleTabChange("history-hotel-cases")}
