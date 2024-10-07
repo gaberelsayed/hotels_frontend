@@ -385,8 +385,8 @@ const ZCase1 = ({
 							name='displayName'
 							label={
 								chosenLanguage === "Arabic"
-									? "اسم العرض (الاسم المعروض للعملاء)"
-									: "Display Name"
+									? "اسم العرض (الاسم المعروض للعملاء باللغة الإنجليزية)"
+									: "Display Name (English)"
 							}
 							rules={[
 								{
@@ -529,7 +529,9 @@ const ZCase1 = ({
 						<Form.Item
 							name='description'
 							label={
-								chosenLanguage === "Arabic" ? "وصف الغرفة" : "Room Description"
+								chosenLanguage === "Arabic"
+									? "وصف الغرفة باللغة الإنجليزية"
+									: "Room Description (English)"
 							}
 							rules={[
 								{
