@@ -44,7 +44,6 @@ const ZUpdateCase1 = ({
 
 	// Prepopulate fields based on selectedRoomType
 	useEffect(() => {
-		window.scrollTo({ top: 90, behavior: "smooth" });
 		if (roomTypeSelected && existingRoomDetails) {
 			form.setFieldsValue({
 				displayName: existingRoomDetails.displayName || "",
@@ -67,7 +66,7 @@ const ZUpdateCase1 = ({
 		} else {
 			setPricedExtrasData([]); // Reset pricedExtrasData when no room is selected
 		}
-	}, [roomTypeSelected, existingRoomDetails, form, arabicField, formArabic]);
+	}, [roomTypeSelected, existingRoomDetails, form]);
 
 	const handleOpenModal = () => {
 		// Re-set the formPricedExtras fields with the current pricedExtrasData
@@ -320,21 +319,6 @@ const ZUpdateCase1 = ({
 
 	const handleArabicModalOpen = (field) => {
 		setArabicField(field);
-
-		const selectedRoomId = form.getFieldValue("_id");
-
-		// Find the existing room details based on selectedRoomId
-		const roomDetails = hotelDetails.roomCountDetails.find(
-			(room) => room._id === selectedRoomId
-		);
-
-		// Set the initial value for the Arabic field in the form
-		if (roomDetails) {
-			formArabic.setFieldsValue({
-				arabicValue: roomDetails[`${field}_OtherLanguage`] || "",
-			});
-		}
-
 		setIsArabicModalVisible(true);
 	};
 
@@ -380,8 +364,6 @@ const ZUpdateCase1 = ({
 	};
 
 	const handleCheckboxChange = (checked) => {
-		form.setFieldsValue({ commisionIncluded: checked });
-
 		const selectedRoomId = form.getFieldValue("_id");
 
 		setHotelDetails((prevDetails) => {
@@ -411,39 +393,6 @@ const ZUpdateCase1 = ({
 		});
 	};
 
-	const handleFormChange = (changedValues, allValues) => {
-		const selectedRoomId = allValues._id;
-
-		setHotelDetails((prevDetails) => {
-			const updatedRoomCountDetails = Array.isArray(
-				prevDetails.roomCountDetails
-			)
-				? [...prevDetails.roomCountDetails]
-				: [];
-
-			const existingRoomIndex = updatedRoomCountDetails.findIndex(
-				(room) => room._id === selectedRoomId
-			);
-
-			if (existingRoomIndex > -1) {
-				updatedRoomCountDetails[existingRoomIndex] = {
-					...updatedRoomCountDetails[existingRoomIndex],
-					...allValues,
-				};
-			} else {
-				updatedRoomCountDetails.push({
-					_id: selectedRoomId,
-					...allValues,
-				});
-			}
-
-			return {
-				...prevDetails,
-				roomCountDetails: updatedRoomCountDetails,
-			};
-		});
-	};
-
 	return (
 		<ZUpdateCase1Wrapper
 			isArabic={chosenLanguage === "Arabic"}
@@ -457,11 +406,7 @@ const ZUpdateCase1 = ({
 				onOk={handleArabicModalOk}
 				onCancel={handleArabicModalCancel}
 			>
-				<Form
-					form={formArabic}
-					layout='vertical'
-					onValuesChange={handleFormChange}
-				>
+				<Form form={formArabic} layout='vertical'>
 					<Form.Item
 						name='arabicValue'
 						label={`${
@@ -471,7 +416,7 @@ const ZUpdateCase1 = ({
 							{ required: true, message: "Please enter the Arabic value" },
 						]}
 					>
-						{arabicField === "displayName" ? <Input /> : <Input.TextArea />}
+						<Input />
 					</Form.Item>
 				</Form>
 			</Modal>
@@ -566,8 +511,8 @@ const ZUpdateCase1 = ({
 							name='displayName'
 							label={
 								chosenLanguage === "Arabic"
-									? "اسم العرض (الاسم المعروض للعملاء باللغة الإنجليزية)"
-									: "Display Name (In English)"
+									? "اسم العرض (الاسم المعروض للعملاء)"
+									: "Display Name"
 							}
 							rules={[
 								{ required: true, message: "Please input the display name" },
@@ -720,9 +665,7 @@ const ZUpdateCase1 = ({
 						<Form.Item
 							name='description'
 							label={
-								chosenLanguage === "Arabic"
-									? "وصف الغرفة باللغة الإنجليزية"
-									: "Room Description (English)"
+								chosenLanguage === "Arabic" ? "وصف الغرفة" : "Room Description"
 							}
 							rules={[
 								{
@@ -969,7 +912,7 @@ const ZUpdateCase1 = ({
 
 							<Modal
 								title='Priced Extras'
-								open={isModalVisible}
+								visible={isModalVisible}
 								onOk={handleModalOk}
 								onCancel={handleModalCancel}
 								width={700}

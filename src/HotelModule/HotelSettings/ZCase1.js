@@ -11,6 +11,7 @@ import {
 	Popconfirm,
 	message,
 	Radio,
+	Checkbox,
 } from "antd";
 import styled from "styled-components";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
@@ -34,9 +35,12 @@ const ZCase1 = ({
 	extraAmenitiesList = [],
 }) => {
 	const [isModalVisible, setIsModalVisible] = useState(false);
+	const [isArabicModalVisible, setIsArabicModalVisible] = useState(false);
+	const [arabicField, setArabicField] = useState(""); // 'name' or 'description'
 	const [pricedExtrasData, setPricedExtrasData] = useState([]);
 	const [editingKey, setEditingKey] = useState("");
 	const [formPricedExtras] = Form.useForm();
+	const [formArabic] = Form.useForm();
 
 	// Set default value for activeRoom to true when adding a new room
 	useEffect(() => {
@@ -292,11 +296,115 @@ const ZCase1 = ({
 		};
 	});
 
+	const handleArabicModalOpen = (field) => {
+		setArabicField(field);
+		setIsArabicModalVisible(true);
+	};
+
+	const handleArabicModalOk = () => {
+		const roomType =
+			form.getFieldValue("roomType") === "other"
+				? customRoomType
+				: form.getFieldValue("roomType");
+
+		const value = formArabic.getFieldValue("arabicValue");
+		setHotelDetails((prevDetails) => {
+			const updatedRoomCountDetails = Array.isArray(
+				prevDetails.roomCountDetails
+			)
+				? [...prevDetails.roomCountDetails]
+				: [];
+
+			const existingRoomIndex = updatedRoomCountDetails.findIndex(
+				(room) => room.roomType === roomType
+			);
+
+			if (existingRoomIndex > -1) {
+				updatedRoomCountDetails[existingRoomIndex][
+					`${arabicField}_OtherLanguage`
+				] = value;
+			} else {
+				updatedRoomCountDetails.push({
+					roomType,
+					[`${arabicField}_OtherLanguage`]: value,
+				});
+			}
+
+			return {
+				...prevDetails,
+				roomCountDetails: updatedRoomCountDetails,
+			};
+		});
+
+		setIsArabicModalVisible(false);
+		formArabic.resetFields();
+	};
+
+	const handleArabicModalCancel = () => {
+		setIsArabicModalVisible(false);
+		formArabic.resetFields();
+	};
+
+	const handleCheckboxChange = (checked) => {
+		const roomType =
+			form.getFieldValue("roomType") === "other"
+				? customRoomType
+				: form.getFieldValue("roomType");
+
+		setHotelDetails((prevDetails) => {
+			const updatedRoomCountDetails = Array.isArray(
+				prevDetails.roomCountDetails
+			)
+				? [...prevDetails.roomCountDetails]
+				: [];
+
+			const existingRoomIndex = updatedRoomCountDetails.findIndex(
+				(room) => room.roomType === roomType
+			);
+
+			if (existingRoomIndex > -1) {
+				updatedRoomCountDetails[existingRoomIndex].commisionIncluded = checked;
+			} else {
+				updatedRoomCountDetails.push({
+					roomType,
+					commisionIncluded: checked,
+				});
+			}
+
+			return {
+				...prevDetails,
+				roomCountDetails: updatedRoomCountDetails,
+			};
+		});
+	};
+
 	return (
 		<ZCase1Wrapper
 			isArabic={chosenLanguage === "Arabic"}
 			dir={chosenLanguage === "Arabic" ? "rtl" : "ltr"}
 		>
+			<Modal
+				title={`Add ${
+					arabicField === "displayName" ? "Name" : "Description"
+				} in Arabic`}
+				visible={isArabicModalVisible}
+				onOk={handleArabicModalOk}
+				onCancel={handleArabicModalCancel}
+			>
+				<Form form={formArabic} layout='vertical'>
+					<Form.Item
+						name='arabicValue'
+						label={`${
+							arabicField === "displayName" ? "Display Name" : "Description"
+						} (Arabic)`}
+						rules={[
+							{ required: true, message: "Please enter the Arabic value" },
+						]}
+					>
+						{arabicField === "displayName" ? <Input /> : <Input.TextArea />}
+					</Form.Item>
+				</Form>
+			</Modal>
 			<>
 				<Form.Item
 					name='roomType'
@@ -395,6 +503,20 @@ const ZCase1 = ({
 								},
 							]}
 						>
+							<Button
+								style={{
+									marginLeft: "8px",
+									fontWeight: "bold",
+									fontSize: "small",
+									color: "white",
+									background: "black",
+									marginBottom: "5px",
+								}}
+								type='link'
+								onClick={() => handleArabicModalOpen("displayName")}
+							>
+								Add Name In Arabic
+							</Button>
 							<Input
 								onChange={(e) => {
 									const roomType =
@@ -477,6 +599,7 @@ const ZCase1 = ({
 							/>
 						</Form.Item>
 						<Form.Item
+							className='my-3'
 							name='basePrice'
 							label={
 								chosenLanguage === "Arabic"
@@ -487,6 +610,13 @@ const ZCase1 = ({
 								{ required: true, message: "Please input the base price" },
 							]}
 						>
+							<Form.Item>
+								<Checkbox
+									onChange={(e) => handleCheckboxChange(e.target.checked)}
+								>
+									Include Commission
+								</Checkbox>
+							</Form.Item>
 							<Input
 								type='number'
 								onChange={(e) => {
@@ -540,6 +670,20 @@ const ZCase1 = ({
 								},
 							]}
 						>
+							<Button
+								style={{
+									marginLeft: "8px",
+									fontWeight: "bold",
+									fontSize: "small",
+									color: "white",
+									background: "black",
+									marginBottom: "5px",
+								}}
+								type='link'
+								onClick={() => handleArabicModalOpen("description")}
+							>
+								Add Description In Arabic
+							</Button>
 							<Input.TextArea
 								onChange={(e) => {
 									const roomType =
@@ -576,7 +720,7 @@ const ZCase1 = ({
 										};
 									});
 								}}
-							/>
+							/>{" "}
 						</Form.Item>
 
 						<MultiSelectWrapper>
