@@ -146,6 +146,11 @@ const NewReservationMain = () => {
 				// eslint-disable-next-line
 				const formattedEndDate = moment(formatDate(new Date(end_date)));
 
+				const userId =
+					user.role === 2000
+						? user._id
+						: selectedHotelLocalStorage.belongsTo._id;
+
 				const endDate = new Date();
 				const startDate = new Date();
 				startDate.setDate(endDate.getDate()); // Subtracting -1 days
@@ -207,10 +212,7 @@ const NewReservationMain = () => {
 							}
 
 							if (!hotelRooms || hotelRooms.length === 0) {
-								getHotelRooms(
-									hotelId,
-									user.role === 2000 ? user._id : selectedHotel.belongsTo._id
-								).then((data3) => {
+								getHotelRooms(hotelId, userId).then((data3) => {
 									if (data3 && data3.error) {
 										console.log(data3.error);
 									} else {

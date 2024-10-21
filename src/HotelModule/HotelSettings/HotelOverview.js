@@ -97,7 +97,6 @@ const HotelOverview = ({
 	).length;
 
 	console.log(hotelRooms, "hotelRooms");
-
 	return (
 		<HotelOverviewWrapper>
 			<h3 style={{ textTransform: "capitalize" }}>

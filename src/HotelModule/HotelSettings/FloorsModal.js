@@ -4,6 +4,7 @@ import { Modal } from "antd";
 import ZInputFieldRoomsPFloor from "./ZInputFieldRoomsPFloor";
 import { roomTypeColors } from "../../AdminModule/NewHotels/Assets";
 import { toast } from "react-toastify";
+import { isAuthenticated } from "../../auth";
 
 const FloorsModal = ({
 	modalVisible,
@@ -16,6 +17,11 @@ const FloorsModal = ({
 	setRooms,
 	values,
 }) => {
+	const { user } = isAuthenticated();
+
+	const selectedHotel = JSON.parse(localStorage.getItem("selectedHotel")) || {};
+
+	const userId = user.role === 2000 ? user._id : selectedHotel.belongsTo._id;
 	// Prepopulate the floorDetails based on existing rooms data
 	useEffect(() => {
 		if (rooms && rooms.length > 0) {
@@ -104,7 +110,7 @@ const FloorsModal = ({
 					roomColorCode: roomColor,
 					floor: clickedFloor,
 					hotelId: hotelDetails._id,
-					belongsTo: values._id,
+					belongsTo: userId,
 				};
 
 				if (roomDetails.roomType === "individualBed") {

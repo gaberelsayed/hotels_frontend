@@ -190,24 +190,24 @@ const HotelSettingsMain = () => {
 	const gettingHotelData = () => {
 		const selectedHotel =
 			JSON.parse(localStorage.getItem("selectedHotel")) || {};
-		const hotelId = selectedHotel._id;
+		const userId = user.role === 2000 ? user._id : selectedHotel.belongsTo._id;
 
 		// Fetching user account details
-		hotelAccount(user._id, token, user._id).then((data) => {
+		hotelAccount(user._id, token, userId).then((data) => {
 			if (data && data.error) {
 				console.log(data.error, "Error rendering");
 			} else {
 				setValues(data);
 
 				// Fetching hotel details by hotelId
-				getHotelById(hotelId).then((data2) => {
+				getHotelById(selectedHotel._id).then((data2) => {
 					if (data2 && data2.error) {
 						console.log(data2.error, "Error rendering");
 					} else {
 						if (data && data.name && data._id && data2 && data2._id) {
 							setHotelDetails(data2);
 
-							// other state updates...
+							// Other state updates...
 							setHotelPhotos(
 								data2.hotelPhotos && data2.hotelPhotos.length > 0
 									? data2.hotelPhotos
@@ -221,7 +221,7 @@ const HotelSettingsMain = () => {
 							);
 
 							// Fetching hotel rooms
-							getHotelRooms(data2._id, user._id).then((data4) => {
+							getHotelRooms(data2._id, userId).then((data4) => {
 								if (data4 && data4.error) {
 									console.log(data4.error);
 								} else {
@@ -272,11 +272,14 @@ const HotelSettingsMain = () => {
 	}, [clickedFloor]);
 
 	const hotelDetailsUpdate = (fromPage) => {
+		const selectedHotel =
+			JSON.parse(localStorage.getItem("selectedHotel")) || {};
 		const updatedDetails = { ...hotelDetails, fromPage };
+		const userId = user.role === 2000 ? user._id : selectedHotel.belongsTo._id;
 
 		// Call the API to update the hotel details
 		const hotelId = hotelDetails._id; // Assuming your hotelDetails object has an _id field
-		console.log(updatedDetails, "updatedDetails");
+
 		// Using the API function from your API admin file
 		updateHotelDetails(hotelId, user._id, token, updatedDetails)
 			.then((response) => {
@@ -292,7 +295,7 @@ const HotelSettingsMain = () => {
 						setFinalStepModal(true);
 					} else {
 						setTimeout(() => {
-							window.location.href = `/hotel-management/settings/${user._id}/${hotelDetails._id}?activeTab=roomcount`;
+							window.location.href = `/hotel-management/settings/${userId}/${hotelDetails._id}?activeTab=roomcount`;
 						}, 2000);
 					}
 				}
@@ -301,6 +304,10 @@ const HotelSettingsMain = () => {
 	};
 
 	const addRooms = () => {
+		// eslint-disable-next-line
+		const selectedHotel =
+			JSON.parse(localStorage.getItem("selectedHotel")) || {};
+
 		if (!hotelRooms || hotelRooms.length === 0) {
 			return toast.error("Please Add Rooms");
 		}
