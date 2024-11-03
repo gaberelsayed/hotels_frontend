@@ -7,14 +7,14 @@ import Resizer from "react-image-file-resizer";
 import { isAuthenticated } from "../../auth";
 
 const ZHomePageBanners = ({ addThumbnail, setAddThumbnail }) => {
+	const { user, token } = isAuthenticated();
 	// eslint-disable-next-line
 	const [loading, setLoading] = useState(false);
-	const { user, token } = isAuthenticated();
 
 	const fileUploadAndResizeThumbNail = (e) => {
-		// console.log(e.target.files);
 		let files = e.target.files;
-		let allUploadedFiles = addThumbnail;
+		let allUploadedFiles = addThumbnail.images ? [...addThumbnail.images] : [];
+
 		if (files) {
 			for (let i = 0; i < files.length; i++) {
 				Resizer.imageFileResizer(
@@ -27,8 +27,17 @@ const ZHomePageBanners = ({ addThumbnail, setAddThumbnail }) => {
 					(uri) => {
 						cloudinaryUpload1(user._id, token, { image: uri })
 							.then((data) => {
-								allUploadedFiles.push(data);
-
+								allUploadedFiles.push({
+									...data,
+									title: "",
+									titleArabic: "",
+									subTitle: "",
+									subtitleArabic: "",
+									buttonTitle: "",
+									buttonTitleArabic: "",
+									pageRedirectURL: "",
+									btnBackgroundColor: "",
+								});
 								setAddThumbnail({ ...addThumbnail, images: allUploadedFiles });
 							})
 							.catch((err) => {
@@ -41,23 +50,14 @@ const ZHomePageBanners = ({ addThumbnail, setAddThumbnail }) => {
 		}
 	};
 
-	const FileUploadThumbnail = () => {
-		return (
-			<>
-				<ImageCardHomeMainBanner
-					uploadFrom='BasicProduct'
-					addThumbnail={addThumbnail}
-					handleImageRemove={handleImageRemove}
-					setAddThumbnail={setAddThumbnail}
-					fileUploadAndResizeThumbNail={fileUploadAndResizeThumbNail}
-				/>
-			</>
-		);
+	const handleFieldChange = (index, field, value) => {
+		let updatedImages = [...addThumbnail.images];
+		updatedImages[index][field] = value;
+		setAddThumbnail({ ...addThumbnail, images: updatedImages });
 	};
 
 	const handleImageRemove = (public_id) => {
 		setLoading(true);
-		// console.log("remove image", public_id);
 		axios
 			.post(
 				`${process.env.REACT_APP_API_URL}/admin/removeimage/${user._id}`,
@@ -69,24 +69,15 @@ const ZHomePageBanners = ({ addThumbnail, setAddThumbnail }) => {
 				}
 			)
 			.then((res) => {
-				// eslint-disable-next-line
-				const { images } = addThumbnail;
-				let filteredImages = images.filter((item) => {
-					return item.public_id !== public_id;
-				});
-				if (addThumbnail.images.length === 1) {
-					setAddThumbnail([]);
-				} else {
-					setAddThumbnail({ ...addThumbnail, images: filteredImages });
-				}
+				let filteredImages = addThumbnail.images.filter(
+					(item) => item.public_id !== public_id
+				);
+				setAddThumbnail({ ...addThumbnail, images: filteredImages });
 				setLoading(false);
 			})
 			.catch((err) => {
 				console.log(err);
 				setLoading(false);
-				// setTimeout(function () {
-				// 	window.location.reload(false);
-				// }, 1000);
 			});
 	};
 
@@ -94,12 +85,19 @@ const ZHomePageBanners = ({ addThumbnail, setAddThumbnail }) => {
 		<ZHomePageBannersWrapper>
 			<div className='container mt-3'>
 				<h3
-					style={{ color: "#009ef7", fontWeight: "bold" }}
 					className='mt-1 mb-3 text-center'
+					style={{ color: "#009ef7", fontWeight: "bold" }}
 				>
 					Home Page Main Banners
 				</h3>
-				{FileUploadThumbnail()}
+				<ImageCardHomeMainBanner
+					uploadFrom='BasicProduct'
+					addThumbnail={addThumbnail}
+					handleImageRemove={handleImageRemove}
+					setAddThumbnail={setAddThumbnail}
+					fileUploadAndResizeThumbNail={fileUploadAndResizeThumbNail}
+					handleFieldChange={handleFieldChange}
+				/>
 			</div>
 		</ZHomePageBannersWrapper>
 	);
@@ -112,13 +110,7 @@ const ZHomePageBannersWrapper = styled.div`
 		border: 2px solid lightgrey;
 		border-radius: 20px;
 		background: white;
-	}
-
-	@media (max-width: 1750px) {
-		background: white;
-	}
-
-	@media (max-width: 1400px) {
-		background: white;
+		padding: 10px;
+		margin-top: 10px;
 	}
 `;
