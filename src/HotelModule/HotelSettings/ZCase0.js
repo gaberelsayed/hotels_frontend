@@ -3,6 +3,7 @@ import { Form, Input, Button, Select, message, Modal, Checkbox } from "antd";
 import styled from "styled-components";
 import ImageCardMain from "./ImageCardMain";
 import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
+import TextArea from "antd/es/input/TextArea";
 
 const { Option } = Select;
 
@@ -204,7 +205,7 @@ const ZCase0 = ({
 		>
 			<>
 				<div className='row'>
-					<div className='col-md-4'>
+					<div className='col-md-2'>
 						<Form.Item
 							name='parkingLot'
 							label={
@@ -241,7 +242,7 @@ const ZCase0 = ({
 							</Select>
 						</Form.Item>
 					</div>
-					<div className='col-md-4'>
+					<div className='col-md-2'>
 						<Form.Item
 							name='hotelFloors'
 							label={
@@ -262,6 +263,56 @@ const ZCase0 = ({
 									setHotelDetails((prevDetails) => ({
 										...prevDetails,
 										hotelFloors: e.target.value,
+									}));
+								}}
+							/>
+						</Form.Item>
+					</div>
+
+					<div className='col-md-4'>
+						<Form.Item
+							name='aboutHotel'
+							label={chosenLanguage === "Arabic" ? "عن الفندق" : "About Hotel"}
+							rules={[
+								{
+									required: true,
+									message: "Please write a little bit about your hotel",
+								},
+							]}
+						>
+							<TextArea
+								type='text'
+								onChange={(e) => {
+									setHotelDetails((prevDetails) => ({
+										...prevDetails,
+										aboutHotel: e.target.value,
+									}));
+								}}
+							/>
+						</Form.Item>
+					</div>
+
+					<div className='col-md-4'>
+						<Form.Item
+							name='aboutHotelArabic'
+							label={
+								chosenLanguage === "Arabic"
+									? "عن الفندق باللغة العربية"
+									: "About Hotel (In Arabic)"
+							}
+							rules={[
+								{
+									required: true,
+									message: "Please write a little bit about your hotel",
+								},
+							]}
+						>
+							<TextArea
+								type='text'
+								onChange={(e) => {
+									setHotelDetails((prevDetails) => ({
+										...prevDetails,
+										aboutHotelArabic: e.target.value,
 									}));
 								}}
 							/>
