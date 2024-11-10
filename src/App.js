@@ -11,7 +11,7 @@ import Signin from "./pages/Signin";
 //Management Routes
 import AdminRoute from "./auth/AdminRoute";
 import AdminDashboard from "./AdminModule/AdminDashboard/AdminDashboard";
-import AddNewHotel from "./AdminModule/NewHotels/AddNewHotel";
+import AddNewHotel from "./AdminModule/NewHotels/AddNewHotel";    
 import AddedHotelsMain from "./AdminModule/AddedHotels/AddedHotelsMain";
 import AddOwnerAccount from "./AdminModule/AddOwner/AddOwnerAccount";
 
